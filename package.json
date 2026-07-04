@@ -1,0 +1,12 @@
+{
+  "name": "draughtsquest",
+  "version": "1.0.0",
+  "description": "DraughtsQuest — un RPG du jeu de dames internationales 10x10, jouable dans le navigateur.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "test": "node tests/rules.test.mjs && node tests/ai.test.mjs"
+  }
+}

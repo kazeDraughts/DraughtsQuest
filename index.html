@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#1c2733">
+  <title>DraughtsQuest — le RPG du jeu de dames</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛀</text></svg>">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ===================== MENU PRINCIPAL ===================== -->
+    <section id="screen-menu" class="screen active">
+      <div class="menu-box">
+        <h1 class="game-title">Draughts<span>Quest</span></h1>
+        <p class="game-subtitle">Le RPG du jeu de dames internationales</p>
+        <nav class="menu-buttons" id="menu-buttons">
+          <button class="btn btn-primary" id="btn-local">Jouer à deux (local)</button>
+        </nav>
+        <p class="menu-footnote" id="menu-footnote">10×10 · prise obligatoire · rafle majoritaire</p>
+      </div>
+    </section>
+
+    <!-- ===================== PARTIE DE DAMES ===================== -->
+    <section id="screen-match" class="screen">
+      <header class="match-bar">
+        <div class="player-tag" id="tag-black">
+          <span class="player-avatar" id="avatar-black">⚫</span>
+          <span class="player-name" id="name-black">Noirs</span>
+          <span class="player-extra" id="extra-black"></span>
+        </div>
+        <div class="turn-pill" id="turn-pill">Trait aux Blancs</div>
+      </header>
+
+      <div class="board-wrap">
+        <canvas id="board-canvas"></canvas>
+        <div class="board-banner hidden" id="board-banner"></div>
+      </div>
+
+      <footer class="match-bar">
+        <div class="player-tag" id="tag-white">
+          <span class="player-avatar" id="avatar-white">⚪</span>
+          <span class="player-name" id="name-white">Blancs</span>
+          <span class="player-extra" id="extra-white"></span>
+        </div>
+        <div class="match-buttons">
+          <button class="btn btn-small" id="btn-resign">Abandonner</button>
+          <button class="btn btn-small" id="btn-quit-match">Menu</button>
+        </div>
+      </footer>
+
+      <div class="overlay hidden" id="match-overlay">
+        <div class="overlay-box">
+          <h2 id="result-title">Victoire !</h2>
+          <p id="result-detail"></p>
+          <div class="overlay-buttons" id="result-buttons"></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
