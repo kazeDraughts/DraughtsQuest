@@ -8,6 +8,10 @@ import { Match } from './game/match.js';
 import { showScreen, showBanner, showMatchOverlay, el } from './ui/screens.js';
 import { AIPlayer } from './ai/player.js';
 import { AI_LEVELS, LEVEL_ORDER } from './ai/levels.js';
+import { WorldController } from './world/controller.js';
+import { CHARACTERS, characterById } from './world/npcs.js';
+import { drawPortrait } from './world/portraits.js';
+import { loadSave } from './save/save.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -16,6 +20,20 @@ const $ = (id) => document.getElementById(id);
 // ---------------------------------------------------------------------------
 const boardView = new BoardView($('board-canvas'));
 let currentMatch = null;
+let matchOrigin = 'menu'; // 'menu' ou 'world' : où revenir en quittant la partie
+
+/** Avatar d'un camp : id de personnage (portrait dessiné) ou emoji. */
+function setAvatar(spanId, who) {
+  const span = $(spanId);
+  span.innerHTML = '';
+  if (who && CHARACTERS[who]) {
+    const c = document.createElement('canvas');
+    drawPortrait(c, CHARACTERS[who].look, 76);
+    span.append(c);
+  } else {
+    span.textContent = who || '⚪';
+  }
+}
 
 /**
  * Lance une partie sur l'écran de jeu.
@@ -28,10 +46,11 @@ function startMatch(config) {
 
   $('name-white').textContent = config.white.name;
   $('name-black').textContent = config.black.name;
-  $('avatar-white').textContent = config.white.avatar ?? '⚪';
-  $('avatar-black').textContent = config.black.avatar ?? '⚫';
+  setAvatar('avatar-white', config.white.avatar ?? '⚪');
+  setAvatar('avatar-black', config.black.avatar ?? '⚫');
   $('extra-white').textContent = config.white.extra ?? '';
   $('extra-black').textContent = config.black.extra ?? '';
+  matchOrigin = config.origin ?? 'menu';
 
   const match = new Match({
     boardView,
@@ -148,13 +167,88 @@ function openAISelect() {
 }
 
 // ---------------------------------------------------------------------------
+// Aventure (overworld)
+// ---------------------------------------------------------------------------
+let world = null;
+
+function enterWorld() {
+  if (!world) {
+    world = new WorldController({
+      services: {
+        startMatch: (cfg) => startWorldMatch(cfg),
+        toMenu: () => quitToMenu(),
+        sfx: () => {},
+      },
+    });
+  }
+  currentMatch?.destroy();
+  currentMatch = null;
+  showScreen('screen-world');
+  world.enter();
+}
+
+function leaveWorldToMenu() {
+  world?.leave();
+  showScreen('screen-menu');
+}
+
+/**
+ * Partie lancée depuis le monde (PNJ) : l'adversaire est un personnage,
+ * le résultat revient au scénario via cfg.onEnd, puis retour au monde.
+ */
+function startWorldMatch(cfg) {
+  world.leave();
+  const opp = characterById(cfg.opponent);
+  const levelCfg = typeof cfg.level === 'string' ? AI_LEVELS[cfg.level] : cfg.level;
+  const ai = new AIPlayer(cfg.level);
+  startMatch({
+    origin: 'world',
+    fen: cfg.fen,
+    allowedMoves: cfg.allowedMoves,
+    white: { type: 'human', name: 'Tim', avatar: 'player' },
+    black: {
+      type: 'ai',
+      name: opp.name,
+      avatar: opp.id,
+      extra: cfg.extra ?? (levelCfg ? `Force ~${levelCfg.elo}` : ''),
+      getMove: (fen) => ai.getMove(fen),
+    },
+    onEnd: (r) => {
+      if (cfg.onEnd) {
+        cfg.onEnd(r);
+        return;
+      }
+      const won = r.winner === 'w';
+      showMatchOverlay({
+        title: won ? 'Victoire ! 🎉' : r.winner === 'draw' ? 'Partie nulle' : 'Défaite…',
+        detail: won ? `Bien joué, tu as battu ${opp.name} !`
+          : r.winner === 'draw' ? 'Personne ne l\'emporte cette fois.'
+            : `${opp.name} l'emporte. Tu feras mieux la prochaine fois !`,
+        buttons: [
+          { label: 'Retour au monde', className: 'btn-primary', onClick: () => enterWorld() },
+        ],
+      });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Boutons de l'écran de partie
 // ---------------------------------------------------------------------------
 $('btn-resign').addEventListener('click', () => {
   if (!currentMatch || currentMatch.finished) return;
-  currentMatch.resign(currentMatch.engine.turn());
+  // Dans l'aventure, l'humain (Blancs) abandonne ; en local, le camp au trait.
+  currentMatch.resign(matchOrigin === 'world' ? 'w' : currentMatch.engine.turn());
 });
-$('btn-quit-match').addEventListener('click', () => quitToMenu());
+$('btn-quit-match').addEventListener('click', () => {
+  if (matchOrigin === 'world') {
+    if (currentMatch && !currentMatch.finished) currentMatch.resign('w');
+    else enterWorld();
+  } else {
+    quitToMenu();
+  }
+});
+$('btn-world-menu').addEventListener('click', () => leaveWorldToMenu());
 
 // ---------------------------------------------------------------------------
 // Menu principal
@@ -162,12 +256,15 @@ $('btn-quit-match').addEventListener('click', () => quitToMenu());
 $('btn-local').addEventListener('click', () => startLocalMatch());
 $('btn-vs-ai').addEventListener('click', () => openAISelect());
 $('btn-ai-cancel').addEventListener('click', () => $('ai-select').classList.add('hidden'));
+$('btn-adventure').addEventListener('click', () => enterWorld());
 
+loadSave();
 showScreen('screen-menu');
 
 // Petit crochet de débogage / tests automatisés (sans effet en jeu normal).
 window.__dq = {
   boardView,
   get match() { return currentMatch; },
+  get world() { return world; },
   startMatch,
 };

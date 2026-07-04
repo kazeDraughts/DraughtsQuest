@@ -282,6 +282,18 @@ body {
   .touch-controls { display: none; }
 }
 
+/* Fondu de transition entre cartes */
+#world-fade {
+  position: absolute;
+  inset: 0;
+  background: #06090d;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .28s ease;
+  z-index: 15;
+}
+#world-fade.on { opacity: 1; pointer-events: auto; }
+
 /* ---------- Dialogues ---------- */
 .dialogue-box {
   position: absolute;
