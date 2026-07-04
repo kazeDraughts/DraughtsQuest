@@ -5,7 +5,9 @@
 
 import { BoardView } from './game/boardview.js';
 import { Match } from './game/match.js';
-import { showScreen, showBanner, showMatchOverlay } from './ui/screens.js';
+import { showScreen, showBanner, showMatchOverlay, el } from './ui/screens.js';
+import { AIPlayer } from './ai/player.js';
+import { AI_LEVELS, LEVEL_ORDER } from './ai/levels.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -40,7 +42,12 @@ function startMatch(config) {
     onMessage: (msg) => showBanner(msg),
     onTurn: (color, player) => {
       const pill = $('turn-pill');
-      pill.textContent = color === 'w' ? `Trait aux Blancs — ${config.white.name}` : `Trait aux Noirs — ${config.black.name}`;
+      if (player.type === 'ai') {
+        pill.innerHTML = '';
+        pill.append(el('span.spin'), ` ${player.name} réfléchit…`);
+      } else {
+        pill.textContent = color === 'w' ? `Trait aux Blancs — ${config.white.name}` : `Trait aux Noirs — ${config.black.name}`;
+      }
       pill.classList.toggle('me', player.type === 'human');
     },
     onMove: () => {},
@@ -84,7 +91,60 @@ function startLocalMatch() {
   startMatch({
     white: { type: 'human', name: 'Joueur 1 (Blancs)' },
     black: { type: 'human', name: 'Joueur 2 (Noirs)' },
+    onEnd: (r) => showMatchOverlay({
+      title: r.title,
+      detail: r.detail,
+      buttons: [
+        { label: 'Rejouer', className: 'btn-primary', onClick: () => startLocalMatch() },
+        { label: 'Menu principal', className: 'btn-small', onClick: () => quitToMenu() },
+      ],
+    }),
   });
+}
+
+/** Partie libre contre l'IA (le joueur a les Blancs). */
+function startAIMatch(levelId) {
+  const level = AI_LEVELS[levelId];
+  const ai = new AIPlayer(levelId);
+  startMatch({
+    white: { type: 'human', name: 'Toi (Blancs)' },
+    black: {
+      type: 'ai',
+      name: level.name,
+      avatar: level.icon,
+      extra: `Elo ~${level.elo}`,
+      getMove: (fen) => ai.getMove(fen),
+    },
+    onEnd: (r) => showMatchOverlay({
+      title: r.winner === 'w' ? 'Victoire ! 🎉' : r.winner === 'draw' ? 'Partie nulle' : 'Défaite…',
+      detail: r.winner === 'w'
+        ? `Tu as battu ${level.name} !`
+        : r.winner === 'draw' ? 'Personne ne peut plus gagner.' : `${level.name} l'emporte. Retente ta chance !`,
+      buttons: [
+        { label: 'Revanche', className: 'btn-primary', onClick: () => startAIMatch(levelId) },
+        { label: 'Changer de niveau', className: 'btn-good', onClick: () => { quitToMenu(); openAISelect(); } },
+        { label: 'Menu principal', className: 'btn-small', onClick: () => quitToMenu() },
+      ],
+    }),
+  });
+}
+
+// --- Sélecteur de niveau de l'IA ---
+function openAISelect() {
+  const zone = $('ai-level-buttons');
+  zone.innerHTML = '';
+  for (const id of LEVEL_ORDER) {
+    const lv = AI_LEVELS[id];
+    const btn = el('button.btn', `${lv.icon} ${lv.name} — ${lv.desc}`, {
+      onclick: () => {
+        $('ai-select').classList.add('hidden');
+        startAIMatch(id);
+      },
+    });
+    btn.style.textAlign = 'left';
+    zone.append(btn);
+  }
+  $('ai-select').classList.remove('hidden');
 }
 
 // ---------------------------------------------------------------------------
@@ -100,6 +160,8 @@ $('btn-quit-match').addEventListener('click', () => quitToMenu());
 // Menu principal
 // ---------------------------------------------------------------------------
 $('btn-local').addEventListener('click', () => startLocalMatch());
+$('btn-vs-ai').addEventListener('click', () => openAISelect());
+$('btn-ai-cancel').addEventListener('click', () => $('ai-select').classList.add('hidden'));
 
 showScreen('screen-menu');
 

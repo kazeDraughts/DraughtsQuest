@@ -17,7 +17,8 @@
         <h1 class="game-title">Draughts<span>Quest</span></h1>
         <p class="game-subtitle">Le RPG du jeu de dames internationales</p>
         <nav class="menu-buttons" id="menu-buttons">
-          <button class="btn btn-primary" id="btn-local">Jouer à deux (local)</button>
+          <button class="btn btn-primary" id="btn-vs-ai">Jouer contre l'IA</button>
+          <button class="btn" id="btn-local">Jouer à deux (local)</button>
         </nav>
         <p class="menu-footnote" id="menu-footnote">10×10 · prise obligatoire · rafle majoritaire</p>
       </div>
@@ -59,6 +60,15 @@
         </div>
       </div>
     </section>
+
+    <!-- Choix du niveau de l'IA -->
+    <div class="overlay hidden" id="ai-select">
+      <div class="overlay-box">
+        <h2>Choisis ton adversaire</h2>
+        <div class="overlay-buttons" id="ai-level-buttons"></div>
+        <button class="btn btn-small" id="btn-ai-cancel">Retour</button>
+      </div>
+    </div>
 
   </div>
   <script type="module" src="src/main.js"></script>
