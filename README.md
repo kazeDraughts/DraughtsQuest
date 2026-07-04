@@ -1,0 +1,120 @@
+# ⛀ DraughtsQuest
+
+**Le RPG du jeu de dames internationales (10×10)** — jouable dans le
+navigateur, sur PC (souris/clavier) et mobile/tablette (tactile), sans
+installation.
+
+Tim s'ennuie… jusqu'à ce que sa maman l'envoie chez Papi Marcel, qui lui
+apprend le jeu de dames. Bats ton grand-père, inscris-toi au club de la ville
+d'**Otterlaws** (anagramme de Wattrelos !), suis l'enseignement du grand
+maître **Gigi**, gravis les échelons — tournoi du club, championnat régional,
+national — et deviens **champion du monde**. En chemin, gagne des **Pions
+d'Or** et personnalise ton damier et tes pièces dans la boutique de Mme Plot.
+
+## 🚀 Lancer le jeu
+
+Aucune étape de build, aucune dépendance à installer. Il faut juste servir
+les fichiers en HTTP (les modules ES ne se chargent pas depuis `file://`) :
+
+```bash
+npm start          # mini serveur inclus (node tools/serve.mjs)
+# puis ouvrir http://localhost:8080
+```
+
+ou n'importe quel serveur statique : `npx serve .`, `python3 -m http.server`…
+
+## 🎮 Contrôles
+
+| Contexte | PC | Mobile / tablette |
+|---|---|---|
+| Se déplacer | Flèches / ZQSD / WASD | Joystick virtuel (en bas à gauche) |
+| Interagir / avancer le dialogue | E, Espace ou Entrée | Bouton **A** (en bas à droite) |
+| Jouer un coup | Clic sur la pièce puis la case | Toucher la pièce puis la case |
+
+## ✅ Règles implémentées (dames internationales, FMJD)
+
+- damier 10×10, jeu sur cases sombres, 20 pions par camp ;
+- pions : déplacement diagonal en avant, **prise obligatoire en avant comme
+  en arrière** ;
+- **rafle majoritaire obligatoire** : quand plusieurs prises existent, seule
+  la capture du nombre maximal de pièces est légale ;
+- promotion en **dame volante** (déplacement/prise à distance) uniquement si
+  le pion **termine** son coup sur la dernière rangée ;
+- victoire par blocage ou capture totale ; nulles (triple répétition,
+  25 coups de dames sans prise ni coup de pion).
+
+Ces règles sont vérifiées par des tests automatiques : `npm test`
+(voir `tests/rules.test.mjs`, dont deux cas dédiés à la rafle majoritaire,
+et `tests/ai.test.mjs` pour l'IA).
+
+## 🧠 Architecture
+
+```
+index.html, css/          coque responsive (PC + mobile)
+vendor/draughts.js        moteur de RÈGLES vendorisé (@jortvl/draughts, MPL-2.0)
+src/engine/rules.js       RulesEngine : façade propre et REMPLAÇABLE du moteur
+src/ai/                   IA maison : minimax alpha-bêta (search.js),
+                          évaluation (evaluate.js), niveaux (levels.js),
+                          Web Worker (worker.js) + façade (player.js)
+src/game/                 damier canvas (boardview.js) + contrôleur de partie (match.js)
+src/world/                overworld : cartes, moteur, PNJ, portraits, dialogues
+src/story/                scénario (quests.js) + tutoriel interactif (tutorial.js)
+src/career/               Elo, adversaires, compétitions
+src/shop/                 thèmes cosmétiques + boutique
+src/audio/                musiques génératives + effets (Web Audio, zéro asset)
+src/save/                 état du jeu + sauvegarde localStorage
+tests/                    tests node du moteur de règles et de l'IA
+```
+
+Points d'architecture :
+
+- **Moteur de règles réutilisé, pas réécrit** : la génération/validation des
+  coups vient de la bibliothèque `@jortvl/draughts` ; le jeu ne lui parle
+  qu'à travers `RulesEngine`, donc elle est remplaçable.
+- **IA codée maison** (exigence du projet) : négamax + élagage alpha-bêta,
+  approfondissement itératif borné dans le temps, extension des rafles,
+  bruit d'évaluation et probabilité de gaffe réglables → niveaux nommés du
+  Débutant au Grand maître. Le calcul tourne dans un **Web Worker** :
+  l'interface ne gèle jamais, même sur mobile.
+- **La force des adversaires suit un Elo** : chaque victoire fait monter ton
+  classement (et un peu celui de l'adversaire battu) ; les paramètres de
+  l'IA (profondeur, temps, bruit, gaffes) sont dérivés de l'Elo effectif.
+
+## 📦 Bibliothèques et licences
+
+| Composant | Origine | Licence |
+|---|---|---|
+| `vendor/draughts.js` (moteur de règles 10×10) | [@jortvl/draughts](https://www.npmjs.com/package/@jortvl/draughts) v0.4.2, fork maintenu de [draughts.js](https://github.com/shubhendusaurabh/draughts.js) | **MPL-2.0** |
+| Tout le reste (jeu, IA, monde, UI, audio) | code original du projet | **MIT** |
+
+⚠️ **Note licence** : il n'existe pas, à notre connaissance, de bibliothèque
+JavaScript de dames internationales 10×10 sous licence MIT (`draughts.js` et
+son fork sont en MPL-2.0 ; `rapid-draughts`, MIT, ne couvre que le 8×8
+anglais ; `draughts-reader-core` n'a pas de licence déclarée). La MPL-2.0
+n'est **pas** la GPL : c'est un copyleft *faible limité au fichier*, sans
+effet sur le reste du projet. Le fichier est repris à l'identique (plus un
+export ESM de 3 lignes), avec sa licence dans `vendor/LICENSE-MPL-2.0.txt` ;
+détails et procédure de remplacement dans `vendor/README.md`.
+
+Aucune dépendance npm d'exécution : pas de `node_modules`, pas de build.
+
+## 🎨 Assets
+
+**Tous les visuels et tous les sons sont générés par le code** (canvas 2D et
+Web Audio) : il n'y a aucun fichier image ou audio à télécharger, donc aucune
+question de droits. Pour les remplacer par de « vrais » assets :
+
+- **Graphismes** : les tuiles/props se dessinent dans
+  `src/world/overworld.js` (`_drawProp`, `TILE_COLORS`), les personnages dans
+  `src/world/portraits.js`, les pièces dans `src/game/boardview.js`
+  (`drawPiece`) — remplacer ces fonctions par des `drawImage()` de
+  spritesheets.
+- **Musique/SFX** : remplacer `playMusic`/`playSfx` dans
+  `src/audio/audio.js` par la lecture de fichiers (les points d'appel et les
+  noms de pistes — menu, village, club, match, tournament — restent valides).
+
+## 🧪 Tests
+
+```bash
+npm test    # règles (13 tests, dont rafle majoritaire) + IA (6 tests)
+```

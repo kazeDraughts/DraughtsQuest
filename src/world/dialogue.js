@@ -44,6 +44,7 @@ export class Dialogue {
     let answer;
     for (const line of lines) {
       answer = await this._playLine(line);
+      if (!this.isOpen) break; // fermeture forcée (changement d'écran…)
     }
     this.close();
     return answer;
@@ -52,8 +53,13 @@ export class Dialogue {
   close() {
     this.isOpen = false;
     this._advance = null;
+    clearTimeout(this._timer);
     this.box?.classList.add('hidden');
     window.removeEventListener('keydown', this._keyHandler, { capture: true });
+    // Débloque un éventuel play() en attente (fermeture forcée).
+    const r = this._resolveLine;
+    this._resolveLine = null;
+    r?.(undefined);
   }
 
   _ensureBox() {
@@ -75,7 +81,15 @@ export class Dialogue {
   }
 
   _playLine(line) {
-    return new Promise((resolve) => {
+    return new Promise((rawResolve) => {
+      let settled = false;
+      const resolve = (v) => {
+        if (settled) return;
+        settled = true;
+        this._resolveLine = null;
+        rawResolve(v);
+      };
+      this._resolveLine = resolve;
       const who = characterById(line.who || 'player');
       this.nameEl.textContent = line.name || who.name;
       drawPortrait(this.portraitCanvas, who.look, 96);

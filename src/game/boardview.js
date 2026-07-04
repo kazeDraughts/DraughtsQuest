@@ -265,13 +265,24 @@ export class BoardView {
   }
 
   _drawPiece(x, y, code, lifted = false) {
-    const { ctx, cell } = this;
-    const color = code.toLowerCase() === 'w' ? 'w' : 'b';
-    const king = code === 'W' || code === 'B';
-    const style = this.pieces[color];
-    const r = cell * 0.38 * (lifted ? 1.08 : 1);
+    drawPiece(this.ctx, x, y, this.cell, code, this.pieces, this.theme.dark, lifted);
+  }
+}
 
-    ctx.save();
+/**
+ * Dessine une pièce (pion ou dame) — utilisé par le damier ET par les
+ * aperçus de la boutique.
+ * @param {string} code 'w'|'W'|'b'|'B'
+ * @param {object} pieces thème de pièces (voir themes.js)
+ * @param {string} holeColor couleur du trou des donuts (case du damier)
+ */
+export function drawPiece(ctx, x, y, cell, code, pieces, holeColor = '#333', lifted = false) {
+  const color = code.toLowerCase() === 'w' ? 'w' : 'b';
+  const king = code === 'W' || code === 'B';
+  const style = pieces[color];
+  const r = cell * 0.38 * (lifted ? 1.08 : 1);
+
+  ctx.save();
     // Ombre portée
     ctx.beginPath();
     ctx.ellipse(x, y + r * 0.18, r * 0.95, r * 0.6, 0, 0, Math.PI * 2);
@@ -283,7 +294,7 @@ export class BoardView {
       ctx.shadowBlur = cell * 0.3;
     }
 
-    switch (this.pieces.shape) {
+    switch (pieces.shape) {
       case 'ring': {
         ctx.lineWidth = r * 0.42;
         ctx.strokeStyle = style.fill;
@@ -355,7 +366,7 @@ export class BoardView {
         ctx.stroke();
         ctx.beginPath();
         ctx.arc(x, y, r * 0.3, 0, Math.PI * 2);
-        ctx.fillStyle = this.theme.dark;
+        ctx.fillStyle = holeColor;
         ctx.fill();
         break;
       }
@@ -413,5 +424,4 @@ export class BoardView {
       ctx.stroke();
     }
     ctx.restore();
-  }
 }

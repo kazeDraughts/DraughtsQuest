@@ -61,6 +61,14 @@ export const CHARACTERS = {
     id: 'champion', name: 'Viktor Roi',
     look: { skin: '#e8c49c', hair: '#1a1a20', hairStyle: 'short', shirt: '#20242c', mustache: '#1a1a20', bg: '#23262e' },
   },
+  anke: {
+    id: 'anke', name: 'Anke Vries',
+    look: { skin: '#f5d3b0', hair: '#e8d48a', hairStyle: 'bun', shirt: '#d8683c', bg: '#54331f' },
+  },
+  sergei: {
+    id: 'sergei', name: 'Sergueï Volk',
+    look: { skin: '#e8c49c', hair: '#8a8f96', hairStyle: 'short', beard: '#8a8f96', shirt: '#3a4a5c', bg: '#2b3642' },
+  },
 };
 
 export function characterById(id) {

@@ -16,10 +16,15 @@
       <div class="menu-box">
         <h1 class="game-title">Draughts<span>Quest</span></h1>
         <p class="game-subtitle">Le RPG du jeu de dames internationales</p>
+        <p class="menu-stats hidden" id="menu-stats"></p>
         <nav class="menu-buttons" id="menu-buttons">
-          <button class="btn btn-primary" id="btn-adventure">Aventure</button>
+          <button class="btn btn-primary hidden" id="btn-continue">Continuer</button>
+          <button class="btn btn-primary" id="btn-adventure">Nouvelle partie</button>
           <button class="btn" id="btn-vs-ai">Partie rapide contre l'IA</button>
           <button class="btn" id="btn-local">Jouer à deux (local)</button>
+          <button class="btn" id="btn-shop">Boutique</button>
+          <button class="btn" id="btn-options">Options</button>
+          <button class="btn" id="btn-credits">Crédits</button>
         </nav>
         <p class="menu-footnote" id="menu-footnote">10×10 · prise obligatoire · rafle majoritaire</p>
       </div>
@@ -77,6 +82,81 @@
           <div class="overlay-buttons" id="result-buttons"></div>
         </div>
       </div>
+    </section>
+
+    <!-- ===================== OPTIONS ===================== -->
+    <section id="screen-options" class="screen panel-screen">
+      <div class="panel-head">
+        <h2>⚙️ Options</h2>
+        <button class="btn btn-small" id="btn-options-back">Retour</button>
+      </div>
+      <div class="option-row">
+        <label for="opt-music">🎵 Musique</label>
+        <input type="range" id="opt-music" min="0" max="1" step="0.05">
+      </div>
+      <div class="option-row">
+        <label for="opt-sfx">🔊 Effets sonores</label>
+        <input type="range" id="opt-sfx" min="0" max="1" step="0.05">
+      </div>
+      <div class="option-row">
+        <label>Sauvegarde</label>
+        <button class="btn btn-small btn-danger" id="btn-delete-save">Tout effacer</button>
+      </div>
+    </section>
+
+    <!-- ===================== CRÉDITS ===================== -->
+    <section id="screen-credits" class="screen panel-screen">
+      <div class="panel-head">
+        <h2>💛 Crédits</h2>
+        <button class="btn btn-small" id="btn-credits-back">Retour</button>
+      </div>
+      <div class="credits-text">
+        <h3>DraughtsQuest</h3>
+        <p>Un RPG du jeu de dames internationales (10×10), jouable dans le
+        navigateur, sur PC et mobile. Graphismes et musiques générés par le
+        code — aucun asset externe.</p>
+        <h3>Bibliothèques</h3>
+        <p>Moteur de règles : <a href="https://github.com/jortvanleenen/draughts.js" target="_blank" rel="noreferrer">@jortvl/draughts</a>
+        v0.4.2 (licence MPL-2.0), encapsulé et remplaçable. Tout le reste
+        (IA minimax alpha-bêta, monde, interface, audio) est du code original
+        du projet, sous licence MIT, sans dépendance externe.</p>
+        <h3>Merci</h3>
+        <p>À Papi Marcel, à Gigi, et à tous les damistes de Wattrelos —
+        pardon, d'Otterlaws.</p>
+      </div>
+    </section>
+
+    <!-- ===================== BOUTIQUE ===================== -->
+    <section id="screen-shop" class="screen panel-screen">
+      <div class="panel-head">
+        <h2>🛍️ Boutique de Mme Plot</h2>
+        <button class="btn btn-small" id="btn-shop-back">Retour</button>
+      </div>
+      <p class="menu-stats" id="shop-points">🪙 0</p>
+      <div class="shop-section-title">DAMIERS — le terrain de jeu de tes exploits</div>
+      <div class="shop-grid" id="shop-boards"></div>
+      <div class="shop-section-title">PIONS — tes soldats, ton style</div>
+      <div class="shop-grid" id="shop-pieces"></div>
+    </section>
+
+    <!-- ===================== COMPÉTITIONS ===================== -->
+    <section id="screen-competitions" class="screen panel-screen">
+      <div class="panel-head">
+        <h2>🏆 Compétitions</h2>
+        <button class="btn btn-small" id="btn-comp-back">Retour</button>
+      </div>
+      <p class="menu-footnote" id="comp-player-status"></p>
+      <div class="bracket" id="competitions-list"></div>
+    </section>
+
+    <section id="screen-tournament" class="screen panel-screen">
+      <div class="panel-head">
+        <h2 id="tournament-title">Tournoi</h2>
+        <button class="btn btn-small" id="btn-tournament-back">Quitter</button>
+      </div>
+      <p class="menu-footnote" id="tournament-info"></p>
+      <div class="bracket" id="tournament-rounds"></div>
+      <button class="btn btn-primary" id="btn-tournament-play">Jouer la ronde</button>
     </section>
 
     <!-- Choix du niveau de l'IA -->

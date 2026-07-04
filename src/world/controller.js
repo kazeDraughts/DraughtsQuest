@@ -9,7 +9,7 @@
 
 import { Overworld } from './overworld.js';
 import { Dialogue } from './dialogue.js';
-import { getNpcDialogue } from '../story/quests.js';
+import { getNpcDialogue, onMapEntered, currentObjective } from '../story/quests.js';
 import { characterById } from './npcs.js';
 import { state, save, flag, setFlag } from '../save/save.js';
 
@@ -71,8 +71,25 @@ export class WorldController {
   }
 
   /** Événements automatiques à l'arrivée sur une carte (scénario). */
-  _onMapEntered(mapId) {
-    this.services.onMapEntered?.(mapId, this);
+  async _onMapEntered(mapId) {
+    this.services.onMapChanged?.(this.world.map);
+    this.updateHud();
+    await onMapEntered(mapId, this._questCtx());
+    this.updateHud();
+  }
+
+  /** Rafraîchit l'objectif de quête et le compteur de points. */
+  updateHud() {
+    const quest = document.getElementById('hud-quest');
+    const objective = currentObjective(flag, state);
+    quest.classList.toggle('hidden', !objective);
+    quest.innerHTML = '';
+    if (objective) {
+      const b = document.createElement('b');
+      b.textContent = 'Objectif';
+      quest.append(b, objective);
+    }
+    this.services.updateHud?.();
   }
 
   _fadeOut() {
@@ -95,6 +112,7 @@ export class WorldController {
     this.world.paused = true;
     const answer = await this.dialogue.play(lines);
     this.world.paused = false;
+    this.updateHud();
     return answer;
   }
 
@@ -119,7 +137,8 @@ export class WorldController {
     }
   }
 
-  _questCtx() {
+  /** Contexte passé au scénario (quests.js). */
+  questCtx() {
     return {
       flag,
       setFlag,
@@ -129,9 +148,17 @@ export class WorldController {
         this._savePosition();
         this.services.startMatch(cfg);
       },
+      startTutorial: () => {
+        this._savePosition();
+        this.services.startTutorial?.();
+      },
       openShop: () => this.services.openShop?.(),
       openCompetitions: () => this.services.openCompetitions?.(),
     };
+  }
+
+  _questCtx() {
+    return this.questCtx();
   }
 
   // ---------------------------------------------------------------- tactile
