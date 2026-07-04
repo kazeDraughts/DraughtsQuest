@@ -6,8 +6,11 @@
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = new URL('..', import.meta.url).pathname;
+// fileURLToPath (et non `.pathname`) est indispensable sous Windows : une URL
+// de fichier donne un pathname du type "/C:/Users/..." que fs ne sait pas lire.
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PORT = process.env.PORT || 8080;
 
 const MIME = {
@@ -30,10 +33,11 @@ http.createServer(async (req, res) => {
     const data = await readFile(file);
     res.writeHead(200, { 'Content-Type': MIME[extname(file)] || 'application/octet-stream' });
     res.end(data);
-  } catch {
+  } catch (e) {
+    if (e.code !== 'ENOENT') console.error(`[serve] ${req.url} :`, e.message);
     res.writeHead(404);
     res.end('404');
   }
 }).listen(PORT, () => {
-  console.log(`DraughtsQuest : http://localhost:${PORT}`);
+  console.log(`DraughtsQuest : http://localhost:${PORT}  (racine : ${ROOT})`);
 });
