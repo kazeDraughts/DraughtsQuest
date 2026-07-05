@@ -84,7 +84,9 @@ export const EXERCISES = [
     reward: 60,
     steps: [
       {
-        fen: 'W:W27,31,36:B17,18,5',
+        // Le pion blanc 28 bouche la case d'arrivée de 17x28 : après le
+        // sacrifice 27-22, la prise 18x27 est réellement UNIQUE et forcée.
+        fen: 'W:W27,28,31,36:B5,9,17,18',
         intro: [
           { who: 'gigi', text: 'La COMBINAISON, c\'est l\'âme du jeu de dames : une suite de coups FORCÉS qui te fait gagner du matériel. La plus simple : offrir un pion… pour en reprendre deux.' },
           { who: 'gigi', text: 'Souviens-toi : si ton adversaire PEUT prendre, il DOIT prendre. Sers-toi de cette règle comme d\'une arme. Offre le bon pion !' },

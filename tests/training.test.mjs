@@ -13,6 +13,7 @@
 
 import assert from 'node:assert/strict';
 import { RulesEngine } from '../src/engine/rules.js';
+import { findBestMove } from '../src/ai/search.js';
 import { EXERCISES } from '../src/story/training.js';
 
 let passed = 0;
@@ -32,6 +33,24 @@ const material = (engine) => {
   const c = engine.countPieces();
   return { w: c.w + 3 * c.W, b: c.b + 3 * c.B };
 };
+
+/**
+ * Évaluation d'une position du point de vue des Blancs.
+ * Déroule d'abord les coups FORCÉS (findBestMove renvoie un score neutre
+ * par convention quand il n'y a qu'un coup légal — ex. rafle obligatoire).
+ */
+function whiteEval(fen) {
+  const e = new RulesEngine(fen);
+  let guard = 0;
+  while (!e.isGameOver() && e.getLegalMoves().length === 1 && guard++ < 24) {
+    e.applyMove(e.getLegalMoves()[0]);
+  }
+  if (e.isGameOver()) {
+    return e.winner() === 'w' ? 99999 : e.winner() === 'draw' ? 0 : -99999;
+  }
+  const r = findBestMove(e.fen(), { maxDepth: 6, timeMs: 4000, noise: 0 }, 1);
+  return e.turn() === 'w' ? r.score : -r.score;
+}
 
 console.log('Entraînement — validation des exercices par le moteur');
 
@@ -68,6 +87,24 @@ for (const ex of EXERCISES) {
           step.accept.some((a) => a.from === step.hint.from && a.to === step.hint.to),
           `étape ${i + 1} : l'indice ne correspond à aucun coup accepté`,
         );
+      }
+
+      // Anti-réfutation (tactique) : après le coup accepté, AUCUNE défense
+      // noire ne doit sauver les Noirs — chaque réplique légale doit laisser
+      // les Blancs gagnants au minimax. (C'est ce contrôle qui aurait
+      // attrapé la réfutation 17x28 du « coup de deux ».)
+      if (ex.cat === 'Tactique' && step.reply) {
+        const probe = new RulesEngine(engine.fen());
+        probe.applyMove(playable[0]);
+        for (const blackMove of probe.getLegalMoves()) {
+          const c = new RulesEngine(probe.fen());
+          c.applyMove(blackMove);
+          const score = whiteEval(c.fen());
+          assert.ok(
+            score >= 80,
+            `${ex.id} étape ${i + 1} : la défense noire ${blackMove.from}${blackMove.captures.length ? 'x' : '-'}${blackMove.to} RÉFUTE la combinaison (éval blanche ${Math.round(score)})`,
+          );
+        }
       }
 
       // On joue le premier coup accepté jouable, puis la réplique scriptée
