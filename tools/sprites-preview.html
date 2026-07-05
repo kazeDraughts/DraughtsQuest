@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Aperçu des sprites pixel art</title>
+  <style>
+    body { background: #8cc55a; font-family: system-ui; margin: 16px; }
+    canvas { image-rendering: pixelated; display: block; }
+    .row { display: flex; gap: 6px; align-items: flex-end; margin-bottom: 4px; }
+    .name { width: 110px; font-size: 12px; font-weight: 700; color: #23400f; }
+  </style>
+</head>
+<body>
+  <div id="zone"></div>
+  <script type="module">
+    import { drawCharacterSprite } from '../src/world/pixelart.js';
+    import { CHARACTERS } from '../src/world/npcs.js';
+
+    const zone = document.getElementById('zone');
+    const dirs = ['down', 'left', 'right', 'up'];
+    for (const id of Object.keys(CHARACTERS)) {
+      const row = document.createElement('div');
+      row.className = 'row';
+      const name = document.createElement('div');
+      name.className = 'name';
+      name.textContent = id;
+      row.append(name);
+      for (const dir of dirs) {
+        for (const step of [0, 0.13, 0.63]) {  // neutre, pas A, pas B
+          const c = document.createElement('canvas');
+          c.width = 80; c.height = 110;
+          const x = c.getContext('2d');
+          drawCharacterSprite(x, CHARACTERS[id].look, 40, 100, 64, dir, step);
+          row.append(c);
+        }
+      }
+      zone.append(row);
+    }
+  </script>
+</body>
+</html>

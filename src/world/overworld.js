@@ -9,7 +9,7 @@
 
 import { MAPS, SOLID_TILES } from './maps.js';
 import { characterById } from './npcs.js';
-import { drawCharacter } from './portraits.js';
+import { drawCharacterSprite } from './pixelart.js';
 
 const DIRS = {
   up: { x: 0, y: -1 }, down: { x: 0, y: 1 },
@@ -507,11 +507,11 @@ export class Overworld {
       else if (d.kind === 'rock') this._drawRock(d.x * t - cx, d.ty * t - cy);
       else if (d.kind === 'prop') this._drawProp(d.p, cx, cy);
       else if (d.kind === 'npc') {
-        drawCharacter(ctx, d.n.look, d.n.x * t - cx, d.n.y * t - cy, t, d.n.dir, d.n.walking ? d.n.step : 0);
+        drawCharacterSprite(ctx, d.n.look, d.n.x * t - cx, d.n.y * t - cy, t, d.n.dir, d.n.walking ? d.n.step : 0);
       } else {
         const look = this.hooks.playerLook?.() || characterById('player').look;
         const p = this.player;
-        drawCharacter(ctx, look, p.x * t - cx, p.y * t - cy, t, p.dir, p.walking ? p.step : 0);
+        drawCharacterSprite(ctx, look, p.x * t - cx, p.y * t - cy, t, p.dir, p.walking ? p.step : 0);
       }
     }
 
