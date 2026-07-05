@@ -204,6 +204,12 @@
     </div>
 
   </div>
-  <script type="module" src="src/main.js"></script>
+  <script type="module">
+    // Anti-cache léger : GitHub Pages sert les fichiers avec ~10 min de cache,
+    // et Safari mobile garde volontiers les modules d'une session à l'autre.
+    // Après un déploiement, un mélange ancien/nouveau main.js peut casser les
+    // nouveautés EN SILENCE ; on force donc une version d'entrée par heure.
+    import(`./src/main.js?v=${Math.floor(Date.now() / 3600000)}`);
+  </script>
 </body>
 </html>

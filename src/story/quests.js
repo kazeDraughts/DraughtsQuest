@@ -201,7 +201,9 @@ function comboGiverDialogue(ctx, seriesId, texts) {
     lines,
     onDone: (a) => {
       ctx.setFlag(metFlag);
-      if (a === 'play') ctx.startCombo(seriesId);
+      if (a !== 'play') return;
+      if (ctx.startCombo) ctx.startCombo(seriesId);
+      else ctx.say([{ who: seriesId, text: 'Tiens, mon damier n\'est pas prêt… (Le jeu vient d\'être mis à jour : recharge la page !)' }]);
     },
   };
 }

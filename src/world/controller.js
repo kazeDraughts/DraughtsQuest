@@ -159,8 +159,14 @@ export class WorldController {
       openShop: () => this.services.openShop?.(),
       openCompetitions: () => this.services.openCompetitions?.(),
       startCombo: (seriesId) => {
+        // Jamais d'échec muet : si le service manque (vieille version du jeu
+        // encore en cache après une mise à jour), on le dit au joueur.
+        if (!this.services.startCombo) {
+          this.say([{ who: 'player', name: 'Mise à jour', text: 'Une mise à jour du jeu vient d\'arriver : recharge la page pour continuer !' }]);
+          return;
+        }
         this._savePosition();
-        this.services.startCombo?.(seriesId);
+        this.services.startCombo(seriesId);
       },
     };
   }
