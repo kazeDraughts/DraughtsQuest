@@ -74,6 +74,78 @@ export const EXERCISES = [
     ],
   },
 
+  // ---------------------------------------------------- VISION DES RAFLES
+  // Méthode des livrets fédéraux (« apprendre à prendre ») : visualiser le
+  // chemin complet d'une rafle avant de la jouer, sur des chaînes de plus en
+  // plus longues. Positions générées et certifiées par le moteur.
+  {
+    id: 'vision4',
+    cat: 'Vision des rafles',
+    icon: '👁️',
+    title: 'Rafle de 4 : suis le fil',
+    desc: 'Visualise le chemin complet AVANT de toucher le pion.',
+    reward: 40,
+    steps: [
+      {
+        fen: 'W:W35:B18,19,28,30',
+        intro: [
+          { who: 'gigi', text: 'Les livrets de la fédération le répètent : un damiste s\'entraîne à VOIR. Avant de toucher une pièce, on suit le fil de la rafle dans sa tête, saut après saut.' },
+          { who: 'gigi', text: 'Quatre pions noirs, un seul chemin. Trace-le mentalement… puis joue la rafle d\'un seul geste.' },
+        ],
+        accept: [{ from: 35, to: 33 }],
+        wrong: { who: 'gigi', text: 'Reprends calmement : depuis ton pion, cherche le premier saut possible, puis regarde où tu atterris… et enchaîne.' },
+        success: [
+          { who: 'gigi', text: 'Quatre d\'un coup ! Tu vois : l\'œil s\'éduque. Les champions font cet exercice tous les jours, comme des gammes.' },
+        ],
+        hint: { from: 35, to: 33 },
+      },
+    ],
+  },
+  {
+    id: 'vision6',
+    cat: 'Vision des rafles',
+    icon: '🌀',
+    title: 'Rafle de 6 : le grand huit',
+    desc: 'La chaîne s\'allonge, le regard doit suivre.',
+    reward: 55,
+    steps: [
+      {
+        fen: 'W:W31:B7,8,17,28,37,38',
+        intro: [
+          { who: 'gigi', text: 'On monte d\'un cran : SIX pions sur le parcours. Le secret : ne pas mémoriser les cases, mais le MOUVEMENT — avant, arrière, le pion prend dans les quatre directions.' },
+        ],
+        accept: [{ from: 31, to: 13 }],
+        wrong: { who: 'gigi', text: 'Il y a plus long ! Rappelle-toi : tant qu\'un saut est possible depuis ta case d\'arrivée, la rafle CONTINUE.' },
+        success: [
+          { who: 'gigi', text: 'Six pions balayés, quel festival ! Note bien : la prise majoritaire t\'y obligeait — mais c\'est ta vision qui a trouvé le chemin.' },
+        ],
+        hint: { from: 31, to: 13 },
+      },
+    ],
+  },
+  {
+    id: 'vision8',
+    cat: 'Vision des rafles',
+    icon: '🎢',
+    title: 'Rafle de 8 : vertige',
+    desc: 'Le sommet de l\'exercice de vision : huit prises d\'un coup.',
+    reward: 70,
+    steps: [
+      {
+        fen: 'W:W38:B11,12,13,14,21,24,32,34',
+        intro: [
+          { who: 'gigi', text: 'L\'exercice ultime des livrets : HUIT pions, un seul coup. Prends ton temps — en tournoi, on a le droit de réfléchir, pas de se tromper de chemin.' },
+        ],
+        accept: [{ from: 38, to: 40 }],
+        wrong: { who: 'gigi', text: 'Presque ! Suis chaque saut jusqu\'au bout : le chemin serpente… et peut même revenir près de son point de départ.' },
+        success: [
+          { who: 'gigi', text: 'HUIT ! Le damier entier nettoyé d\'un seul coup. Quand tu verras ça en partie — et tu le verras — tu comprendras pourquoi on aime ce jeu.' },
+        ],
+        hint: { from: 38, to: 40 },
+      },
+    ],
+  },
+
   // ------------------------------------------------------------- TACTIQUE
   {
     id: 'coup_de_deux',
@@ -195,6 +267,43 @@ export const EXERCISES = [
     ],
   },
 
+  {
+    id: 'percee',
+    cat: 'Tactique',
+    icon: '🚀',
+    title: 'Le passage à dame',
+    desc: 'Sacrifie pour percer : la prise obligatoire te couronne.',
+    reward: 80,
+    steps: [
+      {
+        // Certifié : 22-18 est l'unique coup gagnant ; 16x7 est forcé ;
+        // la reprise 12x1 capture ET couronne, en toute sécurité.
+        fen: 'W:W11,12,22:B3,16,19',
+        intro: [
+          { who: 'gigi', text: 'Thème royal des livrets fédéraux : le PASSAGE À DAME. Quand tes pions approchent du but, un sacrifice bien placé ouvre la porte — et la prise obligatoire fait le reste.' },
+          { who: 'gigi', text: 'Trouve le coup qui force les Noirs à t\'ouvrir eux-mêmes le chemin du couronnement.' },
+        ],
+        accept: [{ from: 22, to: 18 }],
+        reply: { from: 16, to: 7 },
+        wrong: { who: 'gigi', text: 'Non — rien n\'est forcé après ça. Le bon coup OFFRE un pion de telle façon que la prise noire dégage ta route vers la rangée 1-5.' },
+        success: [
+          { who: 'gigi', text: '22-18 ! Les Noirs doivent prendre : 16x7… et ce faisant, leur pion vient se poser PILE sur ta trajectoire. Regarde ce que la prise obligatoire t\'offre.' },
+        ],
+        hint: { from: 22, to: 18 },
+      },
+      {
+        intro: [
+          { who: 'gigi', text: 'À toi : une prise qui vaut de l\'or.' },
+        ],
+        accept: [{ from: 12, to: 1 }],
+        success: [
+          { who: 'gigi', text: '12x1 : tu CAPTURES et tu te COURONNES du même geste ! Un pion donné, un pion repris, une dame gagnée — le sacrifice de passage, l\'arme favorite des maîtres.' },
+        ],
+        hint: { from: 12, to: 1 },
+      },
+    ],
+  },
+
   // ------------------------------------------------------------- FINALES
   {
     id: 'promotion_race',
@@ -274,7 +383,7 @@ export const EXERCISES = [
   },
 ];
 
-export const TRAINING_CATEGORIES = ['Les bases', 'Tactique', 'Finales'];
+export const TRAINING_CATEGORIES = ['Les bases', 'Vision des rafles', 'Tactique', 'Finales'];
 
 export function exerciseById(id) {
   return EXERCISES.find((e) => e.id === id);

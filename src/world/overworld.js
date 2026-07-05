@@ -16,10 +16,23 @@ const DIRS = {
   left: { x: -1, y: 0 }, right: { x: 1, y: 0 },
 };
 
+// Palette « Animal Crossing » : verts jaunes chaleureux, sable doux, eau vive.
+const PAL = {
+  grass: '#8cc55a', grassAlt: '#85bd54', grassTri: '#9dd36c', grassDark: '#76ad47',
+  path: '#e9d5a0', pathSpeckle: '#d8bd80', pathEdge: '#cfb173',
+  sand: '#f0e0ae',
+  water: '#57b8e8', waterDeep: '#3d9bd6', foam: 'rgba(255,255,255,.75)',
+  wallTop: '#6e5a4a', wall: '#8a7360', plinth: '#5d4c3e',
+  floor: '#d8ab6e', floorLine: '#c1955a',
+  carpet: '#b0533f', carpetIn: '#bd6350', carpetDot: '#a34738',
+  void: '#0c0f14',
+};
+
+/** Couleur de base d'une tuile (le détail est dessiné par _drawTile). */
 const TILE_COLORS = {
-  '.': '#69b358', ',': '#5aa34c', f: '#69b358', p: '#d9b98a', s: '#e2cf9d',
-  t: '#69b358', w: '#4a90c2', r: '#69b358',
-  W: '#6b5844', F: '#c8a878', c: '#b0533f', x: '#0c0f14',
+  '.': PAL.grass, ',': PAL.grassAlt, f: PAL.grass, p: PAL.path, s: PAL.sand,
+  t: PAL.grass, w: PAL.water, r: PAL.grass,
+  W: PAL.wall, F: PAL.floor, c: PAL.carpet, x: PAL.void,
 };
 
 export class Overworld {
@@ -342,7 +355,7 @@ export class Overworld {
     if (!this.map || !this.vw) return;
     const { ctx, tile: t } = this;
     const { cx, cy } = this._camera();
-    ctx.fillStyle = this.map.outdoor ? '#3f7a38' : '#0c0f14';
+    ctx.fillStyle = this.map.outdoor ? PAL.grassDark : PAL.void;
     ctx.fillRect(0, 0, this.vw, this.vh);
 
     const x0 = Math.max(0, Math.floor(cx / t));
@@ -356,39 +369,122 @@ export class Overworld {
         const c = this.grid[y][x];
         const px = x * t - cx;
         const py = y * t - cy;
-        ctx.fillStyle = TILE_COLORS[c] || '#69b358';
+        ctx.fillStyle = TILE_COLORS[c] || PAL.grass;
         ctx.fillRect(px, py, t + 1, t + 1);
-        // variations déterministes pour casser la monotonie
         const h = ((x * 73856093) ^ (y * 19349663)) >>> 0;
-        if ((c === '.' || c === ',') && h % 5 === 0) {
-          ctx.fillStyle = 'rgba(0,0,0,.05)';
-          ctx.fillRect(px + (h % t) * 0.6, py + (h % 7) * (t / 8), t * 0.12, t * 0.08);
+
+        // Herbe façon Animal Crossing : damier doux + petits triangles clairs
+        if (c === '.' || c === ',' || c === 'f' || c === 't' || c === 'r') {
+          if ((x + y) % 2 === 0) {
+            ctx.fillStyle = 'rgba(255,255,255,.045)';
+            ctx.fillRect(px, py, t + 1, t + 1);
+          }
+          ctx.fillStyle = PAL.grassTri;
+          const n = 2 + (h % 2);
+          for (let i = 0; i < n; i++) {
+            const gx = px + (((h >> (i * 4)) % 8) / 8) * t + t * 0.06;
+            const gy = py + (((h >> (i * 4 + 3)) % 8) / 8) * t + t * 0.06;
+            const s2 = t * 0.075;
+            ctx.beginPath();
+            ctx.moveTo(gx, gy + s2);
+            ctx.lineTo(gx + s2, gy + s2);
+            ctx.lineTo(gx + s2 / 2, gy);
+            ctx.closePath();
+            ctx.fill();
+          }
+          if (c === ',') {
+            ctx.fillStyle = 'rgba(0,60,0,.06)';
+            ctx.fillRect(px, py, t + 1, t + 1);
+          }
         }
-        if (c === 'f') {
-          ctx.fillStyle = ['#e8608a', '#f0d048', '#f0f0f0'][h % 3];
-          ctx.beginPath();
-          ctx.arc(px + t * 0.3, py + t * 0.35, t * 0.08, 0, Math.PI * 2);
-          ctx.arc(px + t * 0.65, py + t * 0.6, t * 0.07, 0, Math.PI * 2);
-          ctx.fill();
-        }
+        if (c === 'f') this._drawFlower(px, py, h);
+
+        // Chemins : angles arrondis contre l'herbe + gravillons
         if (c === 'p' || c === 's') {
-          ctx.fillStyle = 'rgba(0,0,0,.06)';
-          if (h % 4 === 0) ctx.fillRect(px + t * 0.2, py + t * 0.4, t * 0.15, t * 0.1);
+          const isPath = (xx, yy) => {
+            if (yy < 0 || yy >= this.H || xx < 0 || xx >= this.W) return true;
+            const g = this.grid[yy][xx];
+            return g === 'p' || g === 's';
+          };
+          // fond herbe, puis pastille de chemin aux coins arrondis
+          ctx.fillStyle = PAL.grass;
+          ctx.fillRect(px, py, t + 1, t + 1);
+          const r = t * 0.38;
+          const radii = [
+            !isPath(x - 1, y) && !isPath(x, y - 1) ? r : 0,
+            !isPath(x + 1, y) && !isPath(x, y - 1) ? r : 0,
+            !isPath(x + 1, y) && !isPath(x, y + 1) ? r : 0,
+            !isPath(x - 1, y) && !isPath(x, y + 1) ? r : 0,
+          ];
+          ctx.fillStyle = TILE_COLORS[c];
+          ctx.beginPath();
+          ctx.roundRect(px - 0.5, py - 0.5, t + 1.5, t + 1.5, radii);
+          ctx.fill();
+          ctx.fillStyle = PAL.pathSpeckle;
+          for (let i = 0; i < 3; i++) {
+            const sx = px + (((h >> (i * 5)) % 16) / 16) * t;
+            const sy = py + (((h >> (i * 5 + 2)) % 16) / 16) * t;
+            ctx.beginPath();
+            ctx.arc(sx + t * 0.1, sy + t * 0.1, t * 0.035, 0, Math.PI * 2);
+            ctx.fill();
+          }
         }
+
+        // Eau : profondeur, reflets animés, écume contre les berges
         if (c === 'w') {
-          ctx.fillStyle = 'rgba(255,255,255,.25)';
-          const ph = (performance.now() / 700 + (x + y) * 0.7) % (Math.PI * 2);
-          ctx.fillRect(px + t * 0.15, py + t * (0.3 + Math.sin(ph) * 0.1), t * 0.3, t * 0.06);
+          const g2 = ctx.createLinearGradient(px, py, px, py + t);
+          g2.addColorStop(0, PAL.water);
+          g2.addColorStop(1, PAL.waterDeep);
+          ctx.fillStyle = g2;
+          ctx.fillRect(px, py, t + 1, t + 1);
+          const ph = (performance.now() / 900 + (x * 1.7 + y) * 0.9) % (Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255,255,255,.35)';
+          ctx.lineWidth = Math.max(1.5, t * 0.04);
+          ctx.beginPath();
+          const wy = py + t * (0.35 + Math.sin(ph) * 0.12);
+          ctx.moveTo(px + t * 0.12, wy);
+          ctx.quadraticCurveTo(px + t * 0.35, wy - t * 0.08, px + t * 0.55, wy);
+          ctx.stroke();
+          const isWater = (xx, yy) => yy >= 0 && yy < this.H && xx >= 0 && xx < this.W && this.grid[yy][xx] === 'w';
+          ctx.fillStyle = PAL.foam;
+          const f2 = Math.max(2, t * 0.07);
+          if (!isWater(x, y - 1)) ctx.fillRect(px, py, t + 1, f2);
+          if (!isWater(x, y + 1)) ctx.fillRect(px, py + t - f2, t + 1, f2);
+          if (!isWater(x - 1, y)) ctx.fillRect(px, py, f2, t + 1);
+          if (!isWater(x + 1, y)) ctx.fillRect(px + t - f2, py, f2, t + 1);
+        }
+
+        // Intérieurs : plancher à lames, tapis à motif, murs à plinthe
+        if (c === 'F') {
+          ctx.strokeStyle = PAL.floorLine;
+          ctx.lineWidth = 1;
+          ctx.globalAlpha = 0.55;
+          ctx.beginPath();
+          ctx.moveTo(px, py + t * 0.5);
+          ctx.lineTo(px + t, py + t * 0.5);
+          ctx.moveTo(px + (y % 2 ? t * 0.5 : t * 0.2), py);
+          ctx.lineTo(px + (y % 2 ? t * 0.5 : t * 0.2), py + t * 0.5);
+          ctx.moveTo(px + (y % 2 ? t * 0.15 : t * 0.7), py + t * 0.5);
+          ctx.lineTo(px + (y % 2 ? t * 0.15 : t * 0.7), py + t);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
         }
         if (c === 'c') {
-          ctx.strokeStyle = 'rgba(0,0,0,.12)';
-          ctx.strokeRect(px + 2, py + 2, t - 4, t - 4);
+          ctx.fillStyle = PAL.carpetIn;
+          ctx.fillRect(px + 2, py + 2, t - 4, t - 4);
+          ctx.fillStyle = PAL.carpetDot;
+          ctx.beginPath();
+          ctx.arc(px + t * 0.5, py + t * 0.5, t * 0.06, 0, Math.PI * 2);
+          ctx.fill();
         }
         if (c === 'W') {
-          ctx.fillStyle = 'rgba(255,255,255,.08)';
-          ctx.fillRect(px, py, t, t * 0.25);
-          ctx.strokeStyle = 'rgba(0,0,0,.25)';
-          ctx.strokeRect(px, py, t, t);
+          // Mur : bandeau haut sombre + plinthe, sans quadrillage dur
+          ctx.fillStyle = PAL.wallTop;
+          ctx.fillRect(px, py, t + 1, t * 0.35);
+          ctx.fillStyle = 'rgba(255,255,255,.06)';
+          ctx.fillRect(px, py + t * 0.35, t + 1, t * 0.08);
+          ctx.fillStyle = PAL.plinth;
+          ctx.fillRect(px, py + t * 0.88, t + 1, t * 0.12);
         }
       }
     }
@@ -460,24 +556,81 @@ export class Overworld {
   }
 
   _drawTree(px, py) {
+    // Arbre « brocoli » façon Animal Crossing : ombre douce, tronc évasé,
+    // canopée en trois étages avec liseré sombre et éclats de lumière.
     const { ctx, tile: t } = this;
-    ctx.fillStyle = '#7a5230';
-    ctx.fillRect(px + t * 0.42, py + t * 0.45, t * 0.16, t * 0.45);
-    ctx.fillStyle = '#3e7d33';
+    const cxp = px + t * 0.5;
+    ctx.fillStyle = 'rgba(20,60,20,.22)';
     ctx.beginPath();
-    ctx.arc(px + t * 0.5, py + t * 0.3, t * 0.42, 0, Math.PI * 2);
+    ctx.ellipse(cxp, py + t * 0.92, t * 0.4, t * 0.14, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,.12)';
+    ctx.fillStyle = '#8a5a33';
     ctx.beginPath();
-    ctx.arc(px + t * 0.38, py + t * 0.2, t * 0.16, 0, Math.PI * 2);
+    ctx.moveTo(cxp - t * 0.09, py + t * 0.45);
+    ctx.lineTo(cxp - t * 0.14, py + t * 0.92);
+    ctx.lineTo(cxp + t * 0.14, py + t * 0.92);
+    ctx.lineTo(cxp + t * 0.09, py + t * 0.45);
+    ctx.closePath();
+    ctx.fill();
+    // Étages de feuillage (du plus sombre au plus clair)
+    const blob = (ox, oy, r, color) => {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(cxp + ox, py + oy, r, 0, Math.PI * 2);
+      ctx.fill();
+    };
+    blob(-t * 0.24, t * 0.42, t * 0.3, '#3d8a3f');
+    blob(t * 0.24, t * 0.42, t * 0.3, '#3d8a3f');
+    blob(0, t * 0.5, t * 0.32, '#3d8a3f');
+    blob(-t * 0.18, t * 0.28, t * 0.28, '#4fa64c');
+    blob(t * 0.18, t * 0.28, t * 0.28, '#4fa64c');
+    blob(0, t * 0.12, t * 0.3, '#5cb857');
+    // Éclats de lumière
+    ctx.fillStyle = 'rgba(255,255,255,.28)';
+    ctx.beginPath();
+    ctx.arc(cxp - t * 0.12, py + t * 0.05, t * 0.09, 0, Math.PI * 2);
+    ctx.arc(cxp + t * 0.16, py + t * 0.2, t * 0.06, 0, Math.PI * 2);
     ctx.fill();
   }
 
   _drawRock(px, py) {
     const { ctx, tile: t } = this;
-    ctx.fillStyle = '#8d9299';
+    ctx.fillStyle = 'rgba(20,60,20,.2)';
     ctx.beginPath();
-    ctx.ellipse(px + t * 0.5, py + t * 0.6, t * 0.34, t * 0.24, 0, 0, Math.PI * 2);
+    ctx.ellipse(px + t * 0.5, py + t * 0.78, t * 0.34, t * 0.1, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#9aa0a8';
+    ctx.beginPath();
+    ctx.ellipse(px + t * 0.5, py + t * 0.58, t * 0.32, t * 0.24, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#b4bac2';
+    ctx.beginPath();
+    ctx.ellipse(px + t * 0.42, py + t * 0.5, t * 0.16, t * 0.1, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  _drawFlower(px, py, h) {
+    // Fleur à pétales : tige, corolle de 5 pétales, cœur doré.
+    const { ctx, tile: t } = this;
+    const fx = px + t * (0.3 + ((h >> 3) % 5) * 0.1);
+    const fy = py + t * (0.35 + ((h >> 6) % 4) * 0.1);
+    ctx.strokeStyle = '#4d8a3c';
+    ctx.lineWidth = Math.max(1.5, t * 0.04);
+    ctx.beginPath();
+    ctx.moveTo(fx, fy + t * 0.08);
+    ctx.lineTo(fx, fy + t * 0.3);
+    ctx.stroke();
+    const petal = ['#f2789e', '#f6d048', '#f5f5f5', '#e88ac8'][h % 4];
+    ctx.fillStyle = petal;
+    for (let i = 0; i < 5; i++) {
+      const a = (i * Math.PI * 2) / 5 + (h % 7);
+      ctx.beginPath();
+      ctx.ellipse(fx + Math.cos(a) * t * 0.075, fy + Math.sin(a) * t * 0.075, t * 0.055, t * 0.04, a, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#f6b73c';
+    ctx.beginPath();
+    ctx.arc(fx, fy, t * 0.04, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -490,30 +643,68 @@ export class Overworld {
 
     switch (p.type) {
       case 'house': {
-        // Corps
+        // Ombre au sol
+        ctx.fillStyle = 'rgba(20,60,20,.18)';
+        ctx.beginPath();
+        ctx.ellipse(x + w / 2, y + h + t * 0.06, w * 0.52, t * 0.14, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Corps aux angles doux
         ctx.fillStyle = p.palette.body;
-        ctx.fillRect(x, y + h * 0.28, w, h * 0.72);
-        // Toit
+        ctx.beginPath();
+        ctx.roundRect(x, y + h * 0.28, w, h * 0.72, [0, 0, 6, 6]);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(0,0,0,.08)';
+        ctx.fillRect(x, y + h * 0.28, w, h * 0.06);
+        // Toit avec faîtage et liseré clair
         ctx.fillStyle = p.palette.roof;
         ctx.beginPath();
-        ctx.moveTo(x - t * 0.18, y + h * 0.32);
-        ctx.lineTo(x + w * 0.5, y - t * 0.35);
-        ctx.lineTo(x + w + t * 0.18, y + h * 0.32);
+        ctx.moveTo(x - t * 0.2, y + h * 0.34);
+        ctx.quadraticCurveTo(x - t * 0.05, y + h * 0.3, x + w * 0.12, y + h * 0.12);
+        ctx.lineTo(x + w * 0.5, y - t * 0.38);
+        ctx.lineTo(x + w * 0.88, y + h * 0.12);
+        ctx.quadraticCurveTo(x + w + t * 0.05, y + h * 0.3, x + w + t * 0.2, y + h * 0.34);
         ctx.closePath();
         ctx.fill();
-        // Porte (au bas de la colonne doorX)
+        ctx.strokeStyle = 'rgba(255,255,255,.25)';
+        ctx.lineWidth = Math.max(2, t * 0.06);
+        ctx.beginPath();
+        ctx.moveTo(x + w * 0.5, y - t * 0.3);
+        ctx.lineTo(x + w * 0.86, y + h * 0.12);
+        ctx.stroke();
+        // Porte en arche + poignée
         const dx = (p.doorX - p.x) * t;
-        ctx.fillStyle = '#4a3218';
-        ctx.fillRect(x + dx + t * 0.12, y + h - t * 0.85, t * 0.76, t * 0.85);
-        ctx.fillStyle = '#2c1e0e';
-        ctx.fillRect(x + dx + t * 0.2, y + h - t * 0.75, t * 0.6, t * 0.75);
-        // Fenêtres
-        ctx.fillStyle = '#ffe9a8';
+        ctx.fillStyle = '#5d3d1e';
+        ctx.beginPath();
+        ctx.roundRect(x + dx + t * 0.1, y + h - t * 0.88, t * 0.8, t * 0.88, [t * 0.4, t * 0.4, 0, 0]);
+        ctx.fill();
+        ctx.fillStyle = '#7a5230';
+        ctx.beginPath();
+        ctx.roundRect(x + dx + t * 0.18, y + h - t * 0.78, t * 0.64, t * 0.78, [t * 0.32, t * 0.32, 0, 0]);
+        ctx.fill();
+        ctx.fillStyle = '#f2d27a';
+        ctx.beginPath();
+        ctx.arc(x + dx + t * 0.68, y + h - t * 0.36, t * 0.045, 0, Math.PI * 2);
+        ctx.fill();
+        // Fenêtres à cadre et reflet
         for (let i = 0; i < (p.w || 1); i++) {
           if (p.x + i === p.doorX) continue;
-          ctx.fillRect(x + i * t + t * 0.25, y + h * 0.5, t * 0.5, t * 0.4);
-          ctx.strokeStyle = 'rgba(0,0,0,.3)';
-          ctx.strokeRect(x + i * t + t * 0.25, y + h * 0.5, t * 0.5, t * 0.4);
+          const wx = x + i * t + t * 0.22;
+          const wy = y + h * 0.48;
+          ctx.fillStyle = '#fff';
+          ctx.beginPath();
+          ctx.roundRect(wx - 2, wy - 2, t * 0.56 + 4, t * 0.44 + 4, 5);
+          ctx.fill();
+          ctx.fillStyle = '#ffe9a8';
+          ctx.beginPath();
+          ctx.roundRect(wx, wy, t * 0.56, t * 0.44, 4);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(255,255,255,.55)';
+          ctx.beginPath();
+          ctx.moveTo(wx + t * 0.08, wy + t * 0.44);
+          ctx.lineTo(wx + t * 0.26, wy);
+          ctx.lineTo(wx + t * 0.36, wy);
+          ctx.lineTo(wx + t * 0.18, wy + t * 0.44);
+          ctx.fill();
         }
         // Enseigne
         if (p.label) {
@@ -624,6 +815,36 @@ export class Overworld {
         ctx.arc(x + w / 2, y + h * 0.35, t * 0.22, 0, Math.PI, true);
         ctx.fill();
         ctx.fillRect(x + w / 2 - t * 0.05, y + h * 0.35, t * 0.1, t * 0.2);
+        break;
+      }
+      case 'blackboard': {
+        // Tableau noir de Gigi : cadre bois, ardoise, diagramme à la craie
+        ctx.fillStyle = '#6e4622';
+        ctx.fillRect(x + 2, y + 2, w - 4, h - 2);
+        ctx.fillStyle = '#2e4038';
+        ctx.fillRect(x + 6, y + 5, w - 12, h - 9);
+        // petit damier à la craie
+        ctx.strokeStyle = 'rgba(240,240,220,.8)';
+        ctx.lineWidth = 1.2;
+        const bs = Math.min(w - 24, t * 0.6);
+        const bx = x + 10;
+        const by = y + h * 0.5 - bs / 2;
+        for (let i = 0; i <= 4; i++) {
+          ctx.beginPath();
+          ctx.moveTo(bx + (i * bs) / 4, by);
+          ctx.lineTo(bx + (i * bs) / 4, by + bs);
+          ctx.moveTo(bx, by + (i * bs) / 4);
+          ctx.lineTo(bx + bs, by + (i * bs) / 4);
+          ctx.stroke();
+        }
+        // flèche de combinaison
+        ctx.beginPath();
+        ctx.moveTo(bx + bs + 6, by + bs * 0.8);
+        ctx.lineTo(bx + bs + t * 0.5, by + bs * 0.2);
+        ctx.stroke();
+        // craie et brosse sur la rainure
+        ctx.fillStyle = '#e8e4d8';
+        ctx.fillRect(x + w * 0.6, y + h - 6, t * 0.18, 3);
         break;
       }
       case 'noticeboard': {

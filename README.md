@@ -49,16 +49,20 @@ et `tests/ai.test.mjs` pour l'IA).
 
 ## 🎓 Salle d'entraînement
 
-Au club (table d'entraînement, ou bouton « Entraînement » du menu), Gigi
-donne des leçons interactives qui suivent le plan des cours fédéraux
-(FFJD/FMJD) : **bases** (notation Manoury, rangée arrière), **tactique**
-(« donner un pour reprendre deux », combinaisons correctes, rafle
-majoritaire, dame volante) et **finales** (course à la dame et temps,
+Au club (le **tableau noir** de Gigi, à gauche de l'entrée — ou le bouton
+« Entraînement » du menu), 12 leçons interactives suivent le plan des cours
+et livrets fédéraux (FFJD/FMJD) : **bases** (notation Manoury, rangée
+arrière), **vision des rafles** (méthode « apprendre à prendre » : chaînes
+de 4, 6 puis 8 prises à visualiser d'un coup), **tactique** (« donner un
+pour reprendre deux », pion empoisonné, rafle majoritaire, dame volante,
+passage à dame par sacrifice) et **finales** (course à la dame et temps,
 opposition/zugzwang). Chaque exercice se joue sur le vrai moteur de règles,
 propose un indice après deux échecs et rapporte des Pions d'Or à la première
-réussite. Les positions ont été construites puis **certifiées par recherche
-minimax** (coup gagnant unique) ; `tests/training.test.mjs` rejoue chaque
-étape à chaque `npm test`. Le contenu textuel est original.
+réussite. Les positions sont **générées puis certifiées par recherche
+minimax** (coup gagnant unique, toutes les défenses perdent, pas de finale
+nulle cachée) ; `tests/training.test.mjs` rejoue chaque étape à chaque
+`npm test`. Le contenu textuel est original (thèmes inspirés des livrets
+pédagogiques de la FFJD, sans reproduction).
 
 ## 🧠 Architecture
 

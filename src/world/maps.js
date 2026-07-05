@@ -186,8 +186,9 @@ function buildClub() {
     props: [
       { type: 'boardtable', x: 3, y: 3, w: 2, h: 1 },
       { type: 'boardtable', x: 11, y: 3, w: 2, h: 1 },
-      { type: 'boardtable', x: 3, y: 6, w: 2, h: 1, label: '🎓 Entraînement' },
+      { type: 'boardtable', x: 3, y: 6, w: 2, h: 1 },
       { type: 'boardtable', x: 11, y: 6, w: 2, h: 1 },
+      { type: 'blackboard', x: 3, y: 1, w: 2, h: 1, label: '🎓 Entraînement' },
       { type: 'trophy', x: 7, y: 1, w: 2, h: 1 },
       { type: 'noticeboard', x: 12, y: 1, w: 2, h: 1, label: '🏆 Compétitions' },
       { type: 'plant', x: 1, y: 1, w: 1, h: 1 },
@@ -208,7 +209,7 @@ function buildClub() {
     ],
     interactables: [
       { id: 'club_notice', type: 'noticehint', x: 12, y: 1, w: 2, h: 1, action: 'competitions' },
-      { id: 'club_training', type: 'boardhint', x: 3, y: 6, w: 2, h: 1, action: 'training' },
+      { id: 'club_training', type: 'boardhint', x: 3, y: 1, w: 2, h: 1, action: 'training' },
     ],
   };
 }
