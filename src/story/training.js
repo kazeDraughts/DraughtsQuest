@@ -116,32 +116,35 @@ export const EXERCISES = [
     cat: 'Tactique',
     icon: '☠️',
     title: 'Le pion empoisonné',
-    desc: 'Un sacrifice qui gagne contre TOUTES les défenses.',
+    desc: 'Ton pion est attaqué ? Laisse-le… le poison est dedans.',
     reward: 70,
     steps: [
       {
-        fen: 'W:W24,32,33:B12,22,29',
+        // Position certifiée par recherche : 33-28 est le SEUL coup gagnant ;
+        // la prise 23x32 est forcée, la contre-rafle 38x16 gagne un pion net
+        // et ne laisse AUCUN pion noir passé (pas de finale nulle derrière).
+        fen: 'W:W33,38,43:B8,21,23',
         intro: [
-          { who: 'gigi', text: 'Monte d\'un cran : parfois le sacrifice laisse un CHOIX à l\'adversaire… mais tous les chemins mènent à ta victoire. C\'est la marque d\'une vraie combinaison.' },
-          { who: 'gigi', text: 'Un de tes trois pions peut avancer en offrant un festin apparent aux Noirs. Cherche le coup qui gagne quelle que soit la prise choisie.' },
+          { who: 'gigi', text: 'Le pion empoisonné : tu OFFRES un pion en plein sur la route de l\'adversaire… mais en le mangeant, son pion atterrit exactement dans ta ligne de tir — et y entraîne son voisin.' },
+          { who: 'gigi', text: 'Souviens-toi : s\'ils PEUVENT prendre, ils DOIVENT prendre. Avance le bon pion sous la dent du pion noir 23, et regarde le piège se refermer.' },
         ],
-        accept: [{ from: 32, to: 28 }],
-        reply: { from: 29, to: 20 },
-        wrong: { who: 'gigi', text: 'Pas celui-là : les Noirs répondent tranquillement. Le bon coup place un pion au CONTACT du pion noir 29, en préparant une reprise en éventail.' },
+        accept: [{ from: 33, to: 28 }],
+        reply: { from: 23, to: 32 },
+        wrong: { who: 'gigi', text: 'Non — après ce coup, rien n\'est forcé. Le poison doit être posé au CONTACT du pion noir 23, avec ton pion 38 en embuscade juste derrière la case où il va retomber.' },
         success: [
-          { who: 'gigi', text: '32-28 ! Le pion noir 29 devait prendre — il a choisi 29x20… mais 29x38 perdait tout autant. Regarde maintenant ta reprise.' },
+          { who: 'gigi', text: '33-28 ! La prise est obligatoire : 23x32… et le pion noir vient de s\'asseoir sur la diagonale de ton pion 38, juste devant son camarade 21. Conclus.' },
         ],
-        hint: { from: 32, to: 28 },
+        hint: { from: 33, to: 28 },
       },
       {
         intro: [
-          { who: 'gigi', text: 'La rafle t\'attend : deux pions noirs sur ta route.' },
+          { who: 'gigi', text: 'La contre-rafle t\'attend : le goinfre en 32, puis son voisin 21.' },
         ],
-        accept: [{ from: 28, to: 8 }],
+        accept: [{ from: 38, to: 16 }],
         success: [
-          { who: 'gigi', text: '28x8, magistral ! Un pion donné, deux repris, et te voilà aux portes de la promotion. Quand chaque défense perd, on dit que la combinaison est CORRECTE — c\'est ça qu\'il faut viser.' },
+          { who: 'gigi', text: '38x16, deux pions balayés ! Un pion offert, deux repris, et le pion noir restant est encore dans ses starting-blocks. Voilà une combinaison CORRECTE : aucun pion adverse ne file à dame derrière. Toujours vérifier l\'après-combinaison !' },
         ],
-        hint: { from: 28, to: 8 },
+        hint: { from: 38, to: 16 },
       },
     ],
   },

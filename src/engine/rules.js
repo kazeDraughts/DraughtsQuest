@@ -24,9 +24,12 @@ export const START_FEN = 'W:W31-50:B1-20';
 export class RulesEngine {
   constructor(fen = START_FEN) {
     this._d = Draughts(fen);
-    // Compteur de demi-coups « calmes » (ni prise, ni coup de pion) pour la
-    // règle de nulle : la bibliothèque ne la gère pas, on la suit ici.
+    // Compteurs pour les règles de nulle (la bibliothèque ne les gère pas) :
+    // demi-coups « calmes » (règle des 25 coups de dames) et demi-coups en
+    // configuration de finale réglementée (règles des 5 et 16 coups).
     this._quietHalfMoves = 0;
+    this._endgameCfg = null;
+    this._endgameHalfMoves = 0;
   }
 
   /** Camp au trait : 'w' ou 'b'. */
@@ -43,6 +46,8 @@ export class RulesEngine {
   loadFen(fen) {
     const ok = this._d.load(fen);
     this._quietHalfMoves = 0;
+    this._endgameCfg = null;
+    this._endgameHalfMoves = 0;
     return ok !== false;
   }
 
@@ -96,7 +101,7 @@ export class RulesEngine {
     const played = this._d.move({ from: Number(from), to: Number(to) });
     if (!played) return null;
     const norm = this._normalize(played);
-    // Suivi de la règle de nulle : 25 coups (50 demi-coups) consécutifs de
+    // Règle de nulle « 25 coups » : 25 coups (50 demi-coups) consécutifs de
     // dames, sans prise et sans mouvement de pion => partie nulle.
     const movedAKing = before[norm.from] === 'W' || before[norm.from] === 'B';
     if (norm.captures.length === 0 && movedAKing) {
@@ -104,12 +109,50 @@ export class RulesEngine {
     } else {
       this._quietHalfMoves = 0;
     }
+    // Règles de nulle des finales contre dame seule (règlement FFJD/FMJD) :
+    // le compteur court tant que la CONFIGURATION de matériel ne change pas
+    // (toute prise ou promotion la change et remet le compteur à zéro).
+    const cfg = this._endgameConfig();
+    if (cfg && cfg === this._endgameCfg) {
+      this._endgameHalfMoves++;
+    } else {
+      this._endgameCfg = cfg;
+      this._endgameHalfMoves = 0;
+    }
     return norm;
+  }
+
+  /**
+   * Configuration de finale réglementée, ou null.
+   * - 'five'    : dame seule contre au plus 2 pièces dont au moins une dame
+   *               => nulle après 5 coups (10 demi-coups) ;
+   * - 'sixteen' : dame seule contre au plus 3 pièces dont au moins une dame
+   *               (3 dames, 2 dames+pion, dame+2 pions)
+   *               => nulle après 16 coups (32 demi-coups).
+   */
+  _endgameConfig() {
+    const c = this.countPieces();
+    const lone = (kings, men, oKings, oPieces) =>
+      kings === 1 && men === 0 && oKings >= 1 && oPieces >= 1;
+    for (const [k, m, oK, oM] of [[c.W, c.w, c.B, c.b], [c.B, c.b, c.W, c.w]]) {
+      if (lone(k, m, oK, oK + oM)) {
+        const oTotal = oK + oM;
+        if (oTotal <= 2) return `five:${c.w},${c.W},${c.b},${c.B}`;
+        if (oTotal <= 3) return `sixteen:${c.w},${c.W},${c.b},${c.B}`;
+      }
+    }
+    return null;
+  }
+
+  _endgameDraw() {
+    if (!this._endgameCfg) return false;
+    if (this._endgameCfg.startsWith('five:')) return this._endgameHalfMoves >= 10;
+    return this._endgameHalfMoves >= 32;
   }
 
   /** La partie est-elle terminée (victoire, ou nulle) ? */
   isGameOver() {
-    return this._quietHalfMoves >= 50 || this._d.gameOver();
+    return this._quietHalfMoves >= 50 || this._endgameDraw() || this._d.gameOver();
   }
 
   /**
@@ -119,7 +162,7 @@ export class RulesEngine {
    */
   winner() {
     if (!this.isGameOver()) return null;
-    if (this._quietHalfMoves >= 50 || this._d.inThreefoldRepetition()) return 'draw';
+    if (this._quietHalfMoves >= 50 || this._endgameDraw() || this._d.inThreefoldRepetition()) return 'draw';
     return this.turn() === WHITE ? BLACK : WHITE;
   }
 

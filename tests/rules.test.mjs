@@ -178,6 +178,42 @@ test('clone : indépendant de l original', () => {
   assert.equal(c.getBoard()[32], 'w');
 });
 
+test('nulle réglementaire : dame seule contre dame seule (règle des 5 coups)', () => {
+  // Deux dames sur des diagonales disjointes : personne ne peut rien faire.
+  const e = new RulesEngine('W:WK46:BK6');
+  const cycle = [
+    { from: 46, to: 41 }, { from: 6, to: 1 },
+    { from: 41, to: 46 }, { from: 1, to: 6 },
+  ];
+  let i = 0;
+  let guard = 0;
+  while (!e.isGameOver() && guard++ < 24) {
+    const mv = cycle[i % 4];
+    i++;
+    assert.ok(e.applyMove(mv), `coup ${mv.from}-${mv.to} refusé`);
+  }
+  assert.ok(e.isGameOver(), 'la finale dame contre dame doit se terminer');
+  assert.equal(e.winner(), 'draw', 'dame seule contre dame seule = nulle');
+  assert.ok(guard <= 12, `la nulle doit tomber vite (règle des 5 coups), pas après ${guard} demi-coups`);
+});
+
+test('classification des finales réglementées (5 coups / 16 coups)', () => {
+  const cfg = (fen) => {
+    const e = new RulesEngine(fen);
+    const c = e._endgameConfig();
+    return c ? c.split(':')[0] : null;
+  };
+  assert.equal(cfg('W:WK46:BK6'), 'five', 'dame contre dame');
+  assert.equal(cfg('W:WK46,24:BK6'), 'five', 'dame+pion contre dame seule');
+  assert.equal(cfg('W:WK46,K48:BK6'), 'five', '2 dames contre dame seule');
+  assert.equal(cfg('W:WK46,K48,24:BK6'), 'sixteen', '2 dames+pion contre dame seule');
+  assert.equal(cfg('W:WK46,K48,K35:BK6'), 'sixteen', '3 dames contre dame seule');
+  assert.equal(cfg('W:WK46,24,29:BK6'), 'sixteen', 'dame+2 pions contre dame seule');
+  assert.equal(cfg('W:WK46,K48,K35,24:BK6'), null, '4 pièces : pas de règle courte');
+  assert.equal(cfg('W:WK46:B6'), null, 'dame contre PION seul : pas de nulle automatique');
+  assert.equal(cfg('W:W31-50:B1-20'), null, 'position de départ : rien');
+});
+
 test('une partie aléatoire complète se termine proprement', () => {
   const e = new RulesEngine();
   let rngState = 42;

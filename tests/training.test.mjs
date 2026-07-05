@@ -46,10 +46,10 @@ function whiteEval(fen) {
     e.applyMove(e.getLegalMoves()[0]);
   }
   if (e.isGameOver()) {
-    return e.winner() === 'w' ? 99999 : e.winner() === 'draw' ? 0 : -99999;
+    return { score: e.winner() === 'w' ? 99999 : e.winner() === 'draw' ? 0 : -99999, engine: e };
   }
   const r = findBestMove(e.fen(), { maxDepth: 6, timeMs: 4000, noise: 0 }, 1);
-  return e.turn() === 'w' ? r.score : -r.score;
+  return { score: e.turn() === 'w' ? r.score : -r.score, engine: e };
 }
 
 console.log('Entraînement — validation des exercices par le moteur');
@@ -99,11 +99,22 @@ for (const ex of EXERCISES) {
         for (const blackMove of probe.getLegalMoves()) {
           const c = new RulesEngine(probe.fen());
           c.applyMove(blackMove);
-          const score = whiteEval(c.fen());
+          const { score, engine: after } = whiteEval(c.fen());
+          const dName = `${blackMove.from}${blackMove.captures.length ? 'x' : '-'}${blackMove.to}`;
           assert.ok(
             score >= 80,
-            `${ex.id} étape ${i + 1} : la défense noire ${blackMove.from}${blackMove.captures.length ? 'x' : '-'}${blackMove.to} RÉFUTE la combinaison (éval blanche ${Math.round(score)})`,
+            `${ex.id} étape ${i + 1} : la défense noire ${dName} RÉFUTE la combinaison (éval blanche ${Math.round(score)})`,
           );
+          // Pas de pion noir passé profond après la séquence forcée : un pion
+          // aux portes de la promotion transforme le « gain » en finale
+          // dame+pion contre dame, nulle réglementaire (règle des 5 coups).
+          const b = after.getBoard();
+          for (let s = 36; s <= 45; s++) {
+            assert.ok(
+              b[s] !== 'b',
+              `${ex.id} étape ${i + 1} : après la défense ${dName}, un pion noir passé en ${s} mène à une finale nulle`,
+            );
+          }
         }
       }
 
