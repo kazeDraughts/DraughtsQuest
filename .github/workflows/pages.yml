@@ -1,0 +1,44 @@
+# Déploiement GitHub Pages maîtrisé (remplace le workflow dynamique
+# « pages build and deployment », dont les re-runs restent bloqués en file).
+#
+# Pour l'activer proprement : Settings → Pages → Source : « GitHub Actions ».
+# Avantages : relance fiable (Re-run jobs fonctionne), déclenchement manuel
+# (bouton « Run workflow »), et un seul déploiement à la fois (concurrency).
+
+name: Déploiement GitHub Pages
+
+on:
+  push:
+    branches: [claude/draughts-rpg-game-vwo7un]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Configurer Pages
+        uses: actions/configure-pages@v5
+
+      - name: Empaqueter le site (statique, racine du dépôt)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Déployer sur GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
