@@ -131,6 +131,9 @@ export class WorldController {
     const ctx = this._questCtx();
     if (action === 'grandpa_board') {
       this.say([{ who: 'player', text: 'Le damier de Papi. Les pièces sont usées d\'avoir tant joué…' }]);
+    } else if (action === 'training') {
+      if (this.services.openTraining) this.services.openTraining();
+      else this.say([{ who: 'player', text: 'La table d\'entraînement du club.' }]);
     } else if (action === 'competitions') {
       if (this.services.openCompetitions) this.services.openCompetitions(ctx);
       else this.say([{ who: 'player', name: 'Tableau d\'affichage', text: 'Les prochains tournois seront annoncés bientôt.' }]);

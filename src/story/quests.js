@@ -31,7 +31,12 @@ export function currentObjective(flag, state) {
   if (flag('world_champion')) return `Tu es ${g('CHAMPION', 'CHAMPIONNE')} DU MONDE ! Savoure… et joue pour le plaisir.`;
   const won = state?.career.competitionsWon || [];
   const beaten = state?.career.beaten || {};
-  if (!beaten.momo) return 'Défie Momo au club (parle-lui).';
+  const trained = Object.keys(state?.training?.done || {}).length;
+  if (!beaten.momo) {
+    return trained >= 2
+      ? 'Défie Momo au club (parle-lui).'
+      : 'Suis les leçons de Gigi à la table d\'entraînement du club, puis défie Momo.';
+  }
   if (!won.includes('club_open')) return 'Remporte le Tournoi du club (tableau d\'affichage).';
   if (!won.includes('regional')) return 'Remporte le Championnat régional !';
   if (!won.includes('national')) return 'Remporte le Championnat national !';
@@ -59,7 +64,7 @@ export async function onMapEntered(mapId, ctx) {
       { who: 'gigi', text: `Alors c'est toi, ${g('le petit prodige', 'la petite prodige')} de Marcel ? On m'appelle Gigi. Grand maître, vice-champion du monde 1987… et désormais ton entraîneur.` },
       { who: 'player', text: 'Papi dit que vous êtes le meilleur joueur qu\'il connaisse !' },
       { who: 'gigi', text: 'Marcel exagère à peine. Écoute : ici on progresse en jouant. Bats les membres du club, et je t\'ouvrirai les portes des tournois. Régional, national… mondial, si tu en as l\'étoffe.' },
-      { who: 'gigi', text: 'Commence par Momo, là-bas. Et n\'oublie jamais : la rafle majoritaire, c\'est la vie.' },
+      { who: 'gigi', text: 'Passe d\'abord par ma TABLE D\'ENTRAÎNEMENT, là-bas à gauche : notation, combinaisons, finales… tout ce qu\'un futur champion doit savoir. Ensuite, défie Momo. Et n\'oublie jamais : la rafle majoritaire, c\'est la vie.' },
     ]);
     ctx.setFlag('met_gigi');
   }

@@ -17,6 +17,7 @@ import { loadSave, setFlag, flag, state, save, hasSave, resetSave } from './save
 import { audio } from './audio/audio.js';
 import { runTutorial, makeSignal } from './story/tutorial.js';
 import { afterTutorial, gigiTips, worldChampionScene } from './story/quests.js';
+import { EXERCISES, TRAINING_CATEGORIES, exerciseById, runExercise } from './story/training.js';
 import {
   COMPETITIONS, competitionById, competitionStatus, unlockHint,
   opponentElo, opponentAiConfig,
@@ -273,6 +274,7 @@ function enterWorld() {
         startTutorial: () => startTutorialFlow(),
         openCompetitions: () => openCompetitions(),
         openShop: () => openShop('world'),
+        openTraining: () => openTraining('world'),
         updateHud: () => {
           const chip = $('hud-points');
           chip.textContent = `🪙 ${state.points}`;
@@ -310,6 +312,7 @@ async function startTutorialFlow() {
   $('extra-white').textContent = '';
   $('extra-black').textContent = 'Leçon de dames';
   matchOrigin = 'world';
+  lessonReturn = () => enterWorld();
 
   if (!matchDialogue) matchDialogue = new Dialogue($('screen-match'));
   tutorialSignal = makeSignal();
@@ -591,6 +594,96 @@ function playTournamentRound() {
 }
 
 // ---------------------------------------------------------------------------
+// Salle d'entraînement (leçons et exercices de Gigi)
+// ---------------------------------------------------------------------------
+let trainingOrigin = 'menu';
+let lessonReturn = null; // où revenir quand on quitte une leçon en cours
+
+function openTraining(origin = trainingOrigin) {
+  trainingOrigin = origin;
+  if (origin === 'world') world?.leave();
+  currentMatch?.destroy();
+  currentMatch = null;
+  showScreen('screen-training');
+
+  const list = $('training-list');
+  list.innerHTML = '';
+  const done = state.training?.done || {};
+  for (const cat of TRAINING_CATEGORIES) {
+    list.append(el('div.shop-section-title', cat.toUpperCase()));
+    for (const ex of EXERCISES.filter((e2) => e2.cat === cat)) {
+      const row = el('div.bracket-row');
+      const isDone = !!done[ex.id];
+      row.append(el('div.who', [
+        el('span', ex.icon),
+        el('div', [
+          el('div', `${ex.title} ${isDone ? '✅' : ''}`),
+          el('div.tag-elo', ex.desc),
+        ]),
+      ]));
+      row.append(el('button.btn.btn-small' + (isDone ? '' : '.btn-primary'),
+        isDone ? 'Rejouer' : `Jouer · 🪙 ${ex.reward}`, {
+          onclick: () => startTrainingExercise(ex.id),
+        }));
+      list.append(row);
+    }
+  }
+}
+
+async function startTrainingExercise(id) {
+  const ex = exerciseById(id);
+  if (!ex) return;
+  currentMatch?.destroy();
+  currentMatch = null;
+  showScreen('screen-match');
+  audio.playMusic('club');
+  boardView.setThemes(state.equipped.board, state.equipped.pieces);
+  $('name-white').textContent = state.player.name;
+  $('name-black').textContent = 'Coach Gigi';
+  setAvatar('avatar-white', 'player');
+  setAvatar('avatar-black', 'gigi');
+  $('extra-white').textContent = '';
+  $('extra-black').textContent = ex.title;
+  matchOrigin = 'training';
+  lessonReturn = () => openTraining();
+
+  if (!matchDialogue) matchDialogue = new Dialogue($('screen-match'));
+  tutorialSignal = makeSignal();
+  const doneOk = await runExercise(ex, {
+    boardView,
+    dialogue: matchDialogue,
+    setStatus: (t) => { $('turn-pill').textContent = t; },
+    signal: tutorialSignal,
+  });
+  tutorialSignal = null;
+  if (!doneOk) return;
+
+  const first = !state.training.done[ex.id];
+  if (first) {
+    state.training.done[ex.id] = true;
+    state.points += ex.reward;
+    save();
+    audio.playSfx('coin');
+  } else {
+    audio.playSfx('win');
+  }
+  showMatchOverlay({
+    title: 'Exercice réussi ! 🎓',
+    detail: first ? 'Gigi hoche la tête, presque impressionné.' : 'Réviser, c\'est déjà progresser.',
+    rewards: first ? [`🪙 +${ex.reward} Pions d'Or`] : [],
+    buttons: [
+      { label: 'Retour à la salle', className: 'btn-primary', onClick: () => openTraining() },
+    ],
+  });
+}
+
+$('btn-training').addEventListener('click', () => openTraining('menu'));
+$('btn-training-back').addEventListener('click', () => {
+  if (trainingOrigin === 'world') enterWorld();
+  else quitToMenu();
+});
+
+// ---------------------------------------------------------------------------
 // Boutique
 // ---------------------------------------------------------------------------
 let shopOrigin = 'menu';
@@ -622,11 +715,13 @@ $('btn-resign').addEventListener('click', () => {
 });
 $('btn-quit-match').addEventListener('click', () => {
   if (tutorialSignal) {
-    // Abandon du tutoriel : retour au monde sans valider la leçon.
+    // Abandon d'une leçon (tutoriel ou exercice) : retour sans valider.
     tutorialSignal.abort();
     matchDialogue?.close();
     tutorialSignal = null;
-    enterWorld();
+    const back = lessonReturn;
+    lessonReturn = null;
+    (back || enterWorld)();
     return;
   }
   if (matchOrigin === 'world') {

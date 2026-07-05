@@ -47,6 +47,19 @@ Ces règles sont vérifiées par des tests automatiques : `npm test`
 (voir `tests/rules.test.mjs`, dont deux cas dédiés à la rafle majoritaire,
 et `tests/ai.test.mjs` pour l'IA).
 
+## 🎓 Salle d'entraînement
+
+Au club (table d'entraînement, ou bouton « Entraînement » du menu), Gigi
+donne des leçons interactives qui suivent le plan des cours fédéraux
+(FFJD/FMJD) : **bases** (notation Manoury, rangée arrière), **tactique**
+(« donner un pour reprendre deux », combinaisons correctes, rafle
+majoritaire, dame volante) et **finales** (course à la dame et temps,
+opposition/zugzwang). Chaque exercice se joue sur le vrai moteur de règles,
+propose un indice après deux échecs et rapporte des Pions d'Or à la première
+réussite. Les positions ont été construites puis **certifiées par recherche
+minimax** (coup gagnant unique) ; `tests/training.test.mjs` rejoue chaque
+étape à chaque `npm test`. Le contenu textuel est original.
+
 ## 🧠 Architecture
 
 ```

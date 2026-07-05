@@ -7,6 +7,6 @@
   "license": "MIT",
   "scripts": {
     "start": "node tools/serve.mjs",
-    "test": "node tests/rules.test.mjs && node tests/ai.test.mjs"
+    "test": "node tests/rules.test.mjs && node tests/ai.test.mjs && node tests/training.test.mjs"
   }
 }

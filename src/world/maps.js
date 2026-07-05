@@ -208,6 +208,7 @@ function buildClub() {
     ],
     interactables: [
       { id: 'club_notice', type: 'noticehint', x: 12, y: 1, w: 2, h: 1, action: 'competitions' },
+      { id: 'club_training', type: 'boardhint', x: 3, y: 6, w: 2, h: 1, action: 'training' },
     ],
   };
 }

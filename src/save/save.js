@@ -23,6 +23,8 @@ export function freshState() {
       beaten: {},            // id d'adversaire -> nombre de victoires
       competitionsWon: [],   // ids des compétitions remportées
     },
+    // Salle d'entraînement : exercices réussis (récompensés une fois)
+    training: { done: {} },
     // Monnaie de la boutique (phase 6)
     points: 0,
     inventory: { boards: ['classic'], pieces: ['classic'] },
@@ -47,6 +49,7 @@ export function loadSave() {
       state = { ...freshState(), ...data };
       state.player = { ...freshState().player, ...data.player };
       state.story = { ...freshState().story, ...data.story };
+      state.training = { done: {}, ...data.training };
       state.career = { ...freshState().career, ...data.career };
       state.inventory = { ...freshState().inventory, ...data.inventory };
       state.equipped = { ...freshState().equipped, ...data.equipped };
