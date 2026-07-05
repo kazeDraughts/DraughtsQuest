@@ -9,6 +9,7 @@
  */
 
 import { RulesEngine } from '../engine/rules.js';
+import { state } from '../save/save.js';
 
 const STEPS = [
   {
@@ -73,7 +74,7 @@ const STEPS = [
     hint: { from: 46, to: 23 },
     success: [
       { who: 'grandpa', text: 'Et voilà le travail ! Tu connais maintenant toutes les règles : déplacement, prise obligatoire, rafle majoritaire, promotion et dame volante.' },
-      { who: 'grandpa', text: 'La théorie, c\'est fait. Place à la pratique, gamin : une VRAIE partie, toi contre moi. Montre-moi ce que tu as dans le crâne !' },
+      { who: 'grandpa', get text() { return `La théorie, c'est fait. Place à la pratique, ${state.player.gender === 'girl' ? 'gamine' : 'gamin'} : une VRAIE partie, toi contre moi. Montre-moi ce que tu as dans le crâne !`; } },
     ],
   },
 ];

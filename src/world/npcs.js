@@ -4,10 +4,25 @@
  * définis dans src/story/quests.js (getDialogueFor).
  */
 
+/** Apparences possibles du héros ou de l'héroïne (création de personnage). */
+export const PLAYER_LOOKS = {
+  boy: { skin: '#f2c79a', hair: '#5b3a1e', hairStyle: 'cap', capColor: '#d84f42', shirt: '#3d7dc8', blush: true, bg: '#37576f' },
+  girl: { skin: '#f2c79a', hair: '#a85f2e', hairStyle: 'long', shirt: '#d84f8a', blush: true, bg: '#37576f' },
+};
+
+/**
+ * Applique l'identité choisie par le joueur : nom affiché dans les dialogues
+ * et apparence (portrait + sprite) partout où le personnage est dessiné.
+ */
+export function updatePlayerCharacter(name, gender) {
+  CHARACTERS.player.name = name;
+  CHARACTERS.player.look = PLAYER_LOOKS[gender] || PLAYER_LOOKS.boy;
+}
+
 export const CHARACTERS = {
   player: {
     id: 'player', name: 'Tim',
-    look: { skin: '#f2c79a', hair: '#5b3a1e', hairStyle: 'cap', capColor: '#d84f42', shirt: '#3d7dc8', blush: true, bg: '#37576f' },
+    look: PLAYER_LOOKS.boy,
   },
   mom: {
     id: 'mom', name: 'Maman',

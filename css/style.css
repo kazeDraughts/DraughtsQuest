@@ -370,6 +370,41 @@ body {
 .shop-card .shop-desc { color: var(--muted); font-size: .75rem; min-height: 2.2em; }
 .shop-section-title { width: min(720px, 100%); color: var(--muted); font-size: .95rem; margin-top: 8px; }
 
+/* ---------- Création du personnage ---------- */
+.gender-row { display: flex; gap: 12px; justify-content: center; }
+.gender-card {
+  flex: 1;
+  appearance: none;
+  font: inherit;
+  color: var(--text);
+  background: var(--panel2);
+  border: 3px solid transparent;
+  border-radius: var(--radius);
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.gender-card canvas { width: 84px; height: 84px; border-radius: 12px; }
+.gender-card.selected { border-color: var(--accent); background: #3a4c60; }
+.name-input {
+  font: inherit;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text);
+  background: var(--bg2);
+  border: 2px solid var(--panel2);
+  border-radius: var(--radius);
+  padding: 12px;
+  width: 100%;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.name-input:focus { outline: none; border-color: var(--accent); }
+
 /* ---------- Options / Crédits ---------- */
 .option-row {
   width: min(480px, 100%);

@@ -159,6 +159,26 @@
       <button class="btn btn-primary" id="btn-tournament-play">Jouer la ronde</button>
     </section>
 
+    <!-- Création du personnage (début de l'aventure) -->
+    <div class="overlay hidden" id="player-create">
+      <div class="overlay-box">
+        <h2>Qui es-tu ?</h2>
+        <div class="gender-row">
+          <button class="gender-card selected" id="gc-boy">
+            <canvas width="96" height="96"></canvas>
+            <span>Garçon</span>
+          </button>
+          <button class="gender-card" id="gc-girl">
+            <canvas width="96" height="96"></canvas>
+            <span>Fille</span>
+          </button>
+        </div>
+        <input class="name-input" id="player-name" maxlength="12" autocomplete="off"
+               placeholder="Ton prénom" value="Tim">
+        <button class="btn btn-primary" id="btn-create-go">C'est parti !</button>
+      </div>
+    </div>
+
     <!-- Choix du niveau de l'IA -->
     <div class="overlay hidden" id="ai-select">
       <div class="overlay-box">

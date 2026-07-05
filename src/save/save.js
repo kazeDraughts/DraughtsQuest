@@ -10,6 +10,8 @@ const KEY = 'draughtsquest_save_v1';
 export function freshState() {
   return {
     version: 1,
+    // Identité choisie à la création du personnage (début de l'aventure)
+    player: { name: 'Tim', gender: 'boy' }, // gender : 'boy' | 'girl'
     // Drapeaux d'avancement du scénario (voir src/story/quests.js)
     story: { flags: {} },
     // Carrière (phase 5) : classement Elo et historique
@@ -43,6 +45,7 @@ export function loadSave() {
     if (data && data.version === 1) {
       // Fusion défensive : les champs manquants prennent la valeur par défaut.
       state = { ...freshState(), ...data };
+      state.player = { ...freshState().player, ...data.player };
       state.story = { ...freshState().story, ...data.story };
       state.career = { ...freshState().career, ...data.career };
       state.inventory = { ...freshState().inventory, ...data.inventory };

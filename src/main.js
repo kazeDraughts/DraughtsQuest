@@ -9,13 +9,14 @@ import { showScreen, showBanner, showMatchOverlay, el } from './ui/screens.js';
 import { AIPlayer } from './ai/player.js';
 import { AI_LEVELS, LEVEL_ORDER } from './ai/levels.js';
 import { WorldController } from './world/controller.js';
-import { CHARACTERS, characterById } from './world/npcs.js';
+import { CHARACTERS, characterById, updatePlayerCharacter, PLAYER_LOOKS } from './world/npcs.js';
+import { setPlayerHomeName } from './world/maps.js';
 import { drawPortrait } from './world/portraits.js';
 import { Dialogue } from './world/dialogue.js';
 import { loadSave, setFlag, flag, state, save, hasSave, resetSave } from './save/save.js';
 import { audio } from './audio/audio.js';
 import { runTutorial, makeSignal } from './story/tutorial.js';
-import { afterTutorial, GIGI_TIPS, worldChampionScene } from './story/quests.js';
+import { afterTutorial, gigiTips, worldChampionScene } from './story/quests.js';
 import {
   COMPETITIONS, competitionById, competitionStatus, unlockHint,
   opponentElo, opponentAiConfig,
@@ -136,7 +137,8 @@ function refreshMenu() {
   const stats = $('menu-stats');
   if (has && flag('intro_done')) {
     const c = state.career;
-    stats.textContent = `${flag('world_champion') ? '🌍 CHAMPION DU MONDE · ' : ''}Elo ${c.elo} (${eloTitle(c.elo)}) · 🪙 ${state.points}`;
+    const champ = state.player.gender === 'girl' ? 'CHAMPIONNE' : 'CHAMPION';
+    stats.textContent = `${flag('world_champion') ? `🌍 ${champ} DU MONDE · ` : ''}${state.player.name} · Elo ${c.elo} (${eloTitle(c.elo)}) · 🪙 ${state.points}`;
     stats.classList.remove('hidden');
   } else {
     stats.classList.add('hidden');
@@ -211,7 +213,59 @@ function openAISelect() {
 // ---------------------------------------------------------------------------
 let world = null;
 
+/** Répercute l'identité choisie (prénom, genre) sur tout le jeu. */
+function applyPlayerIdentity() {
+  updatePlayerCharacter(state.player.name, state.player.gender);
+  setPlayerHomeName(state.player.name);
+}
+
+// --- Création du personnage (première entrée dans l'aventure) ---
+function openPlayerCreation() {
+  const overlay = $('player-create');
+  const cards = { boy: $('gc-boy'), girl: $('gc-girl') };
+  const nameInput = $('player-name');
+  // Portraits d'aperçu des deux personnages
+  drawPortrait(cards.boy.querySelector('canvas'), PLAYER_LOOKS.boy, 96);
+  drawPortrait(cards.girl.querySelector('canvas'), PLAYER_LOOKS.girl, 96);
+
+  let gender = state.player.gender || 'boy';
+  const DEFAULTS = { boy: 'Tim', girl: 'Mia' };
+  const refresh = () => {
+    cards.boy.classList.toggle('selected', gender === 'boy');
+    cards.girl.classList.toggle('selected', gender === 'girl');
+  };
+  const pick = (gValue) => {
+    // Si le prénom affiché est encore un prénom par défaut, on le remplace.
+    if (!nameInput.value.trim() || Object.values(DEFAULTS).includes(nameInput.value.trim())) {
+      nameInput.value = DEFAULTS[gValue];
+    }
+    gender = gValue;
+    refresh();
+    audio.playSfx('blip');
+  };
+  cards.boy.onclick = () => pick('boy');
+  cards.girl.onclick = () => pick('girl');
+  nameInput.value = DEFAULTS[gender];
+  refresh();
+
+  $('btn-create-go').onclick = () => {
+    state.player.name = nameInput.value.trim().slice(0, 12) || DEFAULTS[gender];
+    state.player.gender = gender;
+    setFlag('player_created'); // setFlag sauvegarde aussi l'état
+    applyPlayerIdentity();
+    audio.playSfx('coin');
+    overlay.classList.add('hidden');
+    enterWorld();
+  };
+  overlay.classList.remove('hidden');
+}
+
 function enterWorld() {
+  // Premier lancement de l'aventure : on choisit d'abord son personnage.
+  if (!flag('player_created')) {
+    openPlayerCreation();
+    return;
+  }
   if (!world) {
     world = new WorldController({
       services: {
@@ -249,7 +303,7 @@ async function startTutorialFlow() {
   currentMatch?.destroy();
   currentMatch = null;
   showScreen('screen-match');
-  $('name-white').textContent = 'Tim';
+  $('name-white').textContent = state.player.name;
   $('name-black').textContent = 'Papi Marcel';
   setAvatar('avatar-white', 'player');
   setAvatar('avatar-black', 'grandpa');
@@ -326,7 +380,7 @@ function startWorldMatch(cfg) {
     fen: cfg.fen,
     music: cfg.music,
     allowedMoves: cfg.allowedMoves,
-    white: { type: 'human', name: 'Tim', avatar: 'player' },
+    white: { type: 'human', name: state.player.name, avatar: 'player' },
     black: {
       type: 'ai',
       name: opp.name,
@@ -457,7 +511,7 @@ function playTournamentRound() {
     opponent: oppId,
     career: oppId,
     music: 'tournament',
-    preLines: GIGI_TIPS[comp.id]?.[t.round],
+    preLines: gigiTips(comp.id, t.round, state),
     onEnd: (r) => {
       const outcome = r.winner === 'w' ? 'win' : r.winner === 'draw' ? 'draw' : 'lose';
       const rec = recordCareerResult(oppId, outcome);
@@ -478,10 +532,11 @@ function playTournamentRound() {
           rewards.push(`🏆 Trophée : ${comp.name}`, `🪙 +${comp.rewardPoints} Pions d'Or (prime)`);
           const isWorld = comp.id === 'world';
           if (isWorld) setFlag('world_champion');
+          const girl = state.player.gender === 'girl';
           showMatchOverlay({
-            title: isWorld ? '🌍 CHAMPION DU MONDE !!!' : `${comp.icon} ${comp.name} : REMPORTÉ !`,
+            title: isWorld ? `🌍 ${girl ? 'CHAMPIONNE' : 'CHAMPION'} DU MONDE !!!` : `${comp.icon} ${comp.name} : REMPORTÉ !`,
             detail: isWorld
-              ? 'Tim, le gamin qui s\'ennuyait, est devenu champion du monde de dames internationales.'
+              ? `${state.player.name}, ${girl ? 'la gamine qui s\'ennuyait, est devenue championne' : 'le gamin qui s\'ennuyait, est devenu champion'} du monde de dames internationales.`
               : 'Toutes les rondes gagnées. Quelle démonstration !',
             rewards,
             buttons: [{
@@ -655,6 +710,7 @@ window.addEventListener('pointerdown', unlockAudio);
 window.addEventListener('keydown', unlockAudio);
 
 loadSave();
+applyPlayerIdentity();
 refreshMenu();
 showScreen('screen-menu');
 audio.playMusic('menu');

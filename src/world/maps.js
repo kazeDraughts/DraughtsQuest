@@ -248,5 +248,12 @@ export const MAPS = {
   shop: buildShop(),
 };
 
+/** Personnalise les libellés qui portent le prénom du héros/de l'héroïne. */
+export function setPlayerHomeName(name) {
+  MAPS.home.name = `La maison de ${name}`;
+  const house = MAPS.village.props.find((p) => p.type === 'house' && p.doorX === 5);
+  if (house) house.label = `Chez ${name}`;
+}
+
 /** Tuiles solides (infranchissables). */
 export const SOLID_TILES = new Set(['t', 'w', 'r', 'W', 'x']);

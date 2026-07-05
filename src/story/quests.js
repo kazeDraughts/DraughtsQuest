@@ -16,15 +16,19 @@
 
 import { sparringAvailable } from '../career/opponents.js';
 
+/** Accord de genre : gg(state)('champion', 'championne'). */
+const gg = (state) => (m, f) => (state?.player?.gender === 'girl' ? f : m);
+
 // ---------------------------------------------------------------------------
 // Objectif courant (affiché dans le HUD du monde)
 // ---------------------------------------------------------------------------
 export function currentObjective(flag, state) {
+  const g = gg(state);
   if (!flag('intro_done')) return 'Parle à Maman.';
   if (!flag('tutorial_done')) return 'Va chez Papi Marcel, il a une surprise pour toi.';
   if (!flag('grandpa_beaten')) return 'Bats Papi Marcel dans une vraie partie !';
   if (!flag('met_gigi')) return 'Va au club d\'Otterlaws (au nord) et rencontre Gigi.';
-  if (flag('world_champion')) return 'Tu es CHAMPION DU MONDE ! Savoure… et joue pour le plaisir.';
+  if (flag('world_champion')) return `Tu es ${g('CHAMPION', 'CHAMPIONNE')} DU MONDE ! Savoure… et joue pour le plaisir.`;
   const won = state?.career.competitionsWon || [];
   const beaten = state?.career.beaten || {};
   if (!beaten.momo) return 'Défie Momo au club (parle-lui).';
@@ -38,12 +42,13 @@ export function currentObjective(flag, state) {
 // Scènes automatiques à l'arrivée sur une carte
 // ---------------------------------------------------------------------------
 export async function onMapEntered(mapId, ctx) {
+  const g = gg(ctx.state);
   if (mapId === 'home' && !ctx.flag('intro_done')) {
     await ctx.say([
       { who: 'player', text: 'Maman… je m\'ennuiiiie. Il n\'y a RIEN à faire ici.' },
       { who: 'mom', text: 'Tu t\'ennuies ? Par ce beau soleil ? File donc chez Papi Marcel, il m\'a dit qu\'il avait une surprise pour toi.' },
       { who: 'player', text: 'Une surprise ? Chez Papi ? …Bon, d\'accord, j\'y vais !' },
-      { who: 'mom', text: 'Sa maison est juste au nord de la nôtre, sur le chemin. Amuse-toi bien mon grand !' },
+      { who: 'mom', text: `Sa maison est juste au nord de la nôtre, sur le chemin. Amuse-toi bien ${g('mon grand', 'ma grande')} !` },
     ]);
     ctx.setFlag('intro_done');
   }
@@ -51,7 +56,7 @@ export async function onMapEntered(mapId, ctx) {
   if (mapId === 'club' && !ctx.flag('met_gigi')) {
     await ctx.say([
       { who: 'arbiter', text: 'Tiens, une nouvelle recrue ! Entre, entre. Le patron veut sûrement te voir.' },
-      { who: 'gigi', text: 'Alors c\'est toi, le petit prodige de Marcel ? On m\'appelle Gigi. Grand maître, vice-champion du monde 1987… et désormais ton entraîneur.' },
+      { who: 'gigi', text: `Alors c'est toi, ${g('le petit prodige', 'la petite prodige')} de Marcel ? On m'appelle Gigi. Grand maître, vice-champion du monde 1987… et désormais ton entraîneur.` },
       { who: 'player', text: 'Papi dit que vous êtes le meilleur joueur qu\'il connaisse !' },
       { who: 'gigi', text: 'Marcel exagère à peine. Écoute : ici on progresse en jouant. Bats les membres du club, et je t\'ouvrirai les portes des tournois. Régional, national… mondial, si tu en as l\'étoffe.' },
       { who: 'gigi', text: 'Commence par Momo, là-bas. Et n\'oublie jamais : la rafle majoritaire, c\'est la vie.' },
@@ -64,6 +69,7 @@ export async function onMapEntered(mapId, ctx) {
 // Défi de Papi Marcel (la « vraie » partie qui déverrouille le club)
 // ---------------------------------------------------------------------------
 export function grandpaChallenge(ctx) {
+  const g = gg(ctx.state);
   ctx.startMatch({
     opponent: 'grandpa',
     level: 'debutant',
@@ -74,8 +80,8 @@ export function grandpaChallenge(ctx) {
         title: 'Tu as battu Papi ! 🎉',
         detail: 'Le vieux maître s\'incline…',
         lines: [
-          { who: 'grandpa', text: 'Ça alors… battu par mon propre petit-fils ! Je n\'ai plus rien à t\'apprendre, gamin.' },
-          { who: 'grandpa', text: 'File en ville, au club d\'Otterlaws. Demande GIGI de ma part : c\'est un grand maître, il fera de toi un champion.' },
+          { who: 'grandpa', text: `Ça alors… ${g('battu par mon propre petit-fils', 'battu par ma propre petite-fille')} ! Je n'ai plus rien à t'apprendre, ${g('gamin', 'gamine')}.` },
+          { who: 'grandpa', text: `File en ville, au club d'Otterlaws. Demande GIGI de ma part : c'est un grand maître, il fera de toi ${g('un champion', 'une championne')}.` },
           { who: 'player', text: 'Le club d\'Otterlaws… j\'y cours ! Merci Papi !' },
         ],
       },
@@ -101,10 +107,11 @@ export function grandpaChallenge(ctx) {
 
 /** Après le tutoriel : Papi propose le vrai défi. */
 export async function afterTutorial(ctx) {
+  const g = gg(ctx.state);
   const answer = await ctx.say([
     {
       who: 'grandpa',
-      text: 'Alors, prêt pour ta première vraie partie ? Si tu me bats, je t\'inscris au club de la ville !',
+      text: `Alors, ${g('prêt', 'prête')} pour ta première vraie partie ? Si tu me bats, je t'inscris au club de la ville !`,
       choices: [
         { label: 'On y va, Papi !', value: 'play' },
         { label: 'Laisse-moi souffler…', value: 'later' },
@@ -143,36 +150,41 @@ function clubSparring(ctx, oppId, inviteText, lockedText) {
 // ---------------------------------------------------------------------------
 // Conseils de Gigi avant chaque ronde de compétition
 // ---------------------------------------------------------------------------
-export const GIGI_TIPS = {
-  club_open: [
-    [{ who: 'gigi', text: 'Conseil de coach : contre Momo, occupe le CENTRE. Les bords, c\'est pour les timides.' }],
-    [{ who: 'gigi', text: 'Léa défend bien. Sois patient : prépare tes rafles deux coups à l\'avance.' }],
-    [{ who: 'gigi', text: 'Karim attaque fort mais laisse des trous. Compte chaque échange : ne donne jamais deux pour un.' }],
-  ],
-  regional: [
-    [{ who: 'gigi', text: 'Le régional, ça se gagne avec les TEMPS : chaque coup doit menacer quelque chose.' }],
-    [{ who: 'gigi', text: 'Bastien adore les pièges d\'ouverture. Méfie-toi des cadeaux : un pion offert cache souvent une rafle.' }],
-    [{ who: 'gigi', text: 'Mireille joue la finale mieux que personne. Si tu peux promouvoir avant elle, fonce !' }],
-  ],
-  national: [
-    [{ who: 'gigi', text: 'Niveau national ! Verrouille ta rangée arrière et avance en bloc, comme une marée.' }],
-    [{ who: 'gigi', text: 'Rappelle-toi : une dame vaut trois pions. Sacrifier pour promouvoir est souvent gagnant.' }],
-    [{ who: 'gigi', text: 'Et maintenant… moi. Pas de conseil cette fois, gamin. Montre-moi TOUT ce que tu as appris.' }],
-  ],
-  world: [
-    [{ who: 'gigi', text: 'Anke Vries, école néerlandaise : positionnelle, implacable. Ne lui laisse pas UNE case faible.' }],
-    [{ who: 'gigi', text: 'Sergueï Volk calcule comme une machine. Complique la position : les machines détestent le chaos.' }],
-    [{ who: 'gigi', text: 'Viktor Roi, champion du monde… Il n\'a qu\'une faiblesse : il n\'a jamais joué contre TOI. Va écrire l\'histoire, gamin.' }],
-  ],
-};
+export function gigiTips(compId, round, state) {
+  const g = gg(state);
+  const TIPS = {
+    club_open: [
+      [{ who: 'gigi', text: 'Conseil de coach : contre Momo, occupe le CENTRE. Les bords, c\'est pour les timides.' }],
+      [{ who: 'gigi', text: `Léa défend bien. Sois ${g('patient', 'patiente')} : prépare tes rafles deux coups à l'avance.` }],
+      [{ who: 'gigi', text: 'Karim attaque fort mais laisse des trous. Compte chaque échange : ne donne jamais deux pour un.' }],
+    ],
+    regional: [
+      [{ who: 'gigi', text: 'Le régional, ça se gagne avec les TEMPS : chaque coup doit menacer quelque chose.' }],
+      [{ who: 'gigi', text: 'Bastien adore les pièges d\'ouverture. Méfie-toi des cadeaux : un pion offert cache souvent une rafle.' }],
+      [{ who: 'gigi', text: 'Mireille joue la finale mieux que personne. Si tu peux promouvoir avant elle, fonce !' }],
+    ],
+    national: [
+      [{ who: 'gigi', text: 'Niveau national ! Verrouille ta rangée arrière et avance en bloc, comme une marée.' }],
+      [{ who: 'gigi', text: 'Rappelle-toi : une dame vaut trois pions. Sacrifier pour promouvoir est souvent gagnant.' }],
+      [{ who: 'gigi', text: `Et maintenant… moi. Pas de conseil cette fois, ${g('gamin', 'gamine')}. Montre-moi TOUT ce que tu as appris.` }],
+    ],
+    world: [
+      [{ who: 'gigi', text: 'Anke Vries, école néerlandaise : positionnelle, implacable. Ne lui laisse pas UNE case faible.' }],
+      [{ who: 'gigi', text: 'Sergueï Volk calcule comme une machine. Complique la position : les machines détestent le chaos.' }],
+      [{ who: 'gigi', text: `Viktor Roi, champion du monde… Il n'a qu'une faiblesse : il n'a jamais joué contre TOI. Va écrire l'histoire, ${g('gamin', 'gamine')}.` }],
+    ],
+  };
+  return TIPS[compId]?.[round];
+}
 
-/** Scène de fin : Tim est champion du monde. */
+/** Scène de fin : notre héros ou héroïne est champion(ne) du monde. */
 export async function worldChampionScene(ctx) {
+  const g = gg(ctx.state);
   await ctx.say([
-    { who: 'gigi', text: 'CHAMPION DU MONDE ! Gamin… non. CHAMPION. Tu as fait mentir tous les pronostics.' },
+    { who: 'gigi', text: `${g('CHAMPION', 'CHAMPIONNE')} DU MONDE ! ${g('Gamin', 'Gamine')}… non. ${g('CHAMPION', 'CHAMPIONNE')}. Tu as fait mentir tous les pronostics.` },
     { who: 'player', text: 'On l\'a fait ensemble, Gigi. Toi, Papi, le club… tout Otterlaws !' },
     { who: 'gigi', text: 'Marcel avait raison depuis le début : tu avais le damier dans le sang. File le voir, il t\'attend avec le champagne… enfin, la limonade.' },
-    { who: 'mom', name: 'Maman (au téléphone)', text: 'MON CHÉRI ! Toute la ville parle de toi ! Dire qu\'il y a quelques mois, tu t\'ennuyais…' },
+    { who: 'mom', name: 'Maman (au téléphone)', text: `${g('MON CHÉRI', 'MA CHÉRIE')} ! Toute la ville parle de toi ! Dire qu'il y a quelques mois, tu t'ennuyais…` },
     { who: 'player', text: 'C\'est vrai… Finalement, il suffisait d\'une surprise de Papi. Et de beaucoup, beaucoup de rafles majoritaires.' },
   ]);
 }
@@ -182,13 +194,15 @@ export async function worldChampionScene(ctx) {
 // ---------------------------------------------------------------------------
 export function getNpcDialogue(npcId, ctx) {
   const f = ctx.flag;
+  const N = ctx.state.player.name;
+  const g = gg(ctx.state);
 
   switch (npcId) {
     case 'mom': {
       if (!f('intro_done')) {
         return {
           lines: [
-            { who: 'mom', text: 'File chez Papi Marcel, mon grand. Sa maison est au nord, sur le chemin.' },
+            { who: 'mom', text: `File chez Papi Marcel, ${g('mon grand', 'ma grande')}. Sa maison est au nord, sur le chemin.` },
           ],
         };
       }
@@ -198,18 +212,18 @@ export function getNpcDialogue(npcId, ctx) {
       if (!f('grandpa_beaten')) {
         return { lines: [{ who: 'mom', text: 'Le jeu de dames ! J\'aurais dû m\'en douter… Il y jouait déjà avec ton arrière-grand-mère. Va lui montrer ce que tu vaux !' }] };
       }
-      return { lines: [{ who: 'mom', text: 'Mon fils, futur champion du monde de dames ! Je suis si fière de toi. File au club, ne fais pas attendre ce M. Gigi.' }] };
+      return { lines: [{ who: 'mom', text: `${g('Mon fils, futur champion', 'Ma fille, future championne')} du monde de dames ! Je suis si fière de toi. File au club, ne fais pas attendre ce M. Gigi.` }] };
     }
 
     case 'grandpa': {
       if (!f('tutorial_done')) {
         return {
           lines: [
-            { who: 'grandpa', text: 'Ah, Tim ! Te voilà enfin. Ta mère t\'a parlé de ma surprise ?' },
+            { who: 'grandpa', text: `Ah, ${N} ! Te voilà enfin. Ta mère t'a parlé de ma surprise ?` },
             { who: 'grandpa', text: 'La voici : mon vieux damier ! Le JEU DE DAMES INTERNATIONAL, cent cases, le jeu des rois et des malins.' },
             {
               who: 'grandpa',
-              text: 'Je vais t\'apprendre à jouer. Tu vas voir, c\'est simple à apprendre… et impossible à lâcher. Prêt ?',
+              text: `Je vais t'apprendre à jouer. Tu vas voir, c'est simple à apprendre… et impossible à lâcher. ${g('Prêt', 'Prête')} ?`,
               choices: [
                 { label: 'Apprends-moi, Papi !', value: 'tutorial' },
                 { label: 'Euh… plus tard.', value: 'later' },
@@ -245,7 +259,7 @@ export function getNpcDialogue(npcId, ctx) {
             who: 'grandpa',
             text: f('met_gigi')
               ? 'Alors, comment se passe le club ? Gigi est un sacré personnage, hein ? Une petite amicale pour la forme ?'
-              : 'Le club d\'Otterlaws, gamin ! En ville, au nord. Demande Gigi ! …Ou alors, une petite amicale d\'abord ?',
+              : `Le club d'Otterlaws, ${g('gamin', 'gamine')} ! En ville, au nord. Demande Gigi ! …Ou alors, une petite amicale d'abord ?`,
             choices: [
               { label: 'Une amicale !', value: 'play' },
               { label: 'Une autre fois.', value: 'later' },
@@ -262,10 +276,10 @@ export function getNpcDialogue(npcId, ctx) {
 
     case 'gigi': {
       if (!f('met_gigi')) {
-        return { lines: [{ who: 'gigi', text: 'Approche, gamin, je ne mords pas. Enfin… pas en dehors du damier.' }] };
+        return { lines: [{ who: 'gigi', text: `Approche, ${g('gamin', 'gamine')}, je ne mords pas. Enfin… pas en dehors du damier.` }] };
       }
       if (f('world_champion')) {
-        return { lines: [{ who: 'gigi', text: 'Le CHAMPION DU MONDE en personne, dans mon petit club… Marcel doit pleurer de fierté. Moi ? Une poussière dans l\'œil, c\'est tout.' }] };
+        return { lines: [{ who: 'gigi', text: `${g('Le CHAMPION', 'La CHAMPIONNE')} DU MONDE en personne, dans mon petit club… Marcel doit pleurer de fierté. Moi ? Une poussière dans l'œil, c'est tout.` }] };
       }
       const career = ctx.state.career;
       const lesson = !career.beaten.momo
@@ -307,7 +321,7 @@ export function getNpcDialogue(npcId, ctx) {
     case 'karim':
       return clubSparring(ctx, 'karim',
         'Un jour, je battrai Gigi. En attendant… c\'est toi que je vais battre. On joue ?',
-        'Bats d\'abord Léa, gamin. Ici, on grimpe les échelons dans l\'ordre.');
+        `Bats d'abord Léa, ${g('gamin', 'gamine')}. Ici, on grimpe les échelons dans l'ordre.`);
     case 'arbiter':
       return { lines: [{ who: 'arbiter', text: 'Règlement FMJD, article 4.4 : la prise majoritaire est obligatoire. Je dis ça, je dis rien.' }] };
     case 'shopkeeper':

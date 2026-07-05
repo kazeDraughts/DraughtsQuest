@@ -153,6 +153,13 @@ export function drawCharacter(ctx, cfg, x, y, s, dir = 'down', step = 0) {
   ctx.beginPath();
   ctx.arc(x, top - r * 0.12, r * 0.62, 0, Math.PI * 2);
   ctx.fill();
+  if (cfg.hairStyle === 'long') {
+    // Cheveux longs : mèches qui tombent sur les côtés
+    ctx.beginPath();
+    ctx.arc(x - r * 0.55, top + r * 0.25, r * 0.28, 0, Math.PI * 2);
+    ctx.arc(x + r * 0.55, top + r * 0.25, r * 0.28, 0, Math.PI * 2);
+    ctx.fill();
+  }
   if (cfg.hairStyle === 'cap') {
     // Visière orientée
     const vx = dir === 'left' ? -1 : dir === 'right' ? 1 : 0;
