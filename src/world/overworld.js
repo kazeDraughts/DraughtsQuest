@@ -644,5 +644,19 @@ export class Overworld {
         ctx.fillStyle = '#888';
         ctx.fillRect(x, y, w, h);
     }
+
+    // Enseigne générique au-dessus d'un meuble (les maisons ont la leur)
+    if (p.label && p.type !== 'house') {
+      ctx.font = `600 ${Math.max(11, t * 0.22)}px system-ui`;
+      const tw = ctx.measureText(p.label).width;
+      const lx = x + w / 2;
+      const ly = y - t * 0.34;
+      ctx.fillStyle = 'rgba(12,16,22,.65)';
+      ctx.fillRect(lx - tw / 2 - 8, ly - t * 0.21, tw + 16, t * 0.42);
+      ctx.fillStyle = '#ffe9a8';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(p.label, lx, ly);
+    }
   }
 }
