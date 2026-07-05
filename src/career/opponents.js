@@ -19,6 +19,8 @@ export const OPPONENTS = {
   anke: { id: 'anke', baseElo: 1950, tier: 'world' },
   sergei: { id: 'sergei', baseElo: 2020, tier: 'world' },
   champion: { id: 'champion', baseElo: 2120, tier: 'world' },  // Viktor Roi
+  // Le maître caché : révélé par les énigmes de Séraphine (src/story/combos.js)
+  ermite: { id: 'ermite', baseElo: 2200, tier: 'secret' },
 };
 
 /** Elo effectif : l'adversaire se renforce un peu à chaque défaite contre toi. */

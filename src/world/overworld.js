@@ -87,8 +87,9 @@ export class Overworld {
     this.player.y = at?.y ?? map.spawn.y;
     this.player.dir = at?.dir ?? 'down';
     this._triggerLock = 0.6; // demi-seconde sans déclencher de porte
-    // Instancie les PNJ de la carte (position vivante, séparée des données)
-    this.npcs = map.npcs.map((n) => ({
+    // Instancie les PNJ de la carte (position vivante, séparée des données).
+    // Certains n'apparaissent qu'à un stade du scénario (hook npcVisible).
+    this.npcs = map.npcs.filter((n) => this.hooks.npcVisible?.(n) ?? true).map((n) => ({
       ...n,
       hx: n.x, hy: n.y,        // point d'attache pour la flânerie
       look: characterById(n.id).look,

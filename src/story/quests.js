@@ -15,6 +15,9 @@
  */
 
 import { sparringAvailable } from '../career/opponents.js';
+import {
+  COMBO_BANK, comboSeriesById, combosSolved, comboSeriesDone, comboSeriesAvailable,
+} from './combos.js';
 
 /** Accord de genre : gg(state)('champion', 'championne'). */
 const gg = (state) => (m, f) => (state?.player?.gender === 'girl' ? f : m);
@@ -148,6 +151,57 @@ function clubSparring(ctx, oppId, inviteText, lockedText) {
     ],
     onDone: (a) => {
       if (a === 'play') ctx.startMatch({ opponent: oppId, career: oppId });
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Dialogue type d'un donneur d'énigmes (Fernand, Honoré, Séraphine)
+// ---------------------------------------------------------------------------
+function comboGiverDialogue(ctx, seriesId, texts) {
+  const series = comboSeriesById(seriesId);
+  const total = COMBO_BANK[seriesId].length;
+  const solved = combosSolved(ctx.state, seriesId);
+  const metFlag = `met_${seriesId}`;
+
+  if (comboSeriesDone(ctx.state, seriesId)) {
+    return {
+      lines: [
+        { who: seriesId, text: texts.done },
+        {
+          who: seriesId,
+          text: 'Tu veux t\'y refrotter, pour le plaisir de l\'œil ?',
+          choices: [
+            { label: 'Revoir une énigme', value: 'replay' },
+            { label: 'Une autre fois.', value: 'later' },
+          ],
+        },
+      ],
+      onDone: (a) => {
+        if (a === 'replay') ctx.startCombo(seriesId);
+      },
+    };
+  }
+
+  const lines = [];
+  if (!ctx.flag(metFlag)) {
+    lines.push({ who: seriesId, text: texts.greet }, { who: seriesId, text: texts.pitch });
+  }
+  lines.push({
+    who: seriesId,
+    text: solved === 0
+      ? `${series.icon} Première énigme (sur ${total}) : les Blancs jouent et gagnent. On cherche ?`
+      : `${series.icon} Énigme ${solved + 1} sur ${total}. ${texts.tease || 'Le damier est prêt. On cherche ?'}`,
+    choices: [
+      { label: 'Chercher !', value: 'play' },
+      { label: 'Plus tard.', value: 'later' },
+    ],
+  });
+  return {
+    lines,
+    onDone: (a) => {
+      ctx.setFlag(metFlag);
+      if (a === 'play') ctx.startCombo(seriesId);
     },
   };
 }
@@ -346,10 +400,64 @@ export function getNpcDialogue(npcId, ctx) {
         },
       };
 
-    case 'villager1':
-      return { lines: [{ who: 'villager1', text: 'La ville d\'Otterlaws est au nord. Leur club de dames est réputé dans toute la région !' }] };
+    case 'villager1': {
+      const text = f('grandpa_beaten')
+        ? 'Tu as vu Fernand, près de l\'étang ? Il ne pêche jamais rien… mais ses énigmes de damier sont fameuses dans tout le hameau.'
+        : 'La ville d\'Otterlaws est au nord. Leur club de dames est réputé dans toute la région !';
+      return { lines: [{ who: 'villager1', text }] };
+    }
     case 'villager2':
       return { lines: [{ who: 'villager2', text: 'On raconte que le grand maître Gigi a été vice-champion du monde, dans le temps.' }] };
+
+    // --- Les donneurs d'énigmes : des combinaisons à CHERCHER ---
+    case 'fernand': {
+      if (!f('grandpa_beaten')) {
+        return { lines: [{ who: 'fernand', text: 'Chut… ça mord. Enfin, ça pourrait. Reviens me voir quand tu sauras jouer aux dames : j\'ai des énigmes qui valent le détour.' }] };
+      }
+      return comboGiverDialogue(ctx, 'fernand', {
+        greet: 'Ah, la nouvelle recrue du club ! Moi c\'est Fernand. La pêche et les dames, c\'est pareil : on OFFRE un appât, et la prise est obligatoire, héhé.',
+        pitch: 'J\'ai une série d\'énigmes : dans chacune, les Blancs jouent et GAGNENT. À toi de trouver la combinaison. Chaque réussite est payée en Pions d\'Or… et si tu les résous toutes, je t\'offre mon damier fétiche.',
+        done: 'Plus une seule énigme en réserve — tu les as toutes ferrées ! Va donc voir le vieil Honoré, sur la place d\'Otterlaws : ses combinaisons à lui sont d\'un autre calibre.',
+      });
+    }
+    case 'honore': {
+      if (!comboSeriesAvailable(ctx.state, 'honore')) {
+        return { lines: [{ who: 'honore', text: 'Jeune pousse ! J\'ai connu des combinaisons à faire pleurer un arbitre… Fais d\'abord tes gammes chez Fernand, à l\'étang du hameau. Ensuite, on parlera GRANDS coups.' }] };
+      }
+      return comboGiverDialogue(ctx, 'honore', {
+        greet: 'Honoré, doyen des damistes d\'Otterlaws. Fernand m\'a parlé de toi… Il paraît que tu sais offrir un pion. Voyons si tu sais en offrir DEUX.',
+        pitch: 'Mes énigmes sont des combinaisons de tournoi : sacrifices en chaîne, rafles profondes. Résous-les toutes et je te lègue mes pions de collection — de l\'or, du vrai.',
+        done: 'Ma collection est épuisée, et mon chapeau, tiré. Une dernière chose : une dame en bleu, près des arbres à l\'est… Séraphine. Ses énigmes mènent toutes à la couronne.',
+      });
+    }
+    case 'seraphine': {
+      if (!comboSeriesAvailable(ctx.state, 'seraphine')) {
+        return { lines: [{ who: 'seraphine', text: 'Chaque porte a sa clé, et chaque clé se mérite… Reviens quand Honoré t\'aura tout appris. Alors seulement, je te montrerai le chemin des couronnes.' }] };
+      }
+      return comboGiverDialogue(ctx, 'seraphine', {
+        greet: 'On m\'appelle Séraphine. Je collectionne les fins de partie où tout semble fermé… et où un seul coup ouvre le chemin de la dame.',
+        pitch: 'Six percées, six sacrifices, six couronnes. Résous-les toutes… et je te présenterai quelqu\'un que ce village a oublié. Quelqu\'un qui ne joue plus. Sauf, peut-être, contre toi.',
+        done: 'Toutes les portes sont ouvertes… L\'Ermite t\'attend près de l\'étang du hameau, au sud. Il n\'a pas touché un damier depuis vingt ans. Sois à la hauteur.',
+      });
+    }
+    case 'ermite': {
+      return {
+        lines: [
+          { who: 'ermite', text: 'Séraphine t\'envoie, n\'est-ce pas ? Il y a vingt ans, j\'ai perdu une finale de championnat sur une combinaison que je n\'avais pas VUE. Je n\'ai plus jamais joué.' },
+          {
+            who: 'ermite',
+            text: `Mais toi… tu as résolu ses six percées. Alors montre-moi, ${g('petit chercheur', 'petite chercheuse')} de combinaisons : joue contre moi. Une vraie partie.`,
+            choices: [
+              { label: 'Défier l\'Ermite !', value: 'play' },
+              { label: 'Pas encore…', value: 'later' },
+            ],
+          },
+        ],
+        onDone: (a) => {
+          if (a === 'play') ctx.startMatch({ opponent: 'ermite', career: 'ermite', music: 'tournament' });
+        },
+      };
+    }
 
     default:
       return { lines: [{ who: npcId, text: 'Bonjour !' }] };

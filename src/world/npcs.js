@@ -84,6 +84,23 @@ export const CHARACTERS = {
     id: 'sergei', name: 'Sergueï Volk',
     look: { skin: '#e8c49c', hair: '#8a8f96', hairStyle: 'short', beard: '#8a8f96', shirt: '#3a4a5c', bg: '#2b3642' },
   },
+  // --- Les donneurs d'énigmes (combinaisons à chercher) ---
+  fernand: {
+    id: 'fernand', name: 'Fernand',
+    look: { skin: '#dfae7c', hair: '#4a6a3a', hairStyle: 'cap', capColor: '#4a6a3a', beard: '#b8b8b0', shirt: '#7a6a3c', bg: '#3d4a2e' },
+  },
+  honore: {
+    id: 'honore', name: 'Honoré',
+    look: { skin: '#eab98b', hair: '#c8c8c4', hairStyle: 'grayfringe', mustache: '#c8c8c4', glasses: true, shirt: '#5c4a6e', bg: '#42364e' },
+  },
+  seraphine: {
+    id: 'seraphine', name: 'Séraphine',
+    look: { skin: '#f0c6a0', hair: '#2e2440', hairStyle: 'long', shirt: '#3c3c6e', blush: true, bg: '#2a2a4a' },
+  },
+  ermite: {
+    id: 'ermite', name: 'L\'Ermite',
+    look: { skin: '#d8a878', hair: '#e4e4de', hairStyle: 'bald', beard: '#e4e4de', shirt: '#6e6252', bg: '#3c362c' },
+  },
 };
 
 export function characterById(id) {

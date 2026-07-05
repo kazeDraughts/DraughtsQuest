@@ -18,6 +18,7 @@ import { audio } from './audio/audio.js';
 import { runTutorial, makeSignal } from './story/tutorial.js';
 import { afterTutorial, gigiTips, worldChampionScene } from './story/quests.js';
 import { EXERCISES, TRAINING_CATEGORIES, exerciseById, runExercise } from './story/training.js';
+import { COMBO_BANK, comboSeriesById, comboToExercise } from './story/combos.js';
 import {
   COMPETITIONS, competitionById, competitionStatus, unlockHint,
   opponentElo, opponentAiConfig,
@@ -272,6 +273,7 @@ function enterWorld() {
       services: {
         startMatch: (cfg) => startWorldMatch(cfg),
         startTutorial: () => startTutorialFlow(),
+        startCombo: (seriesId) => startComboChallenge(seriesId),
         openCompetitions: () => openCompetitions(),
         openShop: () => openShop('world'),
         openTraining: () => openTraining('world'),
@@ -674,6 +676,91 @@ async function startTrainingExercise(id) {
     buttons: [
       { label: 'Retour à la salle', className: 'btn-primary', onClick: () => openTraining() },
     ],
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Énigmes des PNJ (Fernand, Honoré, Séraphine) : combinaisons à chercher
+// ---------------------------------------------------------------------------
+async function startComboChallenge(seriesId) {
+  const series = comboSeriesById(seriesId);
+  const bank = COMBO_BANK[seriesId];
+  if (!series || !bank.length) return;
+  const solved = state.training.combos[seriesId] || 0;
+  const replay = solved >= bank.length; // série finie : on revoit au hasard
+  const index = replay ? Math.floor(Math.random() * bank.length) : solved;
+  const ex = comboToExercise(seriesId, index);
+  const npc = characterById(series.npc);
+
+  world?.leave();
+  currentMatch?.destroy();
+  currentMatch = null;
+  showScreen('screen-match');
+  audio.playMusic('club');
+  boardView.setThemes(state.equipped.board, state.equipped.pieces);
+  $('name-white').textContent = state.player.name;
+  $('name-black').textContent = npc.name;
+  setAvatar('avatar-white', 'player');
+  setAvatar('avatar-black', npc.id);
+  $('extra-white').textContent = '';
+  $('extra-black').textContent = ex.title;
+  matchOrigin = 'world';
+  lessonReturn = () => enterWorld();
+
+  if (!matchDialogue) matchDialogue = new Dialogue($('screen-match'));
+  tutorialSignal = makeSignal();
+  const doneOk = await runExercise(ex, {
+    boardView,
+    dialogue: matchDialogue,
+    setStatus: (t) => { $('turn-pill').textContent = t; },
+    signal: tutorialSignal,
+  });
+  tutorialSignal = null;
+  if (!doneOk) return;
+
+  const rewards = [];
+  let seriesJustDone = false;
+  if (!replay) {
+    state.training.combos[seriesId] = solved + 1;
+    state.points += series.reward;
+    rewards.push(`🪙 +${series.reward} Pions d'Or`);
+    seriesJustDone = solved + 1 >= bank.length;
+    if (seriesJustDone) {
+      const u = series.unlock;
+      if (u.kind === 'board' && !state.inventory.boards.includes(u.theme)) {
+        state.inventory.boards.push(u.theme);
+      } else if (u.kind === 'pieces' && !state.inventory.pieces.includes(u.theme)) {
+        state.inventory.pieces.push(u.theme);
+      } else if (u.kind === 'flag') {
+        setFlag(u.flag);
+      }
+      rewards.push(`🎁 ${u.label}`);
+    }
+    save();
+    audio.playSfx(seriesJustDone ? 'win' : 'coin');
+  } else {
+    audio.playSfx('win');
+  }
+
+  const remaining = bank.length - (state.training.combos[seriesId] || 0);
+  const buttons = [];
+  if (!replay && remaining > 0) {
+    buttons.push({ label: 'Énigme suivante !', className: 'btn-primary', onClick: () => startComboChallenge(seriesId) });
+  }
+  buttons.push({
+    label: 'Retour au monde',
+    className: buttons.length ? 'btn-small' : 'btn-primary',
+    onClick: () => enterWorld(),
+  });
+  showMatchOverlay({
+    title: seriesJustDone ? `${series.icon} Série terminée !` : 'Combinaison trouvée ! ✨',
+    detail: seriesJustDone
+      ? `Tu as résolu les ${bank.length} énigmes de ${npc.name} !`
+      : replay
+        ? 'Toujours aussi affûté. Réviser ses combinaisons, c\'est les voir venir en partie.'
+        : `${npc.name} approuve. Il en reste ${remaining} à percer.`,
+    rewards,
+    buttons,
   });
 }
 

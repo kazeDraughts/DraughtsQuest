@@ -64,6 +64,29 @@ nulle cachée) ; `tests/training.test.mjs` rejoue chaque étape à chaque
 `npm test`. Le contenu textuel est original (thèmes inspirés des livrets
 pédagogiques de la FFJD, sans reproduction).
 
+## 🧩 Les donneurs d'énigmes (chercher des combinaisons)
+
+Après avoir battu Papi, trois PNJ proposent des **séries de combinaisons à
+chercher** — sans leçon ni énoncé du coup : « les Blancs jouent et gagnent »,
+à toi de trouver.
+
+- **Fernand** 🎣 (l'étang du hameau) : *coups de deux* — un sacrifice, une
+  reprise forcée, un pion de gain. Série complète → un **damier exclusif**
+  introuvable en boutique.
+- **Honoré** 🎩 (la place d'Otterlaws, débloqué par Fernand) : *grandes
+  combinaisons* — rafles profondes, gains multiples. Série complète → des
+  **pions de collection** exclusifs.
+- **Séraphine** 🌙 (le recoin est d'Otterlaws, débloquée par Honoré) :
+  *passages à dame* — chaque énigme se termine sur une promotion. Série
+  complète → un **maître caché** apparaît dans le hameau… et il se joue
+  en partie classée.
+
+Chaque énigme de la banque est **générée puis certifiée par le moteur** :
+premier coup gagnant unique (aucun autre coup ne gagne), chaque réplique
+noire strictement forcée, gain net ou couronnement vérifié, pas de finale
+nulle cachée. `tests/combos.test.mjs` rejoue et re-certifie toute la banque
+à chaque `npm test`.
+
 ## 🧠 Architecture
 
 ```
@@ -75,7 +98,8 @@ src/ai/                   IA maison : minimax alpha-bêta (search.js),
                           Web Worker (worker.js) + façade (player.js)
 src/game/                 damier canvas (boardview.js) + contrôleur de partie (match.js)
 src/world/                overworld : cartes, moteur, PNJ, portraits, dialogues
-src/story/                scénario (quests.js) + tutoriel interactif (tutorial.js)
+src/story/                scénario (quests.js), tutoriel (tutorial.js),
+                          entraînement (training.js), énigmes PNJ (combos.js)
 src/career/               Elo, adversaires, compétitions
 src/shop/                 thèmes cosmétiques + boutique
 src/audio/                musiques génératives + effets (Web Audio, zéro asset)

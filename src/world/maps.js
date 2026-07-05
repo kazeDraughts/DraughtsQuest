@@ -66,6 +66,8 @@ function buildVillage() {
     ],
     npcs: [
       { id: 'villager1', x: 13, y: 10, dir: 'left', wander: 1.5 },
+      { id: 'fernand', x: 15.7, y: 9.5, dir: 'right' },              // pêche à l'étang
+      { id: 'ermite', x: 19, y: 12.6, dir: 'left', ifFlag: 'ermite_revealed' },
     ],
     interactables: [],
   };
@@ -105,6 +107,8 @@ function buildTown() {
     ],
     npcs: [
       { id: 'villager2', x: 13, y: 11.5, dir: 'left', wander: 1.2 },
+      { id: 'honore', x: 9, y: 11.7, dir: 'right' },                 // banc de la fontaine
+      { id: 'seraphine', x: 18, y: 11.6, dir: 'left' },              // recoin à l'est
     ],
     interactables: [],
   };

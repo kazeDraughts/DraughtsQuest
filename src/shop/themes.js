@@ -56,6 +56,15 @@ export const BOARD_THEMES = [
     light: '#ffe3f1', dark: '#ff9ec6', border: '#e0559b',
     coord: 'rgba(120,30,80,.55)', table: '#8e2f63', candy: true,
   },
+  {
+    id: 'riverside',
+    name: 'Au bord de l\'eau',
+    desc: 'Le damier fétiche de Fernand. Introuvable en boutique.',
+    secret: 'Récompense : les énigmes de Fernand (étang du hameau).',
+    price: 0,
+    light: '#dcebc8', dark: '#4f7d6a', border: '#2e4a3e',
+    coord: 'rgba(240,255,240,.6)', table: '#243830', veins: true,
+  },
 ];
 
 export const PIECE_THEMES = [
@@ -112,6 +121,16 @@ export const PIECE_THEMES = [
     shape: 'donut',
     w: { fill: '#f7c873', edge: '#c98f3d', line: '#fff0f5', icing: '#ff9ec6' },
     b: { fill: '#7a4a21', edge: '#4a2a10', line: '#fff0f5', icing: '#8ee08e' },
+  },
+  {
+    id: 'heritage',
+    name: 'Héritage doré',
+    desc: 'Les pions de collection d\'Honoré. Introuvables en boutique.',
+    secret: 'Récompense : les grandes combinaisons d\'Honoré (place d\'Otterlaws).',
+    price: 0,
+    shape: 'disc',
+    w: { fill: '#f6e2a8', edge: '#c9a23c', line: '#8a6a1c' },
+    b: { fill: '#4a3a20', edge: '#241a0a', line: '#c9a23c' },
   },
 ];
 

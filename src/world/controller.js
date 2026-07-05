@@ -27,6 +27,7 @@ export class WorldController {
       onAction: (action, ref) => this._onAction(action, ref),
       onSign: (text) => this.say([{ who: 'player', name: 'Panneau', text }]),
       isDoorLocked: (door) => !flag(door.lockFlag),
+      npcVisible: (n) => !n.ifFlag || flag(n.ifFlag),
       onLockedDoor: (door) => this.say([{ who: 'player', name: 'Porte close', text: door.lockedMessage || 'C\'est fermé.' }]),
       playerLook: () => characterById('player').look,
     });
@@ -157,6 +158,10 @@ export class WorldController {
       },
       openShop: () => this.services.openShop?.(),
       openCompetitions: () => this.services.openCompetitions?.(),
+      startCombo: (seriesId) => {
+        this._savePosition();
+        this.services.startCombo?.(seriesId);
+      },
     };
   }
 

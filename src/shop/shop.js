@@ -60,6 +60,17 @@ export function renderShop(onChange = () => {}) {
     for (const item of catalog) {
       const owned = state.inventory[kind].includes(item.id);
       const equipped = state.equipped[kind === 'boards' ? 'board' : 'pieces'] === item.id;
+      // Les cosmétiques « secrets » ne se vendent pas : ils se GAGNENT
+      // (énigmes des PNJ). Tant qu'ils ne sont pas possédés, la boutique
+      // n'en montre qu'une silhouette mystère.
+      if (item.secret && !owned) {
+        const card = el('div.shop-card');
+        const mystery = el('div.shop-name', '❓ ✨ ❓');
+        mystery.style.cssText = 'font-size:34px;text-align:center;padding:24px 0;filter:grayscale(1);opacity:.7';
+        card.append(mystery, el('div.shop-name', '???'), el('div.shop-desc', item.secret));
+        zone.append(card);
+        continue;
+      }
       const card = el('div.shop-card');
       if (equipped) card.classList.add('equipped');
       card.append(kind === 'boards' ? boardPreview(item) : piecesPreview(item));
