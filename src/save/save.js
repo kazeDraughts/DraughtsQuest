@@ -24,8 +24,9 @@ export function freshState() {
       competitionsWon: [],   // ids des compétitions remportées
     },
     // Salle d'entraînement : exercices réussis (récompensés une fois)
-    // + énigmes des PNJ : nombre résolu par série (voir src/story/combos.js)
-    training: { done: {}, combos: {} },
+    // + énigmes des PNJ (src/story/combos.js)
+    // + Académie des styles : leçons suivies / parties d'application gagnées
+    training: { done: {}, combos: {}, styles: { done: {}, applied: {} } },
     // Monnaie de la boutique (phase 6)
     points: 0,
     inventory: { boards: ['classic'], pieces: ['classic'] },
@@ -50,8 +51,11 @@ export function loadSave() {
       state = { ...freshState(), ...data };
       state.player = { ...freshState().player, ...data.player };
       state.story = { ...freshState().story, ...data.story };
-      state.training = { done: {}, combos: {}, ...data.training };
+      state.training = { done: {}, combos: {}, styles: { done: {}, applied: {} }, ...data.training };
       if (!state.training.combos) state.training.combos = {};
+      if (!state.training.styles) state.training.styles = { done: {}, applied: {} };
+      if (!state.training.styles.done) state.training.styles.done = {};
+      if (!state.training.styles.applied) state.training.styles.applied = {};
       state.career = { ...freshState().career, ...data.career };
       state.inventory = { ...freshState().inventory, ...data.inventory };
       state.equipped = { ...freshState().equipped, ...data.equipped };

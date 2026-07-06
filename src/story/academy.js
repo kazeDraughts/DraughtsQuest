@@ -1,0 +1,342 @@
+/**
+ * L'ACADÉMIE DU DAMIER — apprendre les grands STYLES de parties.
+ *
+ * Cinq professeurs, cinq styles (le programme suit les cours et livrets
+ * fédéraux FFJD/FMJD — livrets D. Thiney et J-P. Dubois « la stratégie
+ * du blocage ») :
+ *   celestin — LA PARTIE CLASSIQUE : partage du centre, enchaînement
+ *              réciproque, la ligne du « dégagement classique » ;
+ *   gaspard  — LE SYSTÈME GHESTEM : gagner de l'espace par l'avancée
+ *              28-22 puis 33-28, bloquer les pions adverses ;
+ *   salome   — LA PARTIE SEMI-OUVERTE : un seul camp tient le centre,
+ *              l'autre l'ENCERCLE au lieu de l'attaquer de front ;
+ *   tiphaine — LE TAQUIN : l'avant-poste en 24 qui cloue l'aile adverse ;
+ *   boris    — LE MARCHAND DE BOIS : les formations de pionage (Y, croix,
+ *              flèche, triplet) et le Y construit au bord du damier.
+ *
+ * Chaque leçon se joue sur le vrai moteur (format runExercise) : lignes
+ * tirées des livrets ou positions CERTIFIÉES par recherche minimax
+ * (tests/academy.test.mjs les rejoue à chaque npm test). Après la leçon,
+ * le professeur propose une PARTIE D'APPLICATION dans la structure étudiée.
+ */
+
+export const STYLES = [
+  // ------------------------------------------------------------ CLASSIQUE
+  {
+    id: 'classique',
+    npc: 'celestin',
+    icon: '🏛️',
+    title: 'La partie classique',
+    desc: 'Le style des origines : chacun tient le centre, les chaînes se font face.',
+    reward: 60,
+    steps: [
+      {
+        fen: 'W:W31-50:B1-20',
+        intro: [
+          { who: 'celestin', text: 'La PARTIE CLASSIQUE, c\'est le style des origines : les deux camps se partagent le centre et s\'y accrochent — un enchaînement réciproque. Les cases qui comptent : 27, 28, 29 pour toi… 22, 23, 24 pour lui.' },
+          { who: 'celestin', text: 'Tout commence par LE coup d\'ouverture : avance ton pion vers la grande case centrale 28.' },
+        ],
+        accept: [{ from: 32, to: 28 }],
+        reply: { from: 18, to: 22 },
+        wrong: { who: 'celestin', text: 'Non. Le centre, jeune élève, le CENTRE. La case 28 est la porte d\'entrée de toute partie classique : 32-28.' },
+        success: [
+          { who: 'celestin', text: '32-28 ! Et voici la réponse des Noirs : 18-22, le début hollandais. Son pion 22 s\'avance au contact du tien — la partie de position commence.' },
+        ],
+        hint: { from: 32, to: 28 },
+      },
+      {
+        intro: [
+          { who: 'celestin', text: 'Règle d\'or : un pion de pointe ne vaut que par ses SOUTIENS. Développe ta colonne derrière le pion 28.' },
+        ],
+        accept: [{ from: 37, to: 32 }],
+        reply: { from: 12, to: 18 },
+        wrong: { who: 'celestin', text: 'Pense en COLONNES : quel coup vient épauler ton pion 28, dans son dos, sur la même diagonale ?' },
+        success: [
+          { who: 'celestin', text: '37-32 : la colonne 28-32 est née. Les Noirs font de même avec 12-18. Observe : chaque camp construit, personne ne se précipite. C\'est ça, la classique.' },
+        ],
+        hint: { from: 37, to: 32 },
+      },
+      {
+        intro: [
+          { who: 'celestin', text: 'Le pion noir 22 s\'est aventuré. Prends-le en TENAILLE : avance 32-27, il sera cerné des deux côtés.' },
+        ],
+        accept: [{ from: 32, to: 27 }],
+        reply: { from: 19, to: 23 },
+        wrong: { who: 'celestin', text: 'La tenaille ! Le pion 22 noir doit se retrouver coincé entre tes pions 27 et 28. Un seul coup fait cela.' },
+        success: [
+          { who: 'celestin', text: '32-27, la tenaille se referme sur le pion 22… Mais regarde la parade des Noirs : 19-23 ! C\'est le DÉGAGEMENT CLASSIQUE — leur colonne 10-14-19 leur permet d\'offrir l\'échange au bon moment.' },
+        ],
+        hint: { from: 32, to: 27 },
+      },
+      {
+        intro: [
+          { who: 'celestin', text: 'Le pion 23 noir s\'offre à ta prise… qui est obligatoire. Joue-la.' },
+        ],
+        accept: [{ from: 28, to: 19 }],
+        reply: { from: 14, to: 23 },
+        wrong: { who: 'celestin', text: 'La prise est obligatoire : ton pion 28 doit sauter le pion 23.' },
+        success: [
+          { who: 'celestin', text: '28x19, 14x23 — et voilà la PARTIE CLASSIQUE dans toute sa splendeur : ton pion 27 face au pion 23 noir, deux chaînes qui s\'observent.' },
+          { who: 'celestin', text: 'Retiens les trois piliers du style : des COLONNES qui se soutiennent, des TEMPS que l\'on compte (celui qui doit céder le premier perd le centre), et une rangée arrière que l\'on ne dégarnit jamais trop tôt.' },
+        ],
+        hint: { from: 28, to: 19 },
+      },
+    ],
+    practice: {
+      fen: 'W:W27,31,33,34,35,36,38,39,40,41,42,43,44,45,46,47,48,49,50:B1,2,3,4,5,6,7,8,9,10,11,13,15,16,17,18,20,22,23',
+      level: 'apprenti',
+      label: 'Partie classique — position d\'école',
+      reward: 80,
+      invite: 'Assez de théorie : jouons cette position classique jusqu\'au bout. Tiens ton centre, compte tes temps !',
+    },
+  },
+
+  // -------------------------------------------------------------- GHESTEM
+  {
+    id: 'ghestem',
+    npc: 'gaspard',
+    icon: '🧱',
+    title: 'Le système Ghestem',
+    desc: 'Gagner de l\'espace par l\'avancée 28-22, puis bloquer tout ce qui bouge.',
+    reward: 60,
+    steps: [
+      {
+        fen: 'W:W27,28,32,33,34,38,39,43,44,49:B3,4,8,9,13,14,18,19,20,23',
+        intro: [
+          { who: 'gaspard', text: 'Le système GHESTEM, du nom d\'un champion du monde français. L\'idée : GAGNER DE L\'ESPACE dans le camp adverse et étouffer, pion par pion. Comme le dit le maître Dubois : « l\'objectif stratégique, c\'est de bloquer TOUS les pions adverses ».' },
+          { who: 'gaspard', text: 'L\'arme du système : l\'avancée 28-22. Ton pion 27 la protège — les Noirs ne pourront pas la prendre. Vas-y.' },
+        ],
+        accept: [{ from: 28, to: 22 }],
+        reply: { from: 20, to: 24 },
+        wrong: { who: 'gaspard', text: 'Non — L\'AVANCÉE. Ton pion 28 doit plonger en 22, dans leur camp. Regarde : ta case 27 est tenue, la prise 18x27 est impossible.' },
+        success: [
+          { who: 'gaspard', text: '28-22 ! Ton pion campe dans leurs lignes et leur aile gauche suffoque déjà. Ils cherchent de l\'air à droite avec 20-24…' },
+        ],
+        hint: { from: 28, to: 22 },
+      },
+      {
+        intro: [
+          { who: 'gaspard', text: 'L\'avancée Ghestem se joue en DEUX temps : 28-22 d\'abord… puis on réoccupe la case 28. Complète le dispositif.' },
+        ],
+        accept: [{ from: 33, to: 28 }],
+        reply: { from: 8, to: 12 },
+        wrong: { who: 'gaspard', text: 'La case 28 est vide, et c\'est un trou dans ton mur. Quelle pièce peut la reprendre immédiatement ?' },
+        success: [
+          { who: 'gaspard', text: '33-28 : le mur est reconstruit, 22 et 28 verrouillent tout le secteur. Les Noirs n\'ont plus que des coups d\'attente.' },
+        ],
+        hint: { from: 33, to: 28 },
+      },
+      {
+        intro: [
+          { who: 'gaspard', text: 'Dernier principe : chaque pion avancé doit avoir sa RELÈVE. Prépare l\'arrière-garde de ton aile droite.' },
+        ],
+        accept: [{ from: 44, to: 40 }],
+        wrong: { who: 'gaspard', text: 'Pense à demain : quel pion de ta dernière ligne monte soutenir l\'aile droite sans rien affaiblir ?' },
+        success: [
+          { who: 'gaspard', text: '44-40. Regarde ta position : de l\'espace, des colonnes, des temps de réserve — et en face, des pions qui se marchent dessus. C\'est TOUT le système Ghestem : on ne se presse pas, on étouffe.' },
+          { who: 'gaspard', text: 'Garde en tête la mise en garde du maître Dubois : quand c\'est TOI qui es enchaîné, rends ton jeu actif — un objectif précis, ou l\'asphyxie.' },
+        ],
+        hint: { from: 44, to: 40 },
+      },
+    ],
+    practice: {
+      fen: 'B:W22,27,28,32,34,38,39,40,43,49:B3,4,9,12,13,14,18,19,23,24',
+      level: 'apprenti',
+      label: 'Système Ghestem — l\'étau est posé',
+      reward: 80,
+      invite: 'À toi de jouer le dispositif Ghestem jusqu\'à la victoire. Ne relâche JAMAIS l\'étau.',
+    },
+  },
+
+  // --------------------------------------------------------- SEMI-OUVERTE
+  {
+    id: 'semiouverte',
+    npc: 'salome',
+    icon: '🌗',
+    title: 'La partie semi-ouverte',
+    desc: 'Un seul camp tient le centre : l\'autre l\'encercle au lieu de l\'attaquer.',
+    reward: 60,
+    steps: [
+      {
+        // Position certifiée : après 34-29, le pion noir avancé 28 est cerné
+        // et TOUTES les défenses perdent (re-vérifié par tests/academy.test.mjs).
+        certified: true,
+        fen: 'W:W34,36,37,38,39:B8,12,17,18,28',
+        intro: [
+          { who: 'salome', text: 'La partie SEMI-OUVERTE : un seul camp occupe le centre, l\'autre joue autour. Sa grande loi tient en un mot — ENCERCLEMENT. On n\'attaque pas un pion avancé de front… on l\'entoure, jusqu\'à ce qu\'il n\'ait plus une case.' },
+          { who: 'salome', text: 'Regarde ce pion noir en 28, tout fier d\'être entré chez toi. Surtout, ne le brusque pas. Referme simplement la porte derrière lui.' },
+        ],
+        accept: [{ from: 34, to: 29 }],
+        reply: { from: 28, to: 32 },
+        wrong: { who: 'salome', text: 'Trop direct. L\'encerclement, c\'est la patience : quel coup retire au pion 28 sa dernière échappatoire, sans rien lui offrir à prendre ?' },
+        success: [
+          { who: 'salome', text: '34-29 — et la cage est fermée : 32, 33, 37, 38… toutes ses cases de fuite sont surveillées. Il panique et tente 28-32, la sortie du désespoir.' },
+        ],
+        hint: { from: 34, to: 29 },
+      },
+      {
+        intro: [
+          { who: 'salome', text: 'Il s\'est jeté dans la nasse. Referme-la — en reprenant vers le centre.' },
+        ],
+        accept: [{ from: 38, to: 27 }],
+        wrong: { who: 'salome', text: 'Prends-le en gardant ta structure compacte : la prise qui referme la nasse vers l\'intérieur.' },
+        success: [
+          { who: 'salome', text: '38x27 : le pion prisonnier est ramassé, et ta position n\'a pas une ride. Voilà la semi-ouverte : celui qui tient le centre a l\'air d\'avoir l\'avantage… jusqu\'à ce que l\'encerclement le prouve du contraire.' },
+          { who: 'salome', text: 'Retiens : face à un centre adverse, ne te précipite jamais. Contrôle les cases VOISINES, garde tes chaînes souples… et laisse son pion avancé devenir ton prisonnier.' },
+        ],
+        hint: { from: 38, to: 27 },
+      },
+    ],
+    practice: {
+      fen: 'W:W34,36,37,38,39:B8,12,17,18,28',
+      level: 'club',
+      label: 'Semi-ouverte — l\'art d\'encercler',
+      reward: 80,
+      invite: 'Rejouons cette position pour de vrai : encercle, ne te presse pas, et convertis ton avantage.',
+    },
+  },
+
+  // --------------------------------------------------------------- TAQUIN
+  {
+    id: 'taquin',
+    npc: 'tiphaine',
+    icon: '😜',
+    title: 'Le pion taquin',
+    desc: 'Un avant-poste en 24 qui cloue l\'aile adverse… et mord quand on le chasse.',
+    reward: 60,
+    steps: [
+      {
+        fen: 'W:W29,30,33,34,39,40,44,45:B4,5,10,14,15,18,19,25',
+        intro: [
+          { who: 'tiphaine', text: 'Je te présente mon pion préféré : LE TAQUIN. Un pion qu\'on installe en 24, en plein dans leur aile — il ne fait rien de spécial… à part rendre la vie IMPOSSIBLE à tout son voisinage.' },
+          { who: 'tiphaine', text: 'Regarde les pions noirs 15 et 25, collés au bord. Installe le taquin : ils ne bougeront plus. Et ton pion 30 le garde : la prise est impossible.' },
+        ],
+        accept: [{ from: 29, to: 24 }],
+        reply: { from: 15, to: 20 },
+        wrong: { who: 'tiphaine', text: 'La case 24, voyons ! L\'avant-poste doit venir SE COLLER à leur aile — bien gardé par ton pion 30.' },
+        success: [
+          { who: 'tiphaine', text: '29-24, le taquin est en place ! Le pion 25 noir est mort de chez mort (sa seule case, 30, est à toi). Et là… il craque : 15-20 ?! Il essaie de chasser le taquin. Grosse, GROSSE erreur.' },
+        ],
+        hint: { from: 29, to: 24 },
+      },
+      {
+        intro: [
+          { who: 'tiphaine', text: 'La prise est obligatoire — mais COMPTE bien avant de jouer : ton taquin a mieux à croquer que le petit pion 20. Cherche la prise MAJORITAIRE.' },
+        ],
+        accept: [{ from: 24, to: 22 }],
+        wrong: { who: 'tiphaine', text: 'Compte encore ! Entre plusieurs prises, la loi du damier impose la plus LONGUE. Suis le zigzag de ton taquin vers la gauche…' },
+        success: [
+          { who: 'tiphaine', text: '24x22 : DEUX pions raflés (le 19 et le 18), et le sien reste planté en 20 ! Voilà tout l\'art du taquin : il cloue, il agace, et à la première imprudence… il mord.' },
+          { who: 'tiphaine', text: 'Un dernier secret : un taquin sans gardes du corps (30, 34, 40) finit encerclé. Installe-le toujours SOUTENU — sinon c\'est lui qu\'on taquine.' },
+        ],
+        hint: { from: 24, to: 22 },
+      },
+    ],
+    practice: {
+      fen: 'W:W24,30,33,34,39,40,44,45:B4,5,10,14,15,18,23,25',
+      level: 'club',
+      label: 'Le taquin est en 24 — exploite-le',
+      reward: 80,
+      invite: 'Ton taquin est posé, leurs pions 15 et 25 sont cloués. Gagne la partie sans le lâcher !',
+    },
+  },
+
+  // ----------------------------------------------- MARCHAND DE BOIS (formations)
+  {
+    id: 'bois',
+    npc: 'boris',
+    icon: '🪵',
+    title: 'Le marchand de bois',
+    desc: 'Les formations de pionage : le Y, la croix, la flèche… et le Y du bord.',
+    reward: 60,
+    steps: [
+      {
+        fen: 'W:W31-50:B1-20',
+        intro: [
+          { who: 'boris', text: 'Chez moi, on ne joue pas des coups : on monte des CHARPENTES. Les livrets fédéraux les appellent formations de pionage : le Y, la croix, la flèche, le triplet… Un pion seul ne vaut rien — une formation, elle, PORTE.' },
+          { who: 'boris', text: 'Le pionage — donner un pion pour en reprendre un — c\'est la respiration du jeu : sans lui, tout se bouche. Commence par la plus belle des charpentes : avance 33-28 et regarde LA FLÈCHE se dessiner (28, soutenu par 32-33… enfin, par 38 et 39 chez toi).' },
+        ],
+        accept: [{ from: 33, to: 28 }],
+        reply: { from: 19, to: 23 },
+        wrong: { who: 'boris', text: 'Non non. La FLÈCHE se construit par 33-28 : la pointe au centre, les épaules derrière.' },
+        success: [
+          { who: 'boris', text: '33-28, la flèche est encochée ! Et en face : 19-23, ils proposent l\'échange. Bien — un charpentier n\'a jamais peur d\'échanger du bois.' },
+        ],
+        hint: { from: 33, to: 28 },
+      },
+      {
+        intro: [
+          { who: 'boris', text: 'Prise obligatoire : passe par-dessus.' },
+        ],
+        accept: [{ from: 28, to: 19 }],
+        reply: { from: 14, to: 23 },
+        wrong: { who: 'boris', text: 'La prise t\'attend : 28 saute 23.' },
+        success: [
+          { who: 'boris', text: '28x19, 14x23 : un pion donné, un pion repris — le PIONAGE. La position respire, et personne n\'a rien perdu. Maintenant, la leçon sérieuse : viens voir ce qui se passe quand le Y pousse AU BORD du damier…' },
+        ],
+        hint: { from: 28, to: 19 },
+      },
+      {
+        // Position certifiée : 40-35 construit le Y du bord (le « marchand de
+        // bois » du livret Thiney) et crée une menace imparable — TOUTES les
+        // défenses noires perdent (re-vérifié par tests/academy.test.mjs).
+        certified: true,
+        fen: 'W:W24,29,30,40,45:B5,13,14,15,19',
+        intro: [
+          { who: 'boris', text: 'Fin de partie. Ton taquin est en 24 et ta réserve suit. Le Y construit sur un bord, les anciens l\'appellent LE MARCHAND DE BOIS : empile 24-30-35, et la menace 24-20 devient IMPARABLE. Monte la charpente.' },
+        ],
+        accept: [{ from: 40, to: 35 }],
+        reply: { from: 13, to: 18 },
+        wrong: { who: 'boris', text: 'Le bois s\'empile du bas vers le haut : quel coup complète la colonne du bord derrière tes pions 24 et 30 ?' },
+        success: [
+          { who: 'boris', text: '40-35 : le marchand de bois a fait sa pile — 24, 30, 35, et la 45 en réserve. Le moteur de la menace : 24-20 gagnerait un pion quoi qu\'ils fassent. Regarde-le paniquer : 13-18, il tente de se faire de la place…' },
+        ],
+        hint: { from: 40, to: 35 },
+      },
+      {
+        intro: [
+          { who: 'boris', text: 'Et voilà le bois qui tombe tout seul : prise majoritaire !' },
+        ],
+        accept: [{ from: 24, to: 22 }],
+        wrong: { who: 'boris', text: 'Compte les troncs : ton taquin 24 peut sauter DEUX pions d\'un coup. La prise majoritaire est obligatoire.' },
+        success: [
+          { who: 'boris', text: '24x22, deux pions dans la remorque ! Morale du marchand de bois : de bonnes FORMATIONS, une menace simple… et l\'adversaire scie lui-même la branche où il est assis.' },
+        ],
+        hint: { from: 24, to: 22 },
+      },
+    ],
+    practice: {
+      fen: 'W:W24,29,30,40,45:B5,13,14,15,19',
+      level: 'club',
+      label: 'Marchand de bois — trouve 40-35 en partie',
+      reward: 80,
+      invite: 'Rejouons cette fin de partie POUR DE VRAI cette fois : à toi de retrouver la bonne charpente et de conclure.',
+    },
+  },
+];
+
+export const ACADEMY_GRADUATE_BONUS = 250;
+
+export function styleById(id) {
+  return STYLES.find((s) => s.id === id);
+}
+
+export function styleByNpc(npcId) {
+  return STYLES.find((s) => s.npc === npcId);
+}
+
+export function styleDone(state, id) {
+  return !!state.training?.styles?.done?.[id];
+}
+
+export function stylePracticeWon(state, id) {
+  return !!state.training?.styles?.applied?.[id];
+}
+
+export function stylesCompleted(state) {
+  return STYLES.filter((s) => styleDone(state, s.id)).length;
+}
+
+export function isAcademyGraduate(state) {
+  return stylesCompleted(state) >= STYLES.length;
+}

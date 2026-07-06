@@ -57,6 +57,15 @@ export const BOARD_THEMES = [
     coord: 'rgba(120,30,80,.55)', table: '#8e2f63', candy: true,
   },
   {
+    id: 'ardoise',
+    name: 'L\'Ardoise du professeur',
+    desc: 'Le damier d\'étude de l\'Académie, à la craie.',
+    secret: 'Récompense : le diplôme de l\'Académie du Damier (les 5 leçons de style).',
+    price: 0,
+    light: '#3f5347', dark: '#2b3a31', border: '#1d2822',
+    coord: 'rgba(240,240,225,.75)', table: '#15201a', gridGlow: true, glow: '#e8e6d4',
+  },
+  {
     id: 'riverside',
     name: 'Au bord de l\'eau',
     desc: 'Le damier fétiche de Fernand. Introuvable en boutique.',

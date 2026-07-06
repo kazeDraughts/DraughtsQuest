@@ -101,6 +101,27 @@ export const CHARACTERS = {
     id: 'ermite', name: 'L\'Ermite',
     look: { skin: '#d8a878', hair: '#e4e4de', hairStyle: 'bald', beard: '#e4e4de', shirt: '#6e6252', bg: '#3c362c' },
   },
+  // --- Les professeurs de l'Académie du Damier (styles de jeu) ---
+  celestin: {
+    id: 'celestin', name: 'Maître Célestin',
+    look: { skin: '#eab98b', hair: '#dcdcd6', hairStyle: 'grayfringe', mustache: '#dcdcd6', shirt: '#2e4a7a', bg: '#2a3a52' },
+  },
+  gaspard: {
+    id: 'gaspard', name: 'Gaspard',
+    look: { skin: '#d8a878', hair: '#2e2620', hairStyle: 'short', beard: '#2e2620', shirt: '#7a3040', bg: '#472531' },
+  },
+  salome: {
+    id: 'salome', name: 'Salomé',
+    look: { skin: '#f0c6a0', hair: '#6a4a26', hairStyle: 'bun', glasses: true, shirt: '#2c7a72', bg: '#20463f' },
+  },
+  tiphaine: {
+    id: 'tiphaine', name: 'Tiphaine',
+    look: { skin: '#f5d3b0', hair: '#d8722e', hairStyle: 'long', blush: true, shirt: '#d8a832', bg: '#54431f' },
+  },
+  boris: {
+    id: 'boris', name: 'Boris',
+    look: { skin: '#dfae7c', hair: '#5a3c22', hairStyle: 'cap', capColor: '#8a5a30', beard: '#5a3c22', shirt: '#b04a32', bg: '#4a2a20' },
+  },
 };
 
 export function characterById(id) {

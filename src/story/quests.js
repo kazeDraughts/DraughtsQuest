@@ -18,6 +18,7 @@ import { sparringAvailable } from '../career/opponents.js';
 import {
   COMBO_BANK, comboSeriesById, combosSolved, comboSeriesDone, comboSeriesAvailable,
 } from './combos.js';
+import { styleByNpc, styleDone, stylePracticeWon } from './academy.js';
 
 /** Accord de genre : gg(state)('champion', 'championne'). */
 const gg = (state) => (m, f) => (state?.player?.gender === 'girl' ? f : m);
@@ -59,6 +60,14 @@ export async function onMapEntered(mapId, ctx) {
       { who: 'mom', text: `Sa maison est juste au nord de la nôtre, sur le chemin. Amuse-toi bien ${g('mon grand', 'ma grande')} !` },
     ]);
     ctx.setFlag('intro_done');
+  }
+
+  if (mapId === 'academy' && !ctx.flag('met_academy')) {
+    await ctx.say([
+      { who: 'celestin', text: `Entre, entre ! Bienvenue à l'ACADÉMIE DU DAMIER. Le club t'apprend à gagner… nous, nous t'apprenons à COMPRENDRE.` },
+      { who: 'celestin', text: 'Cinq professeurs, cinq styles de parties : la classique, le système Ghestem, la semi-ouverte, le taquin et le marchand de bois. Suis nos cinq leçons et tu repartiras avec le diplôme de l\'Académie… et un cadeau digne de lui.' },
+    ]);
+    ctx.setFlag('met_academy');
   }
 
   if (mapId === 'club' && !ctx.flag('met_gigi')) {
@@ -204,6 +213,52 @@ function comboGiverDialogue(ctx, seriesId, texts) {
       if (a !== 'play') return;
       if (ctx.startCombo) ctx.startCombo(seriesId);
       else ctx.say([{ who: seriesId, text: 'Tiens, mon damier n\'est pas prêt… (Le jeu vient d\'être mis à jour : recharge la page !)' }]);
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Dialogue type d'un professeur de l'Académie (leçon puis partie d'application)
+// ---------------------------------------------------------------------------
+function professorDialogue(ctx, npcId, texts) {
+  const style = styleByNpc(npcId);
+  const metFlag = `met_${npcId}`;
+  const done = styleDone(ctx.state, style.id);
+  const applied = stylePracticeWon(ctx.state, style.id);
+
+  const lines = [];
+  if (!ctx.flag(metFlag)) {
+    lines.push({ who: npcId, text: texts.greet }, { who: npcId, text: texts.pitch });
+  }
+  if (!done) {
+    lines.push({
+      who: npcId,
+      text: `${style.icon} Leçon : « ${style.title} ». On s'installe au damier ?`,
+      choices: [
+        { label: 'Commencer la leçon', value: 'lesson' },
+        { label: 'Plus tard.', value: 'later' },
+      ],
+    });
+  } else {
+    lines.push({ who: npcId, text: texts.after });
+    lines.push({
+      who: npcId,
+      text: applied
+        ? `Tu as déjà gagné ta partie d'application. Envie de rejouer — la leçon, ou une partie dans mon style ?`
+        : `La théorie est acquise… reste la pratique ! ${style.icon} Une PARTIE D'APPLICATION dans mon style, ça te dit ?`,
+      choices: [
+        { label: applied ? 'Partie d\'application' : 'Jouer l\'application !', value: 'practice' },
+        { label: 'Revoir la leçon', value: 'lesson' },
+        { label: 'Une autre fois.', value: 'later' },
+      ],
+    });
+  }
+  return {
+    lines,
+    onDone: (a) => {
+      ctx.setFlag(metFlag);
+      if (a === 'lesson') ctx.startStyleLesson?.(style.id);
+      else if (a === 'practice') ctx.startStylePractice?.(style.id);
     },
   };
 }
@@ -442,6 +497,38 @@ export function getNpcDialogue(npcId, ctx) {
         done: 'Toutes les portes sont ouvertes… L\'Ermite t\'attend près de l\'étang du hameau, au sud. Il n\'a pas touché un damier depuis vingt ans. Sois à la hauteur.',
       });
     }
+    // --- Les professeurs de l'Académie du Damier (styles de jeu) ---
+    case 'celestin':
+      return professorDialogue(ctx, 'celestin', {
+        greet: `Bienvenue à l'Académie, ${g('jeune homme', 'jeune fille')}. Maître Célestin. Ici, on n'apprend pas des coups — on apprend des STYLES. Le mien est le plus ancien de tous : la PARTIE CLASSIQUE.`,
+        pitch: 'Le centre partagé, des chaînes qui se font face, des temps que l\'on compte… Tout joueur doit commencer par là : la classique est la grammaire du jeu de dames.',
+        after: 'Souviens-toi : colonnes, temps, rangée arrière. Quand tu maîtriseras la grammaire… mes collègues t\'apprendront la poésie.',
+      });
+    case 'gaspard':
+      return professorDialogue(ctx, 'gaspard', {
+        greet: 'Gaspard. Mon héros s\'appelait Ghestem — champion du monde, français, et le plus grand étouffeur de pions de l\'histoire.',
+        pitch: 'Mon cours : GAGNER DE L\'ESPACE. L\'avancée 28-22, le mur qui se reconstruit, l\'adversaire qui n\'a plus un coup utile. Le blocage n\'est pas brutal — il est inévitable.',
+        after: 'L\'étau, toujours l\'étau. Et si un jour c\'est TOI qu\'on enchaîne, rappelle-toi ma leçon : un jeu actif, un objectif, sinon l\'asphyxie.',
+      });
+    case 'salome':
+      return professorDialogue(ctx, 'salome', {
+        greet: 'Salomé. Ma spécialité déroute les impatients : la partie SEMI-OUVERTE — un seul camp tient le centre, et ce n\'est pas forcément lui qui gagne.',
+        pitch: 'Je t\'apprendrai l\'ENCERCLEMENT : ne jamais attaquer de front, contrôler les cases voisines, et transformer le beau pion central adverse… en prisonnier.',
+        after: 'La patience, toujours. Un pion avancé sans soutien n\'est pas une menace : c\'est un futur prisonnier.',
+      });
+    case 'tiphaine':
+      return professorDialogue(ctx, 'tiphaine', {
+        greet: 'Moi c\'est Tiphaine ! Ma passion : embêter les gens. Sur le damier, hein. Mon arme préférée : LE TAQUIN, le petit pion posé en 24 qui rend fou tout le voisinage.',
+        pitch: 'Je te montre ? Il cloue les pions 15 et 25 au bord, il ne fait « rien »… et au premier geste d\'énervement en face, il CROQUE. Tu vas adorer.',
+        after: 'Taquine, taquine toujours ! Mais garde tes gardes du corps derrière le 24 — un taquin seul finit toujours par se faire encercler.',
+      });
+    case 'boris':
+      return professorDialogue(ctx, 'boris', {
+        greet: 'Boris, charpentier de damier. Les gens croient que je pousse du bois — c\'est vrai ! Mais je le pousse EN FORMATION : le Y, la croix, la flèche, le triplet…',
+        pitch: 'Et je te montrerai mon chef-d\'œuvre : le Y construit au bord, celui que les anciens appellent LE MARCHAND DE BOIS. Une pile de pions, une menace simple… et tout tombe tout seul.',
+        after: 'Du bois bien empilé ne s\'écroule jamais. Des formations, petit, toujours des formations !',
+      });
+
     case 'ermite': {
       return {
         lines: [

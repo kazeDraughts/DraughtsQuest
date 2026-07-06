@@ -19,6 +19,7 @@ import { runTutorial, makeSignal } from './story/tutorial.js';
 import { afterTutorial, gigiTips, worldChampionScene } from './story/quests.js';
 import { EXERCISES, TRAINING_CATEGORIES, exerciseById, runExercise } from './story/training.js';
 import { COMBO_BANK, comboSeriesById, comboToExercise } from './story/combos.js';
+import { styleById, isAcademyGraduate, ACADEMY_GRADUATE_BONUS } from './story/academy.js';
 import {
   COMPETITIONS, competitionById, competitionStatus, unlockHint,
   opponentElo, opponentAiConfig,
@@ -274,6 +275,8 @@ function enterWorld() {
         startMatch: (cfg) => startWorldMatch(cfg),
         startTutorial: () => startTutorialFlow(),
         startCombo: (seriesId) => startComboChallenge(seriesId),
+        startStyleLesson: (styleId) => startStyleLesson(styleId),
+        startStylePractice: (styleId) => startStylePractice(styleId),
         openCompetitions: () => openCompetitions(),
         openShop: () => openShop('world'),
         openTraining: () => openTraining('world'),
@@ -761,6 +764,110 @@ async function startComboChallenge(seriesId) {
         : `${npc.name} approuve. Il en reste ${remaining} à percer.`,
     rewards,
     buttons,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Académie du Damier : leçons de style et parties d'application
+// ---------------------------------------------------------------------------
+async function startStyleLesson(styleId) {
+  const style = styleById(styleId);
+  if (!style || !style.steps.length) return;
+  const prof = characterById(style.npc);
+
+  world?.leave();
+  currentMatch?.destroy();
+  currentMatch = null;
+  showScreen('screen-match');
+  audio.playMusic('club');
+  boardView.setThemes(state.equipped.board, state.equipped.pieces);
+  $('name-white').textContent = state.player.name;
+  $('name-black').textContent = prof.name;
+  setAvatar('avatar-white', 'player');
+  setAvatar('avatar-black', prof.id);
+  $('extra-white').textContent = '';
+  $('extra-black').textContent = `${style.icon} ${style.title}`;
+  matchOrigin = 'world';
+  lessonReturn = () => enterWorld();
+
+  if (!matchDialogue) matchDialogue = new Dialogue($('screen-match'));
+  tutorialSignal = makeSignal();
+  const doneOk = await runExercise(style, {
+    boardView,
+    dialogue: matchDialogue,
+    setStatus: (t) => { $('turn-pill').textContent = t; },
+    signal: tutorialSignal,
+  });
+  tutorialSignal = null;
+  if (!doneOk) return;
+
+  const rewards = [];
+  const first = !state.training.styles.done[styleId];
+  let graduated = false;
+  if (first) {
+    state.training.styles.done[styleId] = true;
+    state.points += style.reward;
+    rewards.push(`🪙 +${style.reward} Pions d'Or`);
+    if (isAcademyGraduate(state) && !flag('academy_graduate')) {
+      graduated = true;
+      setFlag('academy_graduate');
+      state.points += ACADEMY_GRADUATE_BONUS;
+      if (!state.inventory.boards.includes('ardoise')) state.inventory.boards.push('ardoise');
+      rewards.push(`🎓 DIPLÔME DE L'ACADÉMIE !`, `🪙 +${ACADEMY_GRADUATE_BONUS} Pions d'Or (prime)`, '🎁 Damier « L\'Ardoise du professeur »');
+    }
+    save();
+    audio.playSfx(graduated ? 'win' : 'coin');
+  } else {
+    audio.playSfx('win');
+  }
+  showMatchOverlay({
+    title: graduated ? '🎓 Diplômé de l\'Académie !' : `${style.icon} Leçon terminée !`,
+    detail: graduated
+      ? 'Les cinq styles n\'ont plus de secret pour toi : classique, Ghestem, semi-ouverte, taquin, marchand de bois.'
+      : first
+        ? `${prof.name} te propose maintenant une partie d'application dans ce style.`
+        : 'Réviser ses classiques, littéralement.',
+    rewards,
+    buttons: [
+      { label: 'Retour à l\'Académie', className: 'btn-primary', onClick: () => enterWorld() },
+    ],
+  });
+}
+
+function startStylePractice(styleId) {
+  const style = styleById(styleId);
+  if (!style?.practice?.fen) return;
+  const firstWin = !state.training.styles.applied[styleId];
+  startWorldMatch({
+    opponent: style.npc,
+    level: style.practice.level,
+    fen: style.practice.fen,
+    extra: style.practice.label,
+    preLines: [{ who: style.npc, text: style.practice.invite }],
+    result: {
+      win: {
+        title: 'Application réussie ! 🎉',
+        detail: `${characterById(style.npc).name} applaudit : le style « ${style.title} » est à toi.`,
+        rewards: firstWin ? [`🪙 +${style.practice.reward} Pions d'Or`] : [],
+      },
+      lose: {
+        retry: true,
+        title: 'La théorie, c\'est autre chose en pratique…',
+        detail: 'Retourne voir la leçon, ou retente ta chance !',
+      },
+      draw: {
+        retry: true,
+        title: 'Partie nulle',
+        detail: 'Pas mal — mais un style se prouve par la victoire.',
+      },
+    },
+    onResult: (r, outcome) => {
+      if (outcome === 'win' && firstWin) {
+        state.training.styles.applied[styleId] = true;
+        state.points += style.practice.reward;
+        save();
+      }
+    },
   });
 }
 

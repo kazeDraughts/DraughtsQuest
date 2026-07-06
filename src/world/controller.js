@@ -168,6 +168,22 @@ export class WorldController {
         this._savePosition();
         this.services.startCombo(seriesId);
       },
+      startStyleLesson: (styleId) => {
+        if (!this.services.startStyleLesson) {
+          this.say([{ who: 'player', name: 'Mise à jour', text: 'Une mise à jour du jeu vient d\'arriver : recharge la page pour continuer !' }]);
+          return;
+        }
+        this._savePosition();
+        this.services.startStyleLesson(styleId);
+      },
+      startStylePractice: (styleId) => {
+        if (!this.services.startStylePractice) {
+          this.say([{ who: 'player', name: 'Mise à jour', text: 'Une mise à jour du jeu vient d\'arriver : recharge la page pour continuer !' }]);
+          return;
+        }
+        this._savePosition();
+        this.services.startStylePractice(styleId);
+      },
     };
   }
 

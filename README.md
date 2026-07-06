@@ -87,6 +87,33 @@ noire strictement forcée, gain net ou couronnement vérifié, pas de finale
 nulle cachée. `tests/combos.test.mjs` rejoue et re-certifie toute la banque
 à chaque `npm test`.
 
+## 🏛️ L'Académie du Damier (les styles de parties)
+
+À l'est d'Otterlaws (accès réservé aux membres du club), cinq professeurs
+enseignent les grands **types de parties** aux néophytes — le programme est
+tiré des cours et livrets fédéraux (livret Thiney, livret « La stratégie du
+blocage » de J-P. Dubois) :
+
+- **Maître Célestin** 🏛️ — *la partie classique* : partage du centre,
+  colonnes, tenaille et la ligne du **dégagement classique** (19-23 !)
+  rejouée coup par coup ;
+- **Gaspard** 🧱 — *le système Ghestem* : gagner de l'espace par
+  l'avancée 28-22 puis 33-28, bloquer tous les pions adverses ;
+- **Salomé** 🌗 — *la partie semi-ouverte* : ne jamais attaquer le centre
+  adverse de front — **l'encercler** (position certifiée : le pion avancé
+  est perdu quelle que soit la défense) ;
+- **Tiphaine** 😜 — *le taquin* : l'avant-poste en 24 qui cloue les pions
+  15 et 25 au bord… et mord par prise majoritaire quand on le chasse ;
+- **Boris** 🪵 — *le marchand de bois* : les formations de pionage (Y,
+  croix, flèche, triplet) et le Y du bord à la menace imparable.
+
+Chaque leçon se joue sur le vrai moteur (coups commentés, répliques
+scriptées), puis le professeur propose une **partie d'application** dans la
+structure étudiée. Les cinq leçons donnent le **diplôme de l'Académie** :
+prime de Pions d'Or et damier exclusif « L'Ardoise du professeur ».
+`tests/academy.test.mjs` rejoue chaque leçon et re-certifie les menaces
+« imparables » à chaque `npm test`.
+
 ## 🧠 Architecture
 
 ```
@@ -99,7 +126,8 @@ src/ai/                   IA maison : minimax alpha-bêta (search.js),
 src/game/                 damier canvas (boardview.js) + contrôleur de partie (match.js)
 src/world/                overworld : cartes, moteur, PNJ, portraits, dialogues
 src/story/                scénario (quests.js), tutoriel (tutorial.js),
-                          entraînement (training.js), énigmes PNJ (combos.js)
+                          entraînement (training.js), énigmes PNJ (combos.js),
+                          Académie des styles (academy.js)
 src/career/               Elo, adversaires, compétitions
 src/shop/                 thèmes cosmétiques + boutique
 src/audio/                musiques génératives + effets (Web Audio, zéro asset)

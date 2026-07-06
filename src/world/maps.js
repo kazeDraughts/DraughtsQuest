@@ -80,7 +80,7 @@ function buildTown() {
   const g = grid(22, 16, '.');
   border(g, 't');
   rect(g, 10, 1, 11, 15, 'p');            // axe nord-sud (entrée au sud)
-  rect(g, 3, 8, 18, 9, 'p');              // grande rue
+  rect(g, 3, 8, 21, 9, 'p');              // grande rue (prolongée vers l'Académie)
   rect(g, 6, 5, 6, 8, 'p');               // allée du club
   rect(g, 16, 6, 16, 8, 'p');             // allée de la boutique
   rect(g, 9, 11, 12, 12, 's');            // place de la fontaine
@@ -97,6 +97,7 @@ function buildTown() {
       { type: 'house', x: 14, y: 3, w: 5, h: 3, palette: { body: '#c89a78', roof: '#8a4668' }, doorX: 16, label: 'Boutique de Mme Plot' },
       { type: 'fountain', x: 10, y: 11, w: 2, h: 2 },
       { type: 'sign', x: 12, y: 13, text: '↓ Hameau de Prunelle' },
+      { type: 'sign', x: 19, y: 7, text: 'Académie du Damier →' },
     ],
     doors: [
       { x: 6, y: 4, target: { map: 'club', x: 8, y: 9.2, dir: 'up' }, lockFlag: 'club_unlocked', lockedMessage: 'Le club est réservé aux inscrits. Un grand joueur pourrait t\'y introduire…' },
@@ -104,12 +105,48 @@ function buildTown() {
     ],
     exits: [
       { x1: 9.5, y1: 15.4, x2: 12.5, y2: 16.5, target: { map: 'village', x: 10.5, y: 1.5, dir: 'down' } },
+      { x1: 21.4, y1: 7.5, x2: 22.5, y2: 9.6, target: { map: 'campus', x: 1.6, y: 7.5, dir: 'right' } },
     ],
     npcs: [
       { id: 'villager2', x: 13, y: 11.5, dir: 'left', wander: 1.2 },
       { id: 'honore', x: 9, y: 11.7, dir: 'right' },                 // banc de la fontaine
       { id: 'seraphine', x: 18, y: 11.6, dir: 'left' },              // recoin à l'est
     ],
+    interactables: [],
+  };
+}
+
+// ---------------------------------------------------------------------------
+// PARC DE L'ACADÉMIE (extérieur) — le quartier des études, à l'est de la ville
+// ---------------------------------------------------------------------------
+function buildCampus() {
+  const g = grid(20, 14, '.');
+  border(g, 't');
+  rect(g, 0, 7, 9, 8, 'p');               // allée depuis la ville (ouest)
+  rect(g, 9, 6, 10, 8, 'p');              // montée vers le perron
+  rect(g, 5, 10, 14, 11, 's');            // esplanade de sable au sud
+  rect(g, 16, 9, 18, 11, 'w');            // bassin d'agrément
+  sprinkle(g, [[3, 3], [16, 2], [2, 11], [4, 5], [15, 5]], 't');
+  sprinkle(g, [[3, 9], [6, 4], [13, 4], [17, 6], [7, 12], [12, 12], [2, 6]], 'f');
+  sprinkle(g, [[14, 12], [3, 12]], ',');
+  set(g, 0, 7, 'p'); set(g, 0, 8, 'p');   // ouverture vers la ville
+
+  return {
+    id: 'campus', name: 'Parc de l\'Académie', outdoor: true,
+    grid: toStrings(g),
+    spawn: { x: 2, y: 7.5 },
+    props: [
+      { type: 'house', x: 5, y: 1, w: 10, h: 4, palette: { body: '#ded3bc', roof: '#6a4a8e' }, doorX: 9, label: '🎓 Académie du Damier', big: true },
+      { type: 'fountain', x: 11, y: 10, w: 2, h: 2 },
+      { type: 'sign', x: 7, y: 9, text: 'Académie du Damier — ici, on apprend les STYLES : classique, Ghestem, semi-ouverte, taquin, marchand de bois.' },
+    ],
+    doors: [
+      { x: 9, y: 5, target: { map: 'academy', x: 9, y: 10.2, dir: 'up' }, lockFlag: 'club_unlocked', lockedMessage: 'L\'Académie ouvre ses portes aux membres du club d\'Otterlaws. Fais d\'abord tes preuves au club !' },
+    ],
+    exits: [
+      { x1: -0.5, y1: 6.5, x2: 0.6, y2: 9.6, target: { map: 'town', x: 20.4, y: 8.5, dir: 'left' } },
+    ],
+    npcs: [],
     interactables: [],
   };
 }
@@ -245,6 +282,50 @@ function buildShop() {
   };
 }
 
+// ---------------------------------------------------------------------------
+// LA GRANDE SALLE DE L'ACADÉMIE — cinq professeurs, cinq styles de jeu
+// ---------------------------------------------------------------------------
+function buildAcademy() {
+  const g = interior(18, 12);
+  rect(g, 2, 2, 15, 9, 'c');
+  set(g, 8, 11, 'F'); set(g, 9, 11, 'F');
+  return {
+    id: 'academy', name: 'Académie du Damier', outdoor: false,
+    grid: toStrings(g),
+    spawn: { x: 8.5, y: 9.5 },
+    props: [
+      { type: 'blackboard', x: 2, y: 1, w: 2, h: 1 },
+      { type: 'blackboard', x: 8, y: 1, w: 2, h: 1 },
+      { type: 'blackboard', x: 14, y: 1, w: 2, h: 1 },
+      { type: 'boardtable', x: 2, y: 3, w: 2, h: 1 },
+      { type: 'boardtable', x: 8, y: 3, w: 2, h: 1 },
+      { type: 'boardtable', x: 14, y: 3, w: 2, h: 1 },
+      { type: 'boardtable', x: 4, y: 7, w: 2, h: 1 },
+      { type: 'boardtable', x: 12, y: 7, w: 2, h: 1 },
+      { type: 'shelf', x: 5, y: 1, w: 2, h: 1 },
+      { type: 'shelf', x: 11, y: 1, w: 2, h: 1 },
+      { type: 'plant', x: 1, y: 1, w: 1, h: 1 },
+      { type: 'plant', x: 16, y: 1, w: 1, h: 1 },
+      { type: 'plant', x: 1, y: 9, w: 1, h: 1 },
+      { type: 'plant', x: 16, y: 9, w: 1, h: 1 },
+      { type: 'mat', x: 8, y: 10.6, w: 2, h: 1 },
+    ],
+    doors: [
+      { x: 8, y: 11, target: { map: 'campus', x: 9.5, y: 6.4, dir: 'down' } },
+      { x: 9, y: 11, target: { map: 'campus', x: 9.5, y: 6.4, dir: 'down' } },
+    ],
+    exits: [],
+    npcs: [
+      { id: 'celestin', x: 3, y: 4.4, dir: 'down' },
+      { id: 'gaspard', x: 9, y: 4.4, dir: 'down' },
+      { id: 'salome', x: 15, y: 4.4, dir: 'down' },
+      { id: 'tiphaine', x: 5, y: 8.4, dir: 'right', wander: 0.6 },
+      { id: 'boris', x: 13, y: 8.4, dir: 'left' },
+    ],
+    interactables: [],
+  };
+}
+
 export const MAPS = {
   village: buildVillage(),
   town: buildTown(),
@@ -252,6 +333,8 @@ export const MAPS = {
   grandpa: buildGrandpa(),
   club: buildClub(),
   shop: buildShop(),
+  campus: buildCampus(),
+  academy: buildAcademy(),
 };
 
 /** Personnalise les libellés qui portent le prénom du héros/de l'héroïne. */
