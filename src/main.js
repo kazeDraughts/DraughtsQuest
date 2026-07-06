@@ -18,7 +18,7 @@ import { audio } from './audio/audio.js';
 import { runTutorial, makeSignal } from './story/tutorial.js';
 import { afterTutorial, gigiTips, worldChampionScene } from './story/quests.js';
 import { EXERCISES, TRAINING_CATEGORIES, exerciseById, runExercise } from './story/training.js';
-import { COMBO_BANK, comboSeriesById, comboToExercise } from './story/combos.js';
+import { COMBO_BANK, comboSeriesById, comboToExercise, COMBO_CLEARED_BONUS } from './story/combos.js';
 import { styleById, isAcademyGraduate, ACADEMY_GRADUATE_BONUS } from './story/academy.js';
 import {
   COMPETITIONS, competitionById, competitionStatus, unlockHint,
@@ -723,11 +723,15 @@ async function startComboChallenge(seriesId) {
 
   const rewards = [];
   let seriesJustDone = false;
+  let bankJustCleared = false;
   if (!replay) {
     state.training.combos[seriesId] = solved + 1;
     state.points += series.reward;
     rewards.push(`🪙 +${series.reward} Pions d'Or`);
-    seriesJustDone = solved + 1 >= bank.length;
+    // La récompense de série tombe aux `core` premières énigmes ; vider
+    // TOUTE la réserve (recueils compris) rapporte une prime distincte.
+    seriesJustDone = solved + 1 === (series.core ?? bank.length);
+    bankJustCleared = solved + 1 === bank.length;
     if (seriesJustDone) {
       const u = series.unlock;
       if (u.kind === 'board' && !state.inventory.boards.includes(u.theme)) {
@@ -739,8 +743,12 @@ async function startComboChallenge(seriesId) {
       }
       rewards.push(`🎁 ${u.label}`);
     }
+    if (bankJustCleared) {
+      state.points += COMBO_CLEARED_BONUS;
+      rewards.push(`🏺 Réserve épuisée ! 🪙 +${COMBO_CLEARED_BONUS} Pions d'Or (prime)`);
+    }
     save();
-    audio.playSfx(seriesJustDone ? 'win' : 'coin');
+    audio.playSfx(seriesJustDone || bankJustCleared ? 'win' : 'coin');
   } else {
     audio.playSfx('win');
   }
@@ -756,12 +764,14 @@ async function startComboChallenge(seriesId) {
     onClick: () => enterWorld(),
   });
   showMatchOverlay({
-    title: seriesJustDone ? `${series.icon} Série terminée !` : 'Combinaison trouvée ! ✨',
-    detail: seriesJustDone
-      ? `Tu as résolu les ${bank.length} énigmes de ${npc.name} !`
-      : replay
-        ? 'Toujours aussi affûté. Réviser ses combinaisons, c\'est les voir venir en partie.'
-        : `${npc.name} approuve. Il en reste ${remaining} à percer.`,
+    title: bankJustCleared ? `${series.icon} Réserve épuisée !` : seriesJustDone ? `${series.icon} Série terminée !` : 'Combinaison trouvée ! ✨',
+    detail: bankJustCleared
+      ? `Tu as résolu TOUTES les énigmes de ${npc.name} — les ${bank.length}, recueils compris. Chapeau bas.`
+      : seriesJustDone
+        ? `La série de ${npc.name} est vaincue… mais il lui reste ${remaining} énigmes de collection dans sa besace !`
+        : replay
+          ? 'Toujours aussi affûté. Réviser ses combinaisons, c\'est les voir venir en partie.'
+          : `${npc.name} approuve. Il en reste ${remaining} à percer.`,
     rewards,
     buttons,
   });

@@ -16,7 +16,7 @@
 
 import { sparringAvailable } from '../career/opponents.js';
 import {
-  COMBO_BANK, comboSeriesById, combosSolved, comboSeriesDone, comboSeriesAvailable,
+  COMBO_BANK, comboSeriesById, combosSolved, comboSeriesDone, comboSeriesAvailable, comboBankCleared,
 } from './combos.js';
 import { styleByNpc, styleDone, stylePracticeWon } from './academy.js';
 
@@ -181,7 +181,7 @@ function comboGiverDialogue(ctx, seriesId, texts) {
   const solved = combosSolved(ctx.state, seriesId);
   const metFlag = `met_${seriesId}`;
 
-  if (comboSeriesDone(ctx.state, seriesId)) {
+  if (comboBankCleared(ctx.state, seriesId)) {
     return {
       lines: [
         { who: seriesId, text: texts.done },
@@ -203,6 +203,11 @@ function comboGiverDialogue(ctx, seriesId, texts) {
   const lines = [];
   if (!ctx.flag(metFlag)) {
     lines.push({ who: seriesId, text: texts.greet }, { who: seriesId, text: texts.pitch });
+  }
+  // La série de base est finie mais la besace des recueils ne l'est pas :
+  // le PNJ ressort ses énigmes « de collection ».
+  if (comboSeriesDone(ctx.state, seriesId) && solved < total) {
+    lines.push({ who: seriesId, text: 'Et devine quoi : j\'ai ressorti mes vieux recueils. Des énigmes de COLLECTION, cette fois — les vraies, celles des livres.' });
   }
   lines.push({
     who: seriesId,

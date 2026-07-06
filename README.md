@@ -81,11 +81,15 @@ chercher** — sans leçon ni énoncé du coup : « les Blancs jouent et gagnent
   complète → un **maître caché** apparaît dans le hameau… et il se joue
   en partie classée.
 
-Chaque énigme de la banque est **générée puis certifiée par le moteur** :
-premier coup gagnant unique (aucun autre coup ne gagne), chaque réplique
-noire strictement forcée, gain net ou couronnement vérifié, pas de finale
-nulle cachée. `tests/combos.test.mjs` rejoue et re-certifie toute la banque
-à chaque `npm test`.
+Chaque PNJ a désormais **deux réserves** : ses 6 énigmes de base
+(générées), puis des **énigmes de collection** tirées des recueils
+thématiques du site « Allons à dame » (coup royal, coup renversé, taquin,
+marchand de bois, classique…) — vider toute la besace rapporte une prime.
+Chaque énigme, quelle que soit son origine, est **certifiée par le
+moteur** : premier coup gagnant unique (aucun autre coup ne gagne), chaque
+réplique noire strictement forcée, gain net ou couronnement vérifié, pas
+de finale nulle cachée. `tests/combos.test.mjs` rejoue et re-certifie
+toute la banque à chaque `npm test`.
 
 ## 🏛️ L'Académie du Damier (les styles de parties)
 

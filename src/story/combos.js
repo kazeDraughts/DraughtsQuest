@@ -32,6 +32,13 @@ export const COMBO_BANK = {
       line: [{ w: { from: 29, to: 23, takes: 0 }, b: { from: 26, to: 37, takes: 1 } }, { w: { from: 23, to: 41, takes: 2 } }] },
     { fen: 'W:W28,30,39,43,44:B4,7,18,25,29',
       line: [{ w: { from: 28, to: 23, takes: 0 }, b: { from: 25, to: 34, takes: 1 } }, { w: { from: 23, to: 1, takes: 2 } }] },
+    // — énigmes certifiées issues des recueils « Allons à dame » (J-F. Latapie / J-P. Dubois) —
+    { fen: 'W:W31,36,37,45,48:B3,12,17,19,38', src: 'MdeM/Coup_royal',
+      line: [{ w: { from: 37, to: 32, takes: 0 }, b: { from: 38, to: 27, takes: 1 } }, { w: { from: 31, to: 11, takes: 2 } }] },
+    { fen: 'W:W27,31,36,45,48,49:B3,11,12,16,19,28', src: 'MdeM/Coup_royal',
+      line: [{ w: { from: 27, to: 21, takes: 0 }, b: { from: 16, to: 27, takes: 1 } }, { w: { from: 31, to: 33, takes: 2 } }] },
+    { fen: 'W:W32,35,37,38,41,42,48:B2,6,18,26,31,39', src: 'MdeM/classique1',
+      line: [{ w: { from: 38, to: 33, takes: 0 }, b: { from: 39, to: 28, takes: 1 } }, { w: { from: 32, to: 12, takes: 2 } }] },
   ],
   honore: [
     { fen: 'W:W25,28,30,47:B8,9,13,29',
@@ -46,6 +53,19 @@ export const COMBO_BANK = {
       line: [{ w: { from: 24, to: 20, takes: 0 }, b: { from: 25, to: 32, takes: 3 } }, { w: { from: 20, to: 16, takes: 4 } }] },
     { fen: 'W:W26,29,30,35,46:B5,10,19,20,25',
       line: [{ w: { from: 30, to: 24, takes: 0 }, b: { from: 19, to: 30, takes: 1 } }, { w: { from: 35, to: 4, takes: 3 } }] },
+    // — énigmes certifiées issues des recueils « Allons à dame » (J-F. Latapie / J-P. Dubois) —
+    { fen: 'W:W20,23,34:B10,29,38', src: 'MdeM/Coup_renverse',
+      line: [{ w: { from: 20, to: 14, takes: 0 }, b: { from: 10, to: 28, takes: 2 } }, { w: { from: 34, to: 43, takes: 3 } }] },
+    { fen: 'W:W33,37,38,39,40:B13,14,22,24,35', src: 'fic_combi/cu03',
+      line: [{ w: { from: 33, to: 29, takes: 0 }, b: { from: 35, to: 31, takes: 4 } }, { w: { from: 29, to: 36, takes: 5 } }] },
+    { fen: 'W:W21,27,30,34,37:B12,16,19,20,26,28', src: 'MdeM/TaquB24',
+      line: [{ w: { from: 30, to: 25, takes: 0 }, b: { from: 26, to: 17, takes: 1 } }, { w: { from: 25, to: 32, takes: 3 } }] },
+    { fen: 'W:W32,34,38,39,40,45:B12,13,14,23,24,29', src: 'MdeM/Coup_royal',
+      line: [{ w: { from: 32, to: 28, takes: 0 }, b: { from: 23, to: 43, takes: 2 } }, { w: { from: 34, to: 23, takes: 1 }, b: { from: 43, to: 34, takes: 1 } }, { w: { from: 40, to: 7, takes: 5 } }] },
+    { fen: 'W:W31,35,36,37,45,48:B7,8,10,17,19,23,38', src: 'MdeM/Coup_royal',
+      line: [{ w: { from: 37, to: 32, takes: 0 }, b: { from: 38, to: 27, takes: 1 } }, { w: { from: 31, to: 24, takes: 5 } }] },
+    { fen: 'W:W16,29,30,33,34,37,42:B6,18,19,20,22,28', src: 'MdeM/Coup_royal',
+      line: [{ w: { from: 30, to: 25, takes: 0 }, b: { from: 28, to: 30, takes: 2 } }, { w: { from: 25, to: 12, takes: 3 } }] },
   ],
   seraphine: [
     { fen: 'W:W6,11,24:B1,15,16',
@@ -60,6 +80,19 @@ export const COMBO_BANK = {
       line: [{ w: { from: 14, to: 10, takes: 0 }, b: { from: 15, to: 24, takes: 1 } }, { w: { from: 10, to: 5, takes: 0 } }] },
     { fen: 'W:W7,11,21:B1,14,19',
       line: [{ w: { from: 11, to: 6, takes: 0 }, b: { from: 1, to: 12, takes: 1 } }, { w: { from: 6, to: 1, takes: 0 } }] },
+    // — énigmes certifiées issues des recueils « Allons à dame » (J-F. Latapie / J-P. Dubois) —
+    { fen: 'W:W32,33,37,39:B9,18,23,26', src: 'fic_combi/cu02',
+      line: [{ w: { from: 37, to: 31, takes: 0 }, b: { from: 26, to: 28, takes: 2 } }, { w: { from: 33, to: 4, takes: 3 } }] },
+    { fen: 'W:W26,31,32,43:B9,17,19,38', src: 'fic_combi/cu01',
+      line: [{ w: { from: 26, to: 21, takes: 0 }, b: { from: 17, to: 28, takes: 3 } }, { w: { from: 43, to: 3, takes: 4 } }] },
+    { fen: 'W:W20,25,42,45,48:B3,4,9,10,17,19', src: 'MdeM/Coup_royal',
+      line: [{ w: { from: 20, to: 14, takes: 0 }, b: { from: 9, to: 20, takes: 1 } }, { w: { from: 25, to: 5, takes: 2 } }] },
+    { fen: 'W:W25,29,33,42,47:B9,12,15,21,22,38', src: 'MdeM/TaquN27',
+      line: [{ w: { from: 29, to: 24, takes: 0 }, b: { from: 38, to: 20, takes: 2 } }, { w: { from: 25, to: 3, takes: 2 } }] },
+    { fen: 'W:W24,25,33,38,45,47:B2,4,7,8,9,13,27', src: 'MdeM/classique1',
+      line: [{ w: { from: 38, to: 32, takes: 0 }, b: { from: 27, to: 20, takes: 3 } }, { w: { from: 25, to: 1, takes: 4 } }] },
+    { fen: 'W:W18,26,45,47,48,49:B3,7,12,17,19,27,38', src: 'MdeM/Coup_royal',
+      line: [{ w: { from: 48, to: 43, takes: 0 }, b: { from: 12, to: 23, takes: 1 } }, { w: { from: 43, to: 1, takes: 4 } }] },
   ],
 };
 
@@ -70,6 +103,7 @@ export const COMBO_SERIES = [
     title: 'Les appâts de Fernand',
     icon: '🎣',
     reward: 40,
+    core: 6, // les 6 premières énigmes suffisent au déblocage de la chaîne
     // Ce que la série complète débloque (affiché et appliqué par main.js)
     unlock: { kind: 'board', theme: 'riverside', label: 'Damier « Au bord de l\'eau »' },
     requires: null,
@@ -81,6 +115,7 @@ export const COMBO_SERIES = [
     title: 'Les grands coups d\'Honoré',
     icon: '🎩',
     reward: 60,
+    core: 6,
     unlock: { kind: 'pieces', theme: 'heritage', label: 'Pions « Héritage doré »' },
     requires: 'fernand',
     tagline: 'Des combinaisons profondes, comme au bon vieux temps.',
@@ -91,6 +126,7 @@ export const COMBO_SERIES = [
     title: 'Les percées de Séraphine',
     icon: '🌙',
     reward: 80,
+    core: 6,
     unlock: { kind: 'flag', flag: 'ermite_revealed', label: 'Un maître caché se montre…' },
     requires: 'honore',
     tagline: 'Chaque énigme mène à la couronne.',
@@ -106,10 +142,23 @@ export function combosSolved(state, seriesId) {
   return state.training?.combos?.[seriesId] || 0;
 }
 
-/** La série de ce PNJ est-elle entièrement résolue ? */
+/**
+ * La série « de base » (les `core` premières énigmes) est-elle résolue ?
+ * C'est elle qui déclenche la récompense et débloque la chaîne — les
+ * énigmes suivantes (issues des recueils) sont du bonus.
+ */
 export function comboSeriesDone(state, seriesId) {
+  const s = comboSeriesById(seriesId);
+  return combosSolved(state, seriesId) >= (s?.core ?? COMBO_BANK[seriesId].length);
+}
+
+/** TOUTES les énigmes du PNJ (base + recueils) sont-elles résolues ? */
+export function comboBankCleared(state, seriesId) {
   return combosSolved(state, seriesId) >= COMBO_BANK[seriesId].length;
 }
+
+/** Prime unique quand un joueur vide entièrement la réserve d'un PNJ. */
+export const COMBO_CLEARED_BONUS = 150;
 
 /** Une série est accessible si la précédente de la chaîne est terminée. */
 export function comboSeriesAvailable(state, seriesId) {
