@@ -347,6 +347,104 @@ export const EXERCISES = [
     ],
   },
   {
+    id: 'quatrieme_rangee',
+    cat: 'Finales',
+    icon: '📏',
+    title: 'La règle de la 4e rangée',
+    desc: 'Trois temps d\'avance + le trait : la course est déjà gagnée.',
+    reward: 70,
+    steps: [
+      {
+        // Thème classique des traités de finales : pions sur la 4e rangée
+        // (en partant du haut), trait aux Blancs = gain, aux Noirs = nulle.
+        fen: 'W:W17:B19',
+        intro: [
+          { who: 'gigi', text: 'Un grand classique des traités : les deux pions sont chacun sur leur 4e rangée. Retiens la règle : avec le TRAIT, les Blancs gagnent — sans lui, c\'est nulle. Trois temps d\'avance + le trait, et la course est finie avant de commencer.' },
+          { who: 'gigi', text: 'Fonce : chaque coup doit descendre tout droit vers la couronne.' },
+        ],
+        accept: [{ from: 17, to: 12 }],
+        reply: { from: 19, to: 23 },
+        wrong: { who: 'gigi', text: 'Pas de détour ! Le chemin le plus court vers les cases 1-5, et rien d\'autre.' },
+        success: [{ who: 'gigi', text: '17-12, il répond 19-23. Compte avec moi : il te reste 2 coups pour damer, lui 3. Cette avance-là ne se rattrape pas.' }],
+        hint: { from: 17, to: 12 },
+      },
+      {
+        intro: [{ who: 'gigi', text: 'Continue la ligne droite.' }],
+        accept: [{ from: 12, to: 8 }],
+        reply: { from: 23, to: 28 },
+        wrong: { who: 'gigi', text: 'Tout droit, j\'ai dit !' },
+        success: [{ who: 'gigi', text: 'Encore un pas…' }],
+        hint: { from: 12, to: 8 },
+      },
+      {
+        intro: [{ who: 'gigi', text: 'La couronne t\'attend.' }],
+        accept: [{ from: 8, to: 3 }],
+        reply: { from: 28, to: 33 },
+        wrong: { who: 'gigi', text: 'La dernière rangée !' },
+        success: [{ who: 'gigi', text: 'DAME ! Et maintenant, la deuxième moitié du travail : ARRÊTER son pion. Une dame toute neuve, ça se place.' }],
+        hint: { from: 8, to: 3 },
+      },
+      {
+        intro: [{ who: 'gigi', text: 'Place ta dame sur la diagonale d\'interception — celle que son pion devra traverser.' }],
+        accept: [{ from: 3, to: 25 }],
+        reply: { from: 33, to: 38 },
+        wrong: { who: 'gigi', text: 'Réfléchis : par où son pion doit-il passer pour damer ? Ta dame doit contrôler ce couloir À DISTANCE.' },
+        success: [{ who: 'gigi', text: '3-25, l\'affût est pris. Il avance encore, 33-38… droit dans la gueule du loup.' }],
+        hint: { from: 3, to: 25 },
+      },
+      {
+        intro: [{ who: 'gigi', text: 'Verrouille.' }],
+        accept: [{ from: 25, to: 48 }],
+        wrong: { who: 'gigi', text: 'Le coin ! La case 48 contrôle sa dernière marche.' },
+        success: [
+          { who: 'gigi', text: '25-48 : le pion 38 est mort — 42 et 43 sont sous ta dame. Voilà toute la philosophie des finales : trois temps d\'avance + le trait = une dame + un blocage. Compte TOUJOURS les temps avant de simplifier.' },
+        ],
+        hint: { from: 25, to: 48 },
+      },
+    ],
+  },
+  {
+    id: 'tric_trac',
+    cat: 'Finales',
+    icon: '🚧',
+    title: 'Le tric-trac',
+    desc: 'Dame contre deux pions : le blocage sur la diagonale 6-45.',
+    reward: 80,
+    steps: [
+      {
+        // Thème des traités : les 2 pions noirs sont (ou seront) sur le
+        // tric-trac 6-45 ; la dame gagne depuis les cases 6, 1 ou 11.
+        fen: 'W:WK28:B8,29',
+        intro: [
+          { who: 'gigi', text: 'Le TRIC-TRAC : la double diagonale 6-45. Quand les deux pions adverses s\'y engagent, ta dame n\'a qu\'à occuper le bon bout de la ligne — et plus rien ne passe.' },
+          { who: 'gigi', text: 'Premier geste : rejoins la grande ligne du tric-trac, côté 39.' },
+        ],
+        accept: [{ from: 28, to: 39 }],
+        reply: { from: 8, to: 13 },
+        wrong: { who: 'gigi', text: 'Ta dame doit prendre la diagonale 6-45 — regarde la ligne qui va de la case 6 à la case 45 : c\'est ton autoroute.' },
+        success: [{ who: 'gigi', text: '28-39, la dame est sur l\'autoroute. Le pion 8 s\'avance en 13 : il vient LUI-MÊME se placer sur ta ligne de tir.' }],
+        hint: { from: 28, to: 39 },
+      },
+      {
+        intro: [{ who: 'gigi', text: 'Remonte à l\'autre bout de la ligne : la case 11 tient TOUT le tric-trac.' }],
+        accept: [{ from: 39, to: 11 }],
+        reply: { from: 13, to: 19 },
+        wrong: { who: 'gigi', text: 'Glisse le long de la diagonale, jusqu\'en haut : la case d\'où tu vois les DEUX pions à la fois.' },
+        success: [{ who: 'gigi', text: '39-11 ! De là, ta dame surveille 13-19-24-30-35 ET le retour. Il tente 13-19…' }],
+        hint: { from: 39, to: 11 },
+      },
+      {
+        intro: [{ who: 'gigi', text: 'L\'attaque à distance décisive : cloue les deux pions sur la ligne.' }],
+        accept: [{ from: 11, to: 2 }],
+        wrong: { who: 'gigi', text: 'Recule en coin pour garder les deux pions dans ta ligne de mire — sans jamais quitter leur diagonale.' },
+        success: [
+          { who: 'gigi', text: '11-2 : les pions 19 et 29 sont épinglés sur le tric-trac — s\'ils avancent, ils tombent l\'un derrière l\'autre. Note bien la géographie : diagonale 6-45, cases-clés 1, 6 et 11. En finale, la dame ne poursuit pas les pions : elle occupe les LIGNES.' },
+        ],
+        hint: { from: 11, to: 2 },
+      },
+    ],
+  },
+  {
     id: 'opposition',
     cat: 'Finales',
     icon: '⚖️',

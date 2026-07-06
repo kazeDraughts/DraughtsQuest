@@ -122,6 +122,10 @@ export const CHARACTERS = {
     id: 'boris', name: 'Boris',
     look: { skin: '#dfae7c', hair: '#5a3c22', hairStyle: 'cap', capColor: '#8a5a30', beard: '#5a3c22', shirt: '#b04a32', bg: '#4a2a20' },
   },
+  hortense: {
+    id: 'hortense', name: 'Hortense',
+    look: { skin: '#f0c6a0', hair: '#d8d8d2', hairStyle: 'bun', glasses: true, shirt: '#8a5a78', blush: true, bg: '#4a3242' },
+  },
 };
 
 export function characterById(id) {

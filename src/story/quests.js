@@ -65,7 +65,7 @@ export async function onMapEntered(mapId, ctx) {
   if (mapId === 'academy' && !ctx.flag('met_academy')) {
     await ctx.say([
       { who: 'celestin', text: `Entre, entre ! Bienvenue à l'ACADÉMIE DU DAMIER. Le club t'apprend à gagner… nous, nous t'apprenons à COMPRENDRE.` },
-      { who: 'celestin', text: 'Cinq professeurs, cinq styles de parties : la classique, le système Ghestem, la semi-ouverte, le taquin et le marchand de bois. Suis nos cinq leçons et tu repartiras avec le diplôme de l\'Académie… et un cadeau digne de lui.' },
+      { who: 'celestin', text: 'Six professeurs t\'attendent : cinq styles de parties — la classique, le système Ghestem, la semi-ouverte, le taquin, le marchand de bois — et l\'école des finales d\'Hortense. Suis nos six leçons et tu repartiras avec le diplôme de l\'Académie… et un cadeau digne de lui.' },
     ]);
     ctx.setFlag('met_academy');
   }
@@ -521,6 +521,12 @@ export function getNpcDialogue(npcId, ctx) {
         greet: 'Moi c\'est Tiphaine ! Ma passion : embêter les gens. Sur le damier, hein. Mon arme préférée : LE TAQUIN, le petit pion posé en 24 qui rend fou tout le voisinage.',
         pitch: 'Je te montre ? Il cloue les pions 15 et 25 au bord, il ne fait « rien »… et au premier geste d\'énervement en face, il CROQUE. Tu vas adorer.',
         after: 'Taquine, taquine toujours ! Mais garde tes gardes du corps derrière le 24 — un taquin seul finit toujours par se faire encercler.',
+      });
+    case 'hortense':
+      return professorDialogue(ctx, 'hortense', {
+        greet: `Approche, ${g('mon petit', 'ma petite')}, n'aie pas peur. On m'appelle Hortense — la grand-mère des finales. Mes collègues t'apprennent à ATTAQUER… moi, je t'apprends à GAGNER.`,
+        pitch: 'Car les parties se gagnent en finale, quand il ne reste presque plus rien et que chaque temps pèse une tonne. L\'offre, la double opposition, le blocage angulaire : trois secrets, une vie de victoires.',
+        after: 'N\'oublie pas : les temps avant les pions, l\'offre qui déplace, le coin qui attend. Et repasse me voir — les finales, ça s\'entretient comme un jardin.',
       });
     case 'boris':
       return professorDialogue(ctx, 'boris', {

@@ -313,6 +313,126 @@ export const STYLES = [
       invite: 'Rejouons cette fin de partie POUR DE VRAI cette fois : à toi de retrouver la bonne charpente et de conclure.',
     },
   },
+
+  // -------------------------------------------------------------- FINALES
+  // Le cours d'Hortense suit le plan des traités de fins de partie
+  // (méthode « Allons à dame » de J-F. Latapie) : pions contre pions
+  // (l'offre + la double opposition), puis dame contre deux pions
+  // (le blocage angulaire). Chaque ligne est re-certifiée par le moteur.
+  {
+    id: 'finales',
+    npc: 'hortense',
+    icon: '🏁',
+    title: 'L\'école des finales',
+    desc: 'Là où les parties se gagnent : l\'offre, la double opposition, le blocage angulaire.',
+    reward: 70,
+    steps: [
+      {
+        fen: 'W:W28,35,43:B14,18',
+        intro: [
+          { who: 'hortense', text: 'Assieds-toi, mon petit. Tout le monde veut apprendre les combinaisons… mais les parties, elles, se gagnent EN FINALE. Trois pions contre deux — et pourtant, si tu joues « naturellement », les Noirs passent à dame.' },
+          { who: 'hortense', text: 'Premier secret des finales : on ne compte pas les pions, on compte les CASES et les TEMPS. Commence par avancer ton pion libre — celui qui ne défend rien.' },
+        ],
+        accept: [{ from: 35, to: 30 }],
+        reply: { from: 14, to: 19 },
+        wrong: { who: 'hortense', text: 'Doucement. Regarde tes trois pions : lequel peut avancer sans rien affaiblir ? C\'est toujours par lui qu\'on commence.' },
+        success: [
+          { who: 'hortense', text: '35-30, très bien. Les Noirs avancent 14-19, droit vers la dame… C\'est maintenant que la magie opère.' },
+        ],
+        hint: { from: 35, to: 30 },
+      },
+      {
+        intro: [
+          { who: 'hortense', text: 'Deuxième secret : L\'OFFRE. On donne un pion — pas par générosité : pour que la prise obligatoire amène son pion EXACTEMENT où nous voulons. Offre.' },
+        ],
+        accept: [{ from: 30, to: 24 }],
+        reply: { from: 19, to: 30 },
+        wrong: { who: 'hortense', text: 'Non — il faut OFFRIR. Mets ton pion en prise, de façon que la capture noire l\'éloigne de la promotion.' },
+        success: [
+          { who: 'hortense', text: '30-24 ! Ils doivent prendre : 19x30 — et voilà leur pion de course expédié sur le bord du damier. Un pion donné, un plan gagné.' },
+        ],
+        hint: { from: 30, to: 24 },
+      },
+      {
+        intro: [
+          { who: 'hortense', text: 'Troisième secret : LA DOUBLE OPPOSITION. Place tes deux pions face aux deux siens — à distance impaire — et il ne pourra plus jamais avancer sans se faire prendre.' },
+        ],
+        accept: [{ from: 43, to: 39 }],
+        reply: { from: 30, to: 35 },
+        wrong: { who: 'hortense', text: 'Cherche l\'OPPOSITION : ton pion arrière doit venir se placer face au pion noir qui vient de prendre.' },
+        success: [
+          { who: 'hortense', text: '43-39. Il fuit en 35… mais la porte se referme.' },
+        ],
+        hint: { from: 43, to: 39 },
+      },
+      {
+        intro: [
+          { who: 'hortense', text: 'Scelle la double opposition.' },
+        ],
+        accept: [{ from: 39, to: 34 }],
+        wrong: { who: 'hortense', text: 'Face à lui, à une case d\'écart : c\'est ça, l\'opposition.' },
+        success: [
+          { who: 'hortense', text: '39-34 : double opposition ! Ses deux pions sont paralysés — chaque avance se fait prendre. Il devra les donner l\'un après l\'autre. Voilà comment trois pions bien élevés en battent deux.' },
+        ],
+        hint: { from: 39, to: 34 },
+      },
+      {
+        fen: 'W:WK23:B11,20',
+        intro: [
+          { who: 'hortense', text: 'Deuxième leçon, la plus célèbre de toutes : DAME CONTRE DEUX PIONS. Beaucoup croient que la dame gagne toute seule… Non. Sans méthode, les pions passent. La méthode s\'appelle LE BLOCAGE ANGULAIRE.' },
+          { who: 'hortense', text: 'Le principe : conduire ta dame dans le COIN vers lequel courent les deux pions — case 48 ou 49 — et les y attendre. Commence : recule ta dame sur la diagonale, sans jamais perdre les pions de vue.' },
+        ],
+        accept: [{ from: 23, to: 29 }],
+        reply: { from: 20, to: 25 },
+        wrong: { who: 'hortense', text: 'Ta dame doit reculer VERS le coin 48-49, d\'une case, en gardant les deux pions sous surveillance. Pas de précipitation.' },
+        success: [
+          { who: 'hortense', text: '23-29. Eux avancent, 20-25 — laisse-les venir : plus ils avancent, plus le coin se rapproche.' },
+        ],
+        hint: { from: 23, to: 29 },
+      },
+      {
+        intro: [{ who: 'hortense', text: 'Continue la retraite calculée : case par case.' }],
+        accept: [{ from: 29, to: 34 }],
+        reply: { from: 11, to: 17 },
+        wrong: { who: 'hortense', text: 'Toujours la même diagonale, toujours une case vers le coin.' },
+        success: [{ who: 'hortense', text: '29-34. L\'autre pion s\'ébranle : 11-17. Aucune importance — le rendez-vous est déjà pris, case 48.' }],
+        hint: { from: 29, to: 34 },
+      },
+      {
+        intro: [{ who: 'hortense', text: 'Encore.' }],
+        accept: [{ from: 34, to: 39 }],
+        reply: { from: 17, to: 21 },
+        wrong: { who: 'hortense', text: 'La diagonale, mon petit, la diagonale du coin.' },
+        success: [{ who: 'hortense', text: '34-39, 17-21. Regarde-les se rapprocher l\'un de l\'autre : ils croient marcher vers la dame… ils marchent vers leur cage.' }],
+        hint: { from: 34, to: 39 },
+      },
+      {
+        intro: [{ who: 'hortense', text: 'L\'avant-dernier pas.' }],
+        accept: [{ from: 39, to: 43 }],
+        reply: { from: 21, to: 26 },
+        wrong: { who: 'hortense', text: 'Un pas de plus vers le coin — un seul.' },
+        success: [{ who: 'hortense', text: '39-43, et 21-26. Les deux pions sont côte à côte, aux portes de la dernière rangée. C\'est exactement là qu\'on les voulait.' }],
+        hint: { from: 39, to: 43 },
+      },
+      {
+        intro: [{ who: 'hortense', text: 'Et maintenant… ferme la cage.' }],
+        accept: [{ from: 43, to: 48 }],
+        wrong: { who: 'hortense', text: 'LE COIN. La case 48. C\'est le verrou du blocage angulaire.' },
+        success: [
+          { who: 'hortense', text: '43-48 : BLOCAGE ANGULAIRE. Contemple : 25 et 26 ne peuvent plus avancer qu\'en se jetant sous ta dame. Ils devront se sacrifier l\'un après l\'autre — et le dernier n\'atteindra jamais sa couronne.' },
+          { who: 'hortense', text: 'Retiens mes trois secrets : les TEMPS avant les pions, l\'OFFRE qui déplace, et le COIN qui attend. Avec ça, mon petit, tu ne trembleras plus jamais en finale.' },
+        ],
+        hint: { from: 43, to: 48 },
+      },
+    ],
+    practice: {
+      fen: 'W:W23,24,36,37,38,42:B13,14,16,21,26,27',
+      level: 'club',
+      label: 'Finale de maîtres — 6 pions contre 6',
+      reward: 90,
+      invite: 'Cette finale est tirée d\'une vraie partie de championnat. Compte tes temps, prépare ton offre… et va chercher la double opposition.',
+    },
+  },
 ];
 
 export const ACADEMY_GRADUATE_BONUS = 250;

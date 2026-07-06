@@ -301,6 +301,7 @@ function buildAcademy() {
       { type: 'boardtable', x: 8, y: 3, w: 2, h: 1 },
       { type: 'boardtable', x: 14, y: 3, w: 2, h: 1 },
       { type: 'boardtable', x: 4, y: 7, w: 2, h: 1 },
+      { type: 'boardtable', x: 8, y: 6, w: 2, h: 1 },
       { type: 'boardtable', x: 12, y: 7, w: 2, h: 1 },
       { type: 'shelf', x: 5, y: 1, w: 2, h: 1 },
       { type: 'shelf', x: 11, y: 1, w: 2, h: 1 },
@@ -321,6 +322,7 @@ function buildAcademy() {
       { id: 'salome', x: 15, y: 4.4, dir: 'down' },
       { id: 'tiphaine', x: 5, y: 8.4, dir: 'right', wander: 0.6 },
       { id: 'boris', x: 13, y: 8.4, dir: 'left' },
+      { id: 'hortense', x: 9, y: 7.4, dir: 'down' },
     ],
     interactables: [],
   };

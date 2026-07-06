@@ -105,7 +105,16 @@ blocage » de J-P. Dubois) :
 - **Tiphaine** 😜 — *le taquin* : l'avant-poste en 24 qui cloue les pions
   15 et 25 au bord… et mord par prise majoritaire quand on le chasse ;
 - **Boris** 🪵 — *le marchand de bois* : les formations de pionage (Y,
-  croix, flèche, triplet) et le Y du bord à la menace imparable.
+  croix, flèche, triplet) et le Y du bord à la menace imparable ;
+- **Hortense** 🏁 — *l'école des finales* : l'offre + la double opposition
+  (3 pions contre 2), puis le célèbre **blocage angulaire** (dame contre
+  deux pions), sur des lignes de traités re-certifiées par le moteur.
+
+La table d'entraînement du club gagne aussi deux exercices de finales :
+**la règle de la 4e rangée** (trois temps d'avance + le trait) et **le
+tric-trac** (blocage de la dame sur la diagonale 6-45). Thèmes issus des
+méthodes classiques de fins de partie (« Allons à dame » de J-F. Latapie,
+traités FFJD/FMJD) — texte original, positions revérifiées.
 
 Chaque leçon se joue sur le vrai moteur (coups commentés, répliques
 scriptées), puis le professeur propose une **partie d'application** dans la

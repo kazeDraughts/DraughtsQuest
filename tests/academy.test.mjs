@@ -46,7 +46,7 @@ function whiteEval(fen, depth = 6, ms = 4000) {
 }
 
 // Les leçons qui se terminent sur un gain certifié doivent finir gagnantes.
-const ENDS_WINNING = new Set(['semiouverte', 'taquin', 'bois']);
+const ENDS_WINNING = new Set(['semiouverte', 'taquin', 'bois', 'finales']);
 
 console.log('Académie des styles — validation des leçons par le moteur');
 
@@ -134,7 +134,7 @@ test('identifiants, PNJ et récompenses cohérents', () => {
     npcs.add(s.npc);
     assert.ok(s.reward > 0 && s.title && s.desc && s.icon, `${s.id} : fiche incomplète`);
   }
-  assert.equal(STYLES.length, 5, 'l\'Académie compte cinq styles');
+  assert.equal(STYLES.length, 6, 'l\'Académie compte cinq styles et l\'école des finales');
 });
 
 console.log(`\n${passed} tests réussis${process.exitCode ? ' (avec des ÉCHECS)' : ''}`);
