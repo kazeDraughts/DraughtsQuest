@@ -77,8 +77,20 @@ for (const series of COMBO_SERIES) {
         const wm = legal.find((m) => m.from === step.w.from && m.to === step.w.to);
         assert.ok(wm, `coup blanc ${step.w.from}-${step.w.to} illégal au pas ${i + 1}`);
         engine.applyMove(wm);
-        if (i === 0) {
+        if (i === 0 && series.kind !== 'etude') {
           assert.ok(engine.mustCapture(), 'le premier coup doit être un sacrifice (prise noire obligatoire)');
+        }
+        // Étude : le coup enseigné doit être le SEUL gagnant — chaque autre
+        // coup légal doit laisser filer le gain (éval <= 60).
+        if (i === 0 && series.kind === 'etude') {
+          for (const other of legal) {
+            if (other.from === wm.from && other.to === wm.to) continue;
+            const c = new RulesEngine(rec.fen);
+            c.applyMove(other);
+            const { score: sc } = whiteEval(c.fen());
+            assert.ok(sc <= 60,
+              `l'étude a une 2e solution : ${other.from}-${other.to} gagne aussi (éval ${Math.round(sc)})`);
+          }
         }
         // Réplique noire : FORCÉE (unique) — c'est ce qui rend l'énigme sûre
         if (step.b) {
@@ -93,19 +105,22 @@ for (const series of COMBO_SERIES) {
 
       // Fin de ligne : soit partie gagnée, soit position nettement gagnante
       const { score, engine: after } = whiteEval(engine.fen());
-      assert.ok(score >= 80, `la combinaison ne gagne pas (éval finale ${Math.round(score)})`);
-      // Pas de pion noir passé profond (source de nulles dame+pion vs dame)
-      if (!after.isGameOver()) {
+      assert.ok(score >= (series.kind === 'etude' ? 200 : 80),
+        `la combinaison ne gagne pas (éval finale ${Math.round(score)})`);
+      // Pas de pion noir passé profond (source de nulles dame+pion vs dame).
+      // (Hors études : en finale, l'éval profonde ci-dessus fait foi.)
+      if (!after.isGameOver() && series.kind !== 'etude') {
         const b = after.getBoard();
         for (let s = 36; s <= 45; s++) {
           assert.ok(b[s] !== 'b', `pion noir passé en ${s} : finale nulle possible`);
         }
       }
-      // Le thème annoncé : gain matériel (T1/T2) ou couronne (T3)
+      // Le thème annoncé : gain matériel (T1/T2) ou couronne (T3) —
+      // les études gagnent par la manœuvre, pas forcément au matériel.
       if (series.id === 'seraphine') {
         const last = rec.line[rec.line.length - 1].w;
         assert.ok(last.to <= 5, 'la ligne doit se terminer par une promotion (case 1-5)');
-      } else {
+      } else if (series.kind !== 'etude') {
         const endMat = material(engine);
         const gain = (startMat.b - endMat.b) - (startMat.w - endMat.w);
         assert.ok(gain >= 1, `pas de gain matériel net (gain ${gain})`);

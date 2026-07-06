@@ -19,6 +19,7 @@ import {
   COMBO_BANK, comboSeriesById, combosSolved, comboSeriesDone, comboSeriesAvailable, comboBankCleared,
 } from './combos.js';
 import { styleByNpc, styleDone, stylePracticeWon } from './academy.js';
+import { comboSeriesByNpc } from './combos.js';
 
 /** Accord de genre : gg(state)('champion', 'championne'). */
 const gg = (state) => (m, f) => (state?.player?.gender === 'girl' ? f : m);
@@ -243,6 +244,13 @@ function professorDialogue(ctx, npcId, texts) {
   if (!ctx.flag(metFlag)) {
     lines.push({ who: npcId, text: texts.greet }, { who: npcId, text: texts.pitch });
   }
+  // Certains professeurs ont aussi une série d'énigmes (ex. les études
+  // de finales d'Hortense), proposée une fois leur leçon suivie.
+  const puzzles = comboSeriesByNpc(npcId);
+  const puzzlesSolved = puzzles ? combosSolved(ctx.state, puzzles.id) : 0;
+  const puzzlesTotal = puzzles ? COMBO_BANK[puzzles.id].length : 0;
+  const offerPuzzles = puzzles && done && puzzlesSolved < puzzlesTotal;
+
   if (!done) {
     lines.push({
       who: npcId,
@@ -254,16 +262,21 @@ function professorDialogue(ctx, npcId, texts) {
     });
   } else {
     lines.push({ who: npcId, text: texts.after });
+    const choices = [
+      { label: applied ? 'Partie d\'application' : 'Jouer l\'application !', value: 'practice' },
+      { label: 'Revoir la leçon', value: 'lesson' },
+    ];
+    if (offerPuzzles) choices.unshift({ label: `${puzzles.icon} Étude ${puzzlesSolved + 1}/${puzzlesTotal}`, value: 'puzzle' });
+    else if (puzzles && done && puzzlesTotal > 0) choices.push({ label: `${puzzles.icon} Revoir une étude`, value: 'puzzle' });
+    choices.push({ label: 'Une autre fois.', value: 'later' });
     lines.push({
       who: npcId,
-      text: applied
-        ? `Tu as déjà gagné ta partie d'application. Envie de rejouer — la leçon, ou une partie dans mon style ?`
-        : `La théorie est acquise… reste la pratique ! ${style.icon} Une PARTIE D'APPLICATION dans mon style, ça te dit ?`,
-      choices: [
-        { label: applied ? 'Partie d\'application' : 'Jouer l\'application !', value: 'practice' },
-        { label: 'Revoir la leçon', value: 'lesson' },
-        { label: 'Une autre fois.', value: 'later' },
-      ],
+      text: offerPuzzles
+        ? `${puzzles.icon} Et j'ai ressorti mon cahier d'ÉTUDES : des positions où un seul coup gagne. Il t'en reste ${puzzlesTotal - puzzlesSolved}. Alors — étude, application, ou révision ?`
+        : applied
+          ? `Tu as déjà gagné ta partie d'application. Envie de rejouer — la leçon, ou une partie dans mon style ?`
+          : `La théorie est acquise… reste la pratique ! ${style.icon} Une PARTIE D'APPLICATION dans mon style, ça te dit ?`,
+      choices,
     });
   }
   return {
@@ -272,6 +285,7 @@ function professorDialogue(ctx, npcId, texts) {
       ctx.setFlag(metFlag);
       if (a === 'lesson') ctx.startStyleLesson?.(style.id);
       else if (a === 'practice') ctx.startStylePractice?.(style.id);
+      else if (a === 'puzzle') ctx.startCombo?.(puzzles.id);
     },
   };
 }
@@ -451,8 +465,62 @@ export function getNpcDialogue(npcId, ctx) {
       return clubSparring(ctx, 'karim',
         'Un jour, je battrai Gigi. En attendant… c\'est toi que je vais battre. On joue ?',
         `Bats d'abord Léa, ${g('gamin', 'gamine')}. Ici, on grimpe les échelons dans l'ordre.`);
-    case 'arbiter':
-      return { lines: [{ who: 'arbiter', text: 'Règlement FMJD, article 4.4 : la prise majoritaire est obligatoire. Je dis ça, je dis rien.' }] };
+    case 'arbiter': {
+      if (!f('met_gigi')) {
+        return { lines: [{ who: 'arbiter', text: 'Règlement FMJD, article 4.4 : la prise majoritaire est obligatoire. Je dis ça, je dis rien.' }] };
+      }
+      // L'Arbitre, gardien des positions d'anthologie : LA WOLDOUBY (1910).
+      const first = !f('woldouby_won');
+      return {
+        lines: [
+          { who: 'arbiter', text: 'Règlement FMJD, article 4.4 : la prise majoritaire est obligatoire. Je dis ça, je dis rien.' },
+          {
+            who: 'arbiter',
+            text: first
+              ? 'Et puisque tu traînes par ici… j\'ai reconstitué une position d\'ANTHOLOGIE : la WOLDOUBY, jouée à Paris vers 1910 par un mystérieux champion sénégalais. Dix pions partout, un équilibre au rasoir. Tu prends les Blancs ?'
+              : 'La Woldouby n\'a plus de secret pour toi… mais une position d\'anthologie se rejoue sans modération. Les Blancs ?',
+            choices: [
+              { label: 'Jouer la Woldouby !', value: 'play' },
+              { label: 'Une autre fois.', value: 'later' },
+            ],
+          },
+        ],
+        onDone: (a) => {
+          if (a !== 'play') return;
+          ctx.startMatch({
+            opponent: 'arbiter',
+            level: 'regional',
+            music: 'tournament',
+            fen: 'W:W25,27,28,30,32,33,34,35,37,38:B12,13,14,16,18,19,21,23,24,26',
+            extra: 'Position Woldouby (1910)',
+            result: {
+              win: {
+                flags: ['woldouby_won'],
+                title: 'La Woldouby est tombée ! 🏛️',
+                detail: 'Un siècle d\'analyses… et c\'est toi qui conclus.',
+                rewards: first ? ['🪙 +200 Pions d\'Or (position d\'anthologie)'] : [],
+                lines: [{ who: 'arbiter', text: 'Magistral. Les grands anciens — De Haas, Fabre, Weiss — auraient applaudi. Cette position a fait couler plus d\'encre que bien des championnats.' }],
+              },
+              lose: {
+                retry: true,
+                title: 'La Woldouby résiste…',
+                detail: 'Comme elle résiste aux analystes depuis 1910.',
+                lines: [{ who: 'arbiter', text: 'Ne rougis pas : des générations de maîtres s\'y sont cassé les dents. Reviens quand tu veux, la position ne bouge pas d\'ici.' }],
+              },
+              draw: {
+                retry: true,
+                title: 'Partie nulle — comme souvent dans la Woldouby',
+                detail: 'L\'équilibre au rasoir a tenu.',
+                lines: [{ who: 'arbiter', text: 'La nulle ! Le résultat le plus fréquent entre bons joueurs dans cette position. Mais un champion cherche mieux…' }],
+              },
+            },
+            onResult: (r, outcome) => {
+              if (outcome === 'win' && first) ctx.state.points += 200;
+            },
+          });
+        },
+      };
+    }
     case 'shopkeeper':
       return {
         lines: [

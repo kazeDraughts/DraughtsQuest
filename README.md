@@ -138,6 +138,19 @@ diffusés gratuitement par « Allons à dame » :
 Chaque système se conclut par une partie d'application de niveau
 « Champion régional ».
 
+### 🕯️ Les études d'Hortense et la Woldouby
+
+Après sa leçon, Hortense sort son **cahier d'études** : 12 positions de
+fins de partie tirées des cours « Allons à dame », certifiées en mode
+étude — **un seul coup gagne** (le moteur vérifie que le coup unique mène
+à une évaluation gagnante et que TOUS les autres coups laissent la nulle).
+Les 12 études résolues offrent les pions exclusifs « Ivoire & ébène ».
+
+Au club, l'Arbitre propose enfin de rejouer une **position d'anthologie** :
+la **Woldouby** (Paris, ~1910), 10 pions contre 10, l'équilibre au rasoir
+(le moteur la donne à −3). La vaincre avec les Blancs rapporte 200 Pions
+d'Or.
+
 Chaque leçon se joue sur le vrai moteur (coups commentés, répliques
 scriptées), puis le professeur propose une **partie d'application** dans la
 structure étudiée. Les cinq leçons donnent le **diplôme de l'Académie** :

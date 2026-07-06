@@ -94,6 +94,34 @@ export const COMBO_BANK = {
     { fen: 'W:W18,26,45,47,48,49:B3,7,12,17,19,27,38', src: 'MdeM/Coup_royal',
       line: [{ w: { from: 48, to: 43, takes: 0 }, b: { from: 12, to: 23, takes: 1 } }, { w: { from: 43, to: 1, takes: 4 } }] },
   ],
+  hortense: [
+    // Études de finales des cours « Allons à dame » : UN SEUL coup gagne
+    // (certifié : le coup unique mène à une éval >= 250, les autres <= 60).
+    { fen: 'W:W34,50:B33', src: 'fic_finsdepartie/nfu38',
+      line: [{ w: { from: 34, to: 29, takes: 0 } }] },
+    { fen: 'W:W7,26:B13,38', src: 'fic_finsdepartie/nfu37',
+      line: [{ w: { from: 7, to: 2, takes: 0 } }] },
+    { fen: 'W:WK6,32:B21,K50', src: 'fic_finsdepartie/nfu15',
+      line: [{ w: { from: 32, to: 28, takes: 0 } }] },
+    { fen: 'W:WK28,38:B6,45', src: 'fins_de_partie/fin100d',
+      line: [{ w: { from: 28, to: 50, takes: 0 } }] },
+    { fen: 'W:WK15,34:B25,37', src: 'fins_de_partie/fin100c',
+      line: [{ w: { from: 15, to: 47, takes: 0 } }] },
+    { fen: 'W:WK18,42:B33,39', src: 'fic_finsdepartie/nfu27',
+      line: [{ w: { from: 18, to: 22, takes: 0 } }] },
+    { fen: 'W:W34,K39:BK25,35', src: 'fic_finsdepartie/u39',
+      line: [{ w: { from: 39, to: 48, takes: 0 } }] },
+    { fen: 'W:WK10,35:B25,29,33', src: 'fic_finsdepartie/nfu22',
+      line: [{ w: { from: 10, to: 15, takes: 0 } }] },
+    { fen: 'W:W38,39,47:B28,42', src: 'fic_finsdepartie/nfu31',
+      line: [{ w: { from: 39, to: 33, takes: 0 } }] },
+    { fen: 'W:WK6,38:B22,23,K28', src: 'fins_de_partie/fin100d',
+      line: [{ w: { from: 38, to: 32, takes: 0 } }] },
+    { fen: 'W:W38,K42:B14,18,28,34', src: 'fins_de_partie/fin100c',
+      line: [{ w: { from: 42, to: 48, takes: 0 } }] },
+    { fen: 'W:W13,27,41:B3,11,16', src: 'fic_finsdepartie/nfu28',
+      line: [{ w: { from: 41, to: 37, takes: 0 } }] },
+  ],
 };
 
 export const COMBO_SERIES = [
@@ -131,7 +159,22 @@ export const COMBO_SERIES = [
     requires: 'honore',
     tagline: 'Chaque énigme mène à la couronne.',
   },
+  {
+    id: 'hortense',
+    npc: 'hortense',
+    kind: 'etude', // études de finales : UN SEUL coup gagne (pas de sacrifice imposé)
+    title: 'Les études d\'Hortense',
+    icon: '🕯️',
+    reward: 60,
+    unlock: { kind: 'pieces', theme: 'ivoire', label: 'Pions « Ivoire & ébène »' },
+    requires: null, // proposé par Hortense après sa leçon (voir quests.js)
+    tagline: 'Une position, un seul coup juste. Trouve-le.',
+  },
 ];
+
+export function comboSeriesByNpc(npcId) {
+  return COMBO_SERIES.find((s) => s.npc === npcId);
+}
 
 export function comboSeriesById(id) {
   return COMBO_SERIES.find((s) => s.id === id);
@@ -191,6 +234,15 @@ const VOICE = {
     follow: [{ who: 'honore', text: 'Voilà. Et maintenant, le damier te doit de l\'argent : encaisse.' }],
     wrong: { who: 'honore', text: 'Hum. Joli coup de promeneur, mais rien n\'est forcé. Cherche le sacrifice qui déclenche TOUT.' },
     solved: [{ who: 'honore', text: 'Ah ! Ça, c\'est un coup à raconter au café. Les grandes combinaisons ne meurent jamais.' }],
+  },
+  hortense: {
+    search: (n, total) => [
+      { who: 'hortense', text: `Étude ${n}/${total}, ${'mon petit'}. Les Blancs jouent et GAGNENT — mais attention : dans une étude de finale, UN SEUL coup mène au but. Tous les autres laissent filer la nulle.` },
+      { who: 'hortense', text: 'Prends ton temps. Compte les temps, regarde les lignes… et ne joue que lorsque tu SAIS.' },
+    ],
+    follow: [{ who: 'hortense', text: 'Continue — la précision jusqu\'au bout.' }],
+    wrong: { who: 'hortense', text: 'Non, mon petit — après ce coup, la défense tient et c\'est la nulle. Dans les finales, « presque juste » veut dire faux. Recommence.' },
+    solved: [{ who: 'hortense', text: 'LE coup juste. Tu vois : une finale ne se joue pas, elle se RÉSOUT.' }],
   },
   seraphine: {
     search: (n, total) => [

@@ -132,6 +132,16 @@ export const PIECE_THEMES = [
     b: { fill: '#7a4a21', edge: '#4a2a10', line: '#fff0f5', icing: '#8ee08e' },
   },
   {
+    id: 'ivoire',
+    name: 'Ivoire & ébène',
+    desc: 'Les pions d\'étude d\'Hortense. Introuvables en boutique.',
+    secret: 'Récompense : les études de finales d\'Hortense (Académie).',
+    price: 0,
+    shape: 'disc',
+    w: { fill: '#f8f4e8', edge: '#d8cfb8', line: '#a89c7c' },
+    b: { fill: '#26221e', edge: '#0e0c0a', line: '#8a7c64' },
+  },
+  {
     id: 'heritage',
     name: 'Héritage doré',
     desc: 'Les pions de collection d\'Honoré. Introuvables en boutique.',
