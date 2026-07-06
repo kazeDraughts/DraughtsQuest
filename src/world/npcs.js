@@ -126,6 +126,15 @@ export const CHARACTERS = {
     id: 'hortense', name: 'Hortense',
     look: { skin: '#f0c6a0', hair: '#d8d8d2', hairStyle: 'bun', glasses: true, shirt: '#8a5a78', blush: true, bg: '#4a3242' },
   },
+  // --- L'Annexe des maîtres (réservée aux diplômés) ---
+  piet: {
+    id: 'piet', name: 'Piet',
+    look: { skin: '#f5d3b0', hair: '#e8c47a', hairStyle: 'short', shirt: '#d8501e', bg: '#54250f' },
+  },
+  sacha: {
+    id: 'sacha', name: 'Sacha',
+    look: { skin: '#e8c49c', hair: '#20242c', hairStyle: 'short', glasses: true, beard: '#20242c', shirt: '#2e5a8a', bg: '#1e3248' },
+  },
 };
 
 export function characterById(id) {

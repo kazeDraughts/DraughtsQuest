@@ -16,7 +16,7 @@
 import assert from 'node:assert/strict';
 import { RulesEngine } from '../src/engine/rules.js';
 import { findBestMove } from '../src/ai/search.js';
-import { STYLES } from '../src/story/academy.js';
+import { STYLES, MASTER_STYLES } from '../src/story/academy.js';
 import { AI_LEVELS } from '../src/ai/levels.js';
 
 let passed = 0;
@@ -46,11 +46,11 @@ function whiteEval(fen, depth = 6, ms = 4000) {
 }
 
 // Les leçons qui se terminent sur un gain certifié doivent finir gagnantes.
-const ENDS_WINNING = new Set(['semiouverte', 'taquin', 'bois', 'finales']);
+const ENDS_WINNING = new Set(['semiouverte', 'taquin', 'bois', 'finales', 'roozenburg']);
 
 console.log('Académie des styles — validation des leçons par le moteur');
 
-for (const style of STYLES) {
+for (const style of [...STYLES, ...MASTER_STYLES]) {
   test(`${style.icon} ${style.title} — la leçon se rejoue`, () => {
     assert.ok(style.steps.length > 0, 'leçon vide');
     assert.ok(style.steps[0].fen, 'la première étape doit poser une position');
@@ -127,7 +127,7 @@ for (const style of STYLES) {
 test('identifiants, PNJ et récompenses cohérents', () => {
   const ids = new Set();
   const npcs = new Set();
-  for (const s of STYLES) {
+  for (const s of [...STYLES, ...MASTER_STYLES]) {
     assert.ok(!ids.has(s.id), `id en double : ${s.id}`);
     assert.ok(!npcs.has(s.npc), `PNJ en double : ${s.npc}`);
     ids.add(s.id);
@@ -135,6 +135,7 @@ test('identifiants, PNJ et récompenses cohérents', () => {
     assert.ok(s.reward > 0 && s.title && s.desc && s.icon, `${s.id} : fiche incomplète`);
   }
   assert.equal(STYLES.length, 6, 'l\'Académie compte cinq styles et l\'école des finales');
+  assert.equal(MASTER_STYLES.length, 2, 'l\'Annexe compte deux systèmes de maîtres');
 });
 
 console.log(`\n${passed} tests réussis${process.exitCode ? ' (avec des ÉCHECS)' : ''}`);

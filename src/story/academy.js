@@ -435,14 +435,187 @@ export const STYLES = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// L'ANNEXE DES MAÎTRES — réservée aux diplômés de l'Académie.
+// Deux systèmes de haut niveau, d'après les ouvrages interactifs de
+// Jean-Pierre Dubois (champion de France 1982) diffusés par « Allons à
+// dame » : le système Roozenburg et le système Keller. Lignes re-certifiées.
+// ---------------------------------------------------------------------------
+export const MASTER_STYLES = [
+  {
+    id: 'roozenburg',
+    npc: 'piet',
+    icon: '🌷',
+    title: 'Le système Roozenburg',
+    desc: 'L\'attaque du centre : un taquin épaulé, puis la pression sur le pion isolé.',
+    reward: 90,
+    steps: [
+      {
+        fen: 'W:W29,30,31,32,33,34,35,36,37,38,39,42,44,48:B2,4,7,8,9,12,13,15,16,17,18,19,23,25',
+        intro: [
+          { who: 'piet', text: 'Piet Roozenburg, champion du monde de 1948 à 1956, a donné son nom au plus célèbre des systèmes d\'attaque : on ne prend pas le centre… on l\'ASSIÈGE. D\'abord un pion taquin épaulé, ensuite la pression sur le pion central isolé.' },
+          { who: 'piet', text: 'Regarde le pion noir 23 : c\'est lui, la cible. Première étape : installe le taquin par l\'échange — offre en 24.' },
+        ],
+        accept: [{ from: 30, to: 24 }],
+        reply: { from: 19, to: 30 },
+        wrong: { who: 'piet', text: 'Le système commence toujours par l\'ÉCHANGE d\'installation : quel coup offre un pion en 24, la case du taquin ?' },
+        success: [
+          { who: 'piet', text: '30-24 ! La prise 19x30 est obligatoire… et elle dégage la colonne du pion 23 : le voilà seul au centre.' },
+        ],
+        hint: { from: 30, to: 24 },
+      },
+      {
+        intro: [
+          { who: 'piet', text: 'Reprends — et installe.' },
+        ],
+        accept: [{ from: 35, to: 24 }],
+        wrong: { who: 'piet', text: 'La reprise est obligatoire : ton pion 35 ramasse le pion 30.' },
+        success: [
+          { who: 'piet', text: '35x24 : le taquin est en place, ÉPAULÉ par le pion 29 — jamais de taquin sans épaule ! Et la menace de fond est née : l\'attaque du pion central 23.' },
+        ],
+        hint: { from: 35, to: 24 },
+      },
+      {
+        // Et si les Noirs tentent d'interdire l'attaque par 17-22 ? La
+        // formation de pionnage 33-39-44 punit immédiatement (certifié +163).
+        fen: 'W:W24,29,31,32,33,34,36,37,38,39,42,44,48:B2,4,7,8,9,12,13,15,16,18,22,23,25',
+        intro: [
+          { who: 'piet', text: 'Question piège : les Noirs viennent de jouer 17-22, pour interdire ton attaque en occupant la case 22. Ont-ils raison ?… Non. Et c\'est ta formation de pionnage 33-39-44 qui va le prouver. Frappe.' },
+        ],
+        accept: [{ from: 33, to: 28 }],
+        reply: { from: 22, to: 33 },
+        wrong: { who: 'piet', text: 'Cherche le coup qui met le pion 22 en PRISE OBLIGATOIRE… et prépare une reprise gagnante grâce à la colonne 39-44 derrière.' },
+        success: [
+          { who: 'piet', text: '33-28 ! Ils doivent prendre : 22x33…' },
+        ],
+        hint: { from: 33, to: 28 },
+      },
+      {
+        intro: [
+          { who: 'piet', text: 'Et maintenant, la récolte.' },
+        ],
+        accept: [{ from: 39, to: 19 }],
+        wrong: { who: 'piet', text: 'La rafle majoritaire t\'attend : suis le chemin de ton pion 39.' },
+        success: [
+          { who: 'piet', text: '39x19 : deux pions repris, un pion de gain net. Retiens la mécanique Roozenburg : taquin ÉPAULÉ, pion central ISOLÉ, et une formation de pionnage prête à punir toute défense hâtive.' },
+        ],
+        hint: { from: 39, to: 19 },
+      },
+    ],
+    practice: {
+      fen: 'B:W24,29,31,32,33,34,36,37,38,39,42,44,48:B2,4,7,8,9,12,13,15,16,17,18,23,25',
+      level: 'regional',
+      label: 'Système Roozenburg — le siège du centre',
+      reward: 110,
+      invite: 'Le taquin est installé, le pion 23 est isolé. Joue le siège jusqu\'au bout — sans jamais lâcher la pression.',
+    },
+  },
+  {
+    id: 'keller',
+    npc: 'sacha',
+    icon: '❄️',
+    title: 'Le système Keller',
+    desc: 'L\'engagement total dès l\'ouverture : la variante Chizhov, coup par coup.',
+    reward: 90,
+    steps: [
+      {
+        fen: 'W:W31-50:B1-20',
+        intro: [
+          { who: 'sacha', text: 'Le système Keller : la forme de jeu où l\'engagement est TOTAL dès les premiers coups. On va rejouer la ligne d\'une partie de championnat du monde (Boomstra–Ivanov, 2013) — la variante que le grand Alexis Chizhov a rendue célèbre.' },
+          { who: 'sacha', text: 'Tout commence par le coup de flanc : 33-29, la signature du Keller.' },
+        ],
+        accept: [{ from: 33, to: 29 }],
+        reply: { from: 17, to: 22 },
+        wrong: { who: 'sacha', text: 'La signature du système : le pion 33 monte en 29, sur le flanc. Rien d\'autre.' },
+        success: [{ who: 'sacha', text: '33-29 — et 17-22 en face : les Noirs prennent date au centre. Laisse-les faire : le Keller se joue en colonne.' }],
+        hint: { from: 33, to: 29 },
+      },
+      {
+        intro: [{ who: 'sacha', text: 'Reforme la colonne derrière ton pion de pointe.' }],
+        accept: [{ from: 39, to: 33 }],
+        reply: { from: 11, to: 17 },
+        wrong: { who: 'sacha', text: 'La case 33 vient de se vider : qui la reprend ?' },
+        success: [{ who: 'sacha', text: '39-33. Eux consolident : 11-17. Chacun bâtit son armée — la tension monte.' }],
+        hint: { from: 39, to: 33 },
+      },
+      {
+        intro: [{ who: 'sacha', text: 'Encore la colonne.' }],
+        accept: [{ from: 44, to: 39 }],
+        reply: { from: 6, to: 11 },
+        wrong: { who: 'sacha', text: 'Toujours la même diagonale : 44 relaie 39.' },
+        success: [{ who: 'sacha', text: '44-39, 6-11. Remarque : pas un échange depuis le début. Le Keller accumule la tension… pour la libérer d\'un coup.' }],
+        hint: { from: 44, to: 39 },
+      },
+      {
+        intro: [{ who: 'sacha', text: 'Complète l\'arrière-garde.' }],
+        accept: [{ from: 50, to: 44 }],
+        reply: { from: 1, to: 6 },
+        wrong: { who: 'sacha', text: 'Le pion 50 monte : c\'est le dernier maillon de ta grande colonne.' },
+        success: [{ who: 'sacha', text: '50-44 — la colonne 29-33-39-44 est complète. La plus belle charpente du jeu de dames, si tu veux mon avis.' }],
+        hint: { from: 50, to: 44 },
+      },
+      {
+        intro: [{ who: 'sacha', text: 'Un coup de flanc préparatoire : gêne son aile gauche.' }],
+        accept: [{ from: 31, to: 26 }],
+        reply: { from: 16, to: 21 },
+        wrong: { who: 'sacha', text: 'Sur l\'AILE : le pion 31 vient tenir la case 26, face à leur pion de bande.' },
+        success: [{ who: 'sacha', text: '31-26, 16-21. Tout est en place… C\'est ici que Chizhov dégainait. Prêt pour le feu d\'artifice ?' }],
+        hint: { from: 31, to: 26 },
+      },
+      {
+        intro: [
+          { who: 'sacha', text: 'LA VARIANTE CHIZHOV : 29-24 ! On offre — et le damier explose en échanges. Joue, et suis bien chaque reprise.' },
+        ],
+        accept: [{ from: 29, to: 24 }],
+        reply: { from: 19, to: 30 },
+        wrong: { who: 'sacha', text: 'Le coup d\'engagement : ton pion de pointe 29 plonge en 24, EN PRISE. C\'est voulu.' },
+        success: [{ who: 'sacha', text: '29-24 ! 19x30 — première étincelle.' }],
+        hint: { from: 29, to: 24 },
+      },
+      {
+        intro: [{ who: 'sacha', text: 'Reprends.' }],
+        accept: [{ from: 35, to: 24 }],
+        reply: { from: 20, to: 29 },
+        wrong: { who: 'sacha', text: '35 ramasse 30.' },
+        success: [{ who: 'sacha', text: '35x24, 20x29 : ils répliquent au centre…' }],
+        hint: { from: 35, to: 24 },
+      },
+      {
+        intro: [{ who: 'sacha', text: 'Continue la séquence — chaque prise est obligatoire.' }],
+        accept: [{ from: 34, to: 23 }],
+        reply: { from: 18, to: 29 },
+        wrong: { who: 'sacha', text: '34 saute 29.' },
+        success: [{ who: 'sacha', text: '34x23, 18x29…' }],
+        hint: { from: 34, to: 23 },
+      },
+      {
+        intro: [{ who: 'sacha', text: 'Le point final de la séquence.' }],
+        accept: [{ from: 33, to: 24 }],
+        wrong: { who: 'sacha', text: 'Ton pion 33 conclut la valse : il saute 29.' },
+        success: [
+          { who: 'sacha', text: '33x24 — la poussière retombe : quatre échanges, et TON pion trône en 24 face à leur aile engagée en 21-22. C\'est la structure Keller-Chizhov : matériel égal, mais un avant-poste, des colonnes… et toutes les combinaisons à venir sont pour toi.' },
+        ],
+        hint: { from: 33, to: 24 },
+      },
+    ],
+    practice: {
+      fen: 'B:W24,26,32,36,37,38,39,40,41,42,43,44,45,46,47,48,49:B2,3,4,5,6,7,8,9,10,11,12,13,14,15,17,21,22',
+      level: 'regional',
+      label: 'Structure Keller-Chizhov — à toi de jouer',
+      reward: 110,
+      invite: 'La structure de championnat du monde est sur le damier. Exploite ton avant-poste 24 — et gare aux contre-combinaisons.',
+    },
+  },
+];
+
 export const ACADEMY_GRADUATE_BONUS = 250;
 
 export function styleById(id) {
-  return STYLES.find((s) => s.id === id);
+  return STYLES.find((s) => s.id === id) || MASTER_STYLES.find((s) => s.id === id);
 }
 
 export function styleByNpc(npcId) {
-  return STYLES.find((s) => s.npc === npcId);
+  return STYLES.find((s) => s.npc === npcId) || MASTER_STYLES.find((s) => s.npc === npcId);
 }
 
 export function styleDone(state, id) {

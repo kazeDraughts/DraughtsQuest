@@ -70,6 +70,14 @@ export async function onMapEntered(mapId, ctx) {
     ctx.setFlag('met_academy');
   }
 
+  if (mapId === 'annex' && !ctx.flag('met_annex')) {
+    await ctx.say([
+      { who: 'piet', text: `${g('Un diplômé', 'Une diplômée')} ! Entre, entre. Ici, on ne parle plus de principes… on parle de SYSTÈMES de champions du monde.` },
+      { who: 'sacha', text: 'Roozenburg chez lui, Keller chez moi. Choisis ta table — et prépare-toi à jouer de vraies lignes de championnat.' },
+    ]);
+    ctx.setFlag('met_annex');
+  }
+
   if (mapId === 'club' && !ctx.flag('met_gigi')) {
     await ctx.say([
       { who: 'arbiter', text: 'Tiens, une nouvelle recrue ! Entre, entre. Le patron veut sûrement te voir.' },
@@ -521,6 +529,18 @@ export function getNpcDialogue(npcId, ctx) {
         greet: 'Moi c\'est Tiphaine ! Ma passion : embêter les gens. Sur le damier, hein. Mon arme préférée : LE TAQUIN, le petit pion posé en 24 qui rend fou tout le voisinage.',
         pitch: 'Je te montre ? Il cloue les pions 15 et 25 au bord, il ne fait « rien »… et au premier geste d\'énervement en face, il CROQUE. Tu vas adorer.',
         after: 'Taquine, taquine toujours ! Mais garde tes gardes du corps derrière le 24 — un taquin seul finit toujours par se faire encercler.',
+      });
+    case 'piet':
+      return professorDialogue(ctx, 'piet', {
+        greet: 'Welkom ! Piet, comme le grand Piet Roozenburg — champion du monde de 1948 à 1956. Mon système porte son nom, et crois-moi : le centre adverse n\'en sort jamais indemne.',
+        pitch: 'Je t\'apprendrai à ASSIÉGER : le taquin épaulé d\'abord, la pression sur le pion central isolé ensuite… et la punition immédiate pour qui défend de travers.',
+        after: 'Le siège, toujours le siège : un taquin épaulé, un pion isolé… et la patience du chasseur hollandais.',
+      });
+    case 'sacha':
+      return professorDialogue(ctx, 'sacha', {
+        greet: 'Sacha. J\'ai grandi avec les parties d\'Alexis Chizhov — l\'homme qui a fait du système Keller une arme de championnat du monde.',
+        pitch: 'Chez moi, pas d\'échauffement : l\'engagement est TOTAL dès le troisième coup. Je te ferai rejouer une ligne de championnat du monde, coup par coup, jusqu\'à la structure que tous les maîtres rêvent d\'avoir.',
+        after: 'La colonne 29-33-39-44, l\'avant-poste 24… Quand tu vois ça sur ton damier, la partie est déjà à moitié gagnée. L\'autre moitié, c\'est du calcul.',
       });
     case 'hortense':
       return professorDialogue(ctx, 'hortense', {

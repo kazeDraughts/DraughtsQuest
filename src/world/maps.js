@@ -124,9 +124,10 @@ function buildCampus() {
   border(g, 't');
   rect(g, 0, 7, 9, 8, 'p');               // allée depuis la ville (ouest)
   rect(g, 9, 6, 10, 8, 'p');              // montée vers le perron
+  rect(g, 11, 7, 16, 7, 'p');             // sentier vers l'Annexe des maîtres
   rect(g, 5, 10, 14, 11, 's');            // esplanade de sable au sud
   rect(g, 16, 9, 18, 11, 'w');            // bassin d'agrément
-  sprinkle(g, [[3, 3], [16, 2], [2, 11], [4, 5], [15, 5]], 't');
+  sprinkle(g, [[3, 3], [2, 11], [4, 5]], 't');
   sprinkle(g, [[3, 9], [6, 4], [13, 4], [17, 6], [7, 12], [12, 12], [2, 6]], 'f');
   sprinkle(g, [[14, 12], [3, 12]], ',');
   set(g, 0, 7, 'p'); set(g, 0, 8, 'p');   // ouverture vers la ville
@@ -137,11 +138,13 @@ function buildCampus() {
     spawn: { x: 2, y: 7.5 },
     props: [
       { type: 'house', x: 5, y: 1, w: 10, h: 4, palette: { body: '#ded3bc', roof: '#6a4a8e' }, doorX: 9, label: '🎓 Académie du Damier', big: true },
+      { type: 'house', x: 15, y: 4, w: 4, h: 3, palette: { body: '#c9b8a0', roof: '#3c5a78' }, doorX: 16, label: '🌟 Annexe des maîtres' },
       { type: 'fountain', x: 11, y: 10, w: 2, h: 2 },
-      { type: 'sign', x: 7, y: 9, text: 'Académie du Damier — ici, on apprend les STYLES : classique, Ghestem, semi-ouverte, taquin, marchand de bois.' },
+      { type: 'sign', x: 7, y: 9, text: 'Académie du Damier — ici, on apprend les STYLES : classique, Ghestem, semi-ouverte, taquin, marchand de bois… et les finales.' },
     ],
     doors: [
       { x: 9, y: 5, target: { map: 'academy', x: 9, y: 10.2, dir: 'up' }, lockFlag: 'club_unlocked', lockedMessage: 'L\'Académie ouvre ses portes aux membres du club d\'Otterlaws. Fais d\'abord tes preuves au club !' },
+      { x: 16, y: 6, target: { map: 'annex', x: 5.5, y: 6.2, dir: 'up' }, lockFlag: 'academy_graduate', lockedMessage: 'L\'Annexe des maîtres est réservée aux DIPLÔMÉS de l\'Académie. Termine les six leçons !' },
     ],
     exits: [
       { x1: -0.5, y1: 6.5, x2: 0.6, y2: 9.6, target: { map: 'town', x: 20.4, y: 8.5, dir: 'left' } },
@@ -328,6 +331,39 @@ function buildAcademy() {
   };
 }
 
+// ---------------------------------------------------------------------------
+// L'ANNEXE DES MAÎTRES — la petite salle des grands systèmes
+// ---------------------------------------------------------------------------
+function buildAnnex() {
+  const g = interior(11, 8);
+  rect(g, 2, 2, 8, 5, 'c');
+  set(g, 5, 7, 'F'); set(g, 6, 7, 'F');
+  return {
+    id: 'annex', name: 'Annexe des maîtres', outdoor: false,
+    grid: toStrings(g),
+    spawn: { x: 5.5, y: 5.5 },
+    props: [
+      { type: 'blackboard', x: 4, y: 1, w: 2, h: 1 },
+      { type: 'boardtable', x: 2, y: 3, w: 2, h: 1 },
+      { type: 'boardtable', x: 7, y: 3, w: 2, h: 1 },
+      { type: 'trophy', x: 1, y: 1, w: 2, h: 1 },
+      { type: 'shelf', x: 7, y: 1, w: 2, h: 1 },
+      { type: 'plant', x: 9, y: 5, w: 1, h: 1 },
+      { type: 'mat', x: 5, y: 6.6, w: 2, h: 1 },
+    ],
+    doors: [
+      { x: 5, y: 7, target: { map: 'campus', x: 16.5, y: 7.2, dir: 'down' } },
+      { x: 6, y: 7, target: { map: 'campus', x: 16.5, y: 7.2, dir: 'down' } },
+    ],
+    exits: [],
+    npcs: [
+      { id: 'piet', x: 3, y: 4.4, dir: 'down' },
+      { id: 'sacha', x: 8, y: 4.4, dir: 'down' },
+    ],
+    interactables: [],
+  };
+}
+
 export const MAPS = {
   village: buildVillage(),
   town: buildTown(),
@@ -337,6 +373,7 @@ export const MAPS = {
   shop: buildShop(),
   campus: buildCampus(),
   academy: buildAcademy(),
+  annex: buildAnnex(),
 };
 
 /** Personnalise les libellés qui portent le prénom du héros/de l'héroïne. */

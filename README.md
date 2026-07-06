@@ -116,6 +116,24 @@ tric-trac** (blocage de la dame sur la diagonale 6-45). Thèmes issus des
 méthodes classiques de fins de partie (« Allons à dame » de J-F. Latapie,
 traités FFJD/FMJD) — texte original, positions revérifiées.
 
+### 🌟 L'Annexe des maîtres (réservée aux diplômés)
+
+Le **diplôme de l'Académie** (les 6 leçons) débloque une petite salle sur
+le campus où deux maîtres enseignent des systèmes de niveau championnat,
+d'après les ouvrages interactifs de J-P. Dubois (champion de France 1982)
+diffusés gratuitement par « Allons à dame » :
+
+- **Piet** 🌷 — *le système Roozenburg* (champion du monde 1948-1956) :
+  l'échange d'installation 30-24/35x24, le taquin épaulé, la pression sur
+  le pion central isolé… et la punition de la défense 17-22 par la
+  formation 33-39-44 (gain certifié) ;
+- **Sacha** ❄️ — *le système Keller, variante Chizhov* : la ligne complète
+  d'une partie de championnat du monde (Boomstra–Ivanov, 2013) rejouée
+  coup par coup, jusqu'à la structure à avant-poste 24.
+
+Chaque système se conclut par une partie d'application de niveau
+« Champion régional ».
+
 Chaque leçon se joue sur le vrai moteur (coups commentés, répliques
 scriptées), puis le professeur propose une **partie d'application** dans la
 structure étudiée. Les cinq leçons donnent le **diplôme de l'Académie** :
