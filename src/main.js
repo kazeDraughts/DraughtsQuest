@@ -27,6 +27,8 @@ import {
 import { updateElo, eloTitle } from './career/elo.js';
 import { renderShop } from './shop/shop.js';
 import { renderCarnet } from './ui/carnet.js';
+import { GAMES, gameById } from './story/games.js';
+import { RulesEngine } from './engine/rules.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -282,6 +284,7 @@ function enterWorld() {
         openCompetitions: () => openCompetitions(),
         openShop: () => openShop('world'),
         openTraining: () => openTraining('world'),
+        openLibrary: () => openLibrary(),
         updateHud: () => {
           const chip = $('hud-points');
           chip.textContent = `🪙 ${state.points}`;
@@ -912,6 +915,99 @@ function openCarnet(origin = 'menu') {
   showScreen('screen-carnet');
   renderCarnet();
 }
+
+// ---------------------------------------------------------------------------
+// La bibliothèque du club : parties de maîtres à rejouer
+// ---------------------------------------------------------------------------
+let readerBoard = null;   // BoardView dédié à l'écran de lecture
+let readerGame = null;    // { game, fens, idx }
+
+function openLibrary() {
+  world?.leave();
+  showScreen('screen-library');
+  const list = $('library-list');
+  list.innerHTML = '';
+  const read = state.library?.read || {};
+  for (const g of GAMES) {
+    const row = el('div.bracket-row');
+    row.append(el('div.who', [
+      el('span', '📖'),
+      el('div', [
+        el('div', `${g.white} — ${g.black} ${read[g.id] ? '✅' : ''}`),
+        el('div.tag-elo', `${g.event} · ${g.theme} · ${g.moves.length} coups`),
+      ]),
+    ]));
+    row.append(el('button.btn.btn-small' + (read[g.id] ? '' : '.btn-primary'),
+      read[g.id] ? 'Relire' : 'Lire · 🪙 40', { onclick: () => openGameReader(g.id) }));
+    list.append(row);
+  }
+}
+
+function openGameReader(id) {
+  const game = gameById(id);
+  if (!game) return;
+  showScreen('screen-reader');
+  if (!readerBoard) readerBoard = new BoardView($('reader-canvas'));
+  readerBoard.setThemes(state.equipped.board, state.equipped.pieces);
+  // Précalcule toutes les positions de la partie
+  const engine = new RulesEngine();
+  const fens = [engine.fen()];
+  const played = [];
+  for (const m of game.moves) {
+    const legal = engine.getLegalMoves().find((x) => x.from === m.from && x.to === m.to);
+    if (!legal) break; // ne devrait pas arriver : parties validées par les tests
+    engine.applyMove(legal);
+    fens.push(engine.fen());
+    played.push(legal);
+  }
+  readerGame = { game, fens, played, idx: 0 };
+  $('reader-title').textContent = `${game.white} — ${game.black}`;
+  $('reader-event').textContent = `${game.event} · ${game.theme}`;
+  renderReader();
+}
+
+function renderReader() {
+  if (!readerGame) return;
+  const { game, fens, played, idx } = readerGame;
+  const engine = new RulesEngine(fens[idx]);
+  readerBoard.setState(engine.getBoard(), {
+    lastMove: idx > 0 ? { from: played[idx - 1].from, to: played[idx - 1].to } : null,
+  });
+  $('reader-ply').textContent = `${idx}/${played.length}`;
+  // Note : celle du coup qui vient d'être joué (idx-1), sinon l'intro en 0
+  const note = idx === 0 ? game.notes[0] : game.notes[idx - 1];
+  const mv = idx > 0 ? played[idx - 1] : null;
+  const mvTxt = mv ? `${idx % 2 === 1 ? 'Blancs' : 'Noirs'} : ${mv.from}${mv.captures.length ? 'x' : '-'}${mv.to}. ` : '';
+  $('reader-note').textContent = (idx > 0 ? mvTxt : '') + (note && idx > 0 && game.notes[idx - 1] ? note : idx === 0 ? note : '');
+
+  // Première lecture complète : récompense
+  if (idx === played.length) {
+    if (!state.library) state.library = { read: {} };
+    if (!state.library.read[game.id]) {
+      state.library.read[game.id] = true;
+      state.points += 40;
+      save();
+      audio.playSfx('coin');
+      $('reader-note').textContent += ' — 🪙 +40 Pions d\'Or (première lecture) !';
+    }
+  }
+}
+
+function readerStep(delta) {
+  if (!readerGame) return;
+  const next = Math.max(0, Math.min(readerGame.played.length, readerGame.idx + delta));
+  if (next === readerGame.idx) return;
+  readerGame.idx = next;
+  audio.playSfx('blip');
+  renderReader();
+}
+
+$('btn-reader-start').addEventListener('click', () => { if (readerGame) { readerGame.idx = 0; renderReader(); } });
+$('btn-reader-end').addEventListener('click', () => { if (readerGame) { readerGame.idx = readerGame.played.length; renderReader(); } });
+$('btn-reader-prev').addEventListener('click', () => readerStep(-1));
+$('btn-reader-next').addEventListener('click', () => readerStep(1));
+$('btn-reader-back').addEventListener('click', () => openLibrary());
+$('btn-library-back').addEventListener('click', () => enterWorld());
 
 $('btn-carnet').addEventListener('click', () => openCarnet('menu'));
 $('btn-world-carnet').addEventListener('click', () => openCarnet('world'));

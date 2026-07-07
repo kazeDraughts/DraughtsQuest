@@ -156,6 +156,33 @@
       <div class="bracket" id="training-list"></div>
     </section>
 
+    <!-- ===================== BIBLIOTHÈQUE DU CLUB ===================== -->
+    <section id="screen-library" class="screen panel-screen">
+      <div class="panel-head">
+        <h2>📚 La bibliothèque du club</h2>
+        <button class="btn btn-small" id="btn-library-back">Retour</button>
+      </div>
+      <p class="menu-footnote">Des parties de maîtres à rejouer coup par coup — la première lecture complète de chaque partie rapporte des Pions d'Or.</p>
+      <div class="bracket" id="library-list"></div>
+    </section>
+
+    <section id="screen-reader" class="screen panel-screen">
+      <div class="panel-head">
+        <h2 id="reader-title">Partie</h2>
+        <button class="btn btn-small" id="btn-reader-back">Bibliothèque</button>
+      </div>
+      <p class="menu-footnote" id="reader-event"></p>
+      <div class="board-wrap reader-board"><canvas id="reader-canvas"></canvas></div>
+      <p class="reader-note" id="reader-note"></p>
+      <div class="reader-controls">
+        <button class="btn btn-small" id="btn-reader-start">⏮</button>
+        <button class="btn btn-small" id="btn-reader-prev">◀</button>
+        <span class="hud-chip" id="reader-ply">0/0</span>
+        <button class="btn btn-small btn-primary" id="btn-reader-next">▶</button>
+        <button class="btn btn-small" id="btn-reader-end">⏭</button>
+      </div>
+    </section>
+
     <!-- ===================== CARNET DU DAMISTE ===================== -->
     <section id="screen-carnet" class="screen panel-screen">
       <div class="panel-head">

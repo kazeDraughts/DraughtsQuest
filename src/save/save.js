@@ -27,6 +27,8 @@ export function freshState() {
     // + énigmes des PNJ (src/story/combos.js)
     // + Académie des styles : leçons suivies / parties d'application gagnées
     training: { done: {}, combos: {}, styles: { done: {}, applied: {} } },
+    // Bibliothèque du club : parties de maîtres déjà lues (récompensées 1 fois)
+    library: { read: {} },
     // Monnaie de la boutique (phase 6)
     points: 0,
     inventory: { boards: ['classic'], pieces: ['classic'] },
@@ -56,6 +58,8 @@ export function loadSave() {
       if (!state.training.styles) state.training.styles = { done: {}, applied: {} };
       if (!state.training.styles.done) state.training.styles.done = {};
       if (!state.training.styles.applied) state.training.styles.applied = {};
+      state.library = { read: {}, ...data.library };
+      if (!state.library.read) state.library.read = {};
       state.career = { ...freshState().career, ...data.career };
       state.inventory = { ...freshState().inventory, ...data.inventory };
       state.equipped = { ...freshState().equipped, ...data.equipped };

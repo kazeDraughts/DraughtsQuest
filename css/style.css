@@ -461,3 +461,14 @@ body {
   .player-extra { display: none; }
   .turn-pill { font-size: .75rem; padding: 6px 10px; }
 }
+
+/* ------------------------- Bibliothèque du club ------------------------- */
+.reader-board { height: min(52vh, 92vw); flex: none; }
+.reader-note {
+  min-height: 44px; margin: 8px auto 0; max-width: 640px; text-align: center;
+  color: var(--ink-soft, #cfd8e3); font-size: 14px; line-height: 1.45;
+}
+.reader-controls {
+  display: flex; gap: 10px; justify-content: center; align-items: center;
+  margin-top: 8px; flex-wrap: wrap;
+}

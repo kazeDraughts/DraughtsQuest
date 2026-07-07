@@ -158,6 +158,18 @@ prime de Pions d'Or et damier exclusif « L'Ardoise du professeur ».
 `tests/academy.test.mjs` rejoue chaque leçon et re-certifie les menaces
 « imparables » à chaque `npm test`.
 
+## 📚 La bibliothèque du club
+
+L'étagère du club (à côté du tableau noir) ouvre la bibliothèque : **huit
+parties de maîtres à rejouer coup par coup** — Korchov–Kouperman (URSS
+1955), Sijbrands–Varkevisser (1967), Zalitis–Gantwarg, Chizhov–Clerc
+(Leeuwarden 1998), Boomstra–Schotanus, Shchegolev–Kolodiev, etc. Les coups
+sont des faits historiques extraits du corpus « Allons à dame » et
+**revérifiés par le moteur** (`tests/games.test.mjs` rejoue chaque partie
+intégralement) ; les annotations (rafles, promotions, bascules
+d'évaluation, fiches d'introduction) sont originales. Première lecture
+complète d'une partie : +40 Pions d'Or.
+
 ## 📖 Le Carnet du damiste
 
 Accessible depuis le menu et depuis le monde (bouton 📖 en haut à droite),

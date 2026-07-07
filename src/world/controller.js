@@ -138,6 +138,9 @@ export class WorldController {
     } else if (action === 'competitions') {
       if (this.services.openCompetitions) this.services.openCompetitions(ctx);
       else this.say([{ who: 'player', name: 'Tableau d\'affichage', text: 'Les prochains tournois seront annoncés bientôt.' }]);
+    } else if (action === 'library') {
+      if (this.services.openLibrary) this.services.openLibrary();
+      else this.say([{ who: 'player', name: 'Mise à jour', text: 'Une mise à jour du jeu vient d\'arriver : recharge la page pour consulter la bibliothèque !' }]);
     }
   }
 

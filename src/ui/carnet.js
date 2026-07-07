@@ -16,6 +16,7 @@ import { STYLES, MASTER_STYLES, styleDone, stylePracticeWon, stylesCompleted, is
 import { COMPETITIONS, competitionStatus, unlockHint } from '../career/opponents.js';
 import { eloTitle } from '../career/elo.js';
 import { BOARD_THEMES, PIECE_THEMES } from '../shop/themes.js';
+import { GAMES } from '../story/games.js';
 
 const WHERE = {
   fernand: 'Fernand, à l\'étang du hameau',
@@ -52,6 +53,11 @@ export function renderCarnet() {
   zone.append(el('div.shop-section-title', '🎓 SALLE D\'ENTRAÎNEMENT'));
   zone.append(row('🧑‍🏫', 'Les leçons de Gigi', `${exDone}/${EXERCISES.length}`,
     'Le tableau noir, au club d\'Otterlaws', exDone >= EXERCISES.length));
+
+  const readCount = Object.keys(state.library?.read || {}).length;
+  zone.append(row('📚', 'La bibliothèque du club', `${readCount}/${GAMES.length} parties lues`,
+    flag('club_unlocked') ? 'L\'étagère du club, près du tableau noir' : 'On dit que le club en garde une belle…',
+    readCount >= GAMES.length));
 
   // ------------------------------------------------------------- ACADÉMIE
   zone.append(el('div.shop-section-title', '🏛️ ACADÉMIE DU DAMIER'));
