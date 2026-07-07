@@ -41,7 +41,13 @@ ou n'importe quel serveur statique : `npx serve .`, `python3 -m http.server`…
 - promotion en **dame volante** (déplacement/prise à distance) uniquement si
   le pion **termine** son coup sur la dernière rangée ;
 - victoire par blocage ou capture totale ; nulles (triple répétition,
-  25 coups de dames sans prise ni coup de pion).
+  25 coups de dames sans prise ni coup de pion) ;
+- **proposition de nulle** (bouton 🤝) : l'IA VÉRIFIE la position au
+  minimax avant de répondre — elle refuse avant 30 demi-coups (« un peu
+  tôt ! »), refuse si elle est nettement mieux (seuil d'exigence selon sa
+  force : un grand maître ne lâche rien), accepte sinon ; en partie
+  locale, la nulle se conclut d'un commun accord entre les deux joueurs
+  (`tests/drawoffer.test.mjs`).
 
 Ces règles sont vérifiées par des tests automatiques : `npm test`
 (voir `tests/rules.test.mjs`, dont deux cas dédiés à la rafle majoritaire,

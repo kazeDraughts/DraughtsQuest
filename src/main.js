@@ -31,6 +31,7 @@ import { GAMES, gameById } from './story/games.js';
 import { RulesEngine } from './engine/rules.js';
 import { findBestMove } from './ai/search.js';
 import { PLACEMENT_STEPS, placementResult, placementSkipsTutorial } from './career/placement.js';
+import { aiAcceptsDraw, DRAW_RETRY_PLIES } from './game/drawoffer.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -40,6 +41,8 @@ const $ = (id) => document.getElementById(id);
 const boardView = new BoardView($('board-canvas'));
 let currentMatch = null;
 let matchOrigin = 'menu'; // 'menu' ou 'world' : où revenir en quittant la partie
+let currentMatchAI = null; // { side, elo } si un camp est tenu par l'IA
+let drawOfferLockedUntil = 0; // demi-coup avant lequel on ne peut reproposer
 
 /** Avatar d'un camp : id de personnage (portrait dessiné) ou emoji. */
 function setAvatar(spanId, who) {
@@ -73,6 +76,13 @@ function startMatch(config) {
   $('extra-white').textContent = config.white.extra ?? '';
   $('extra-black').textContent = config.black.extra ?? '';
   matchOrigin = config.origin ?? 'menu';
+  // Qui tient l'autre camp ? (sert à la proposition de nulle)
+  currentMatchAI = config.black.type === 'ai'
+    ? { side: 'b', elo: config.black.eloHint ?? 1200 }
+    : config.white.type === 'ai'
+      ? { side: 'w', elo: config.white.eloHint ?? 1200 }
+      : null;
+  drawOfferLockedUntil = 0;
 
   const match = new Match({
     boardView,
@@ -106,9 +116,11 @@ function startMatch(config) {
       const title = result.winner === 'draw' ? 'Partie nulle !' : `${names[result.winner]} gagne !`;
       const detail = result.resigned
         ? 'Victoire par abandon.'
-        : result.winner === 'draw'
-          ? 'Aucun des deux camps ne peut l\'emporter.'
-          : 'L\'adversaire ne peut plus jouer.';
+        : result.agreed
+          ? 'Nulle d\'un commun accord — proposition acceptée. 🤝'
+          : result.winner === 'draw'
+            ? 'Aucun des deux camps ne peut l\'emporter.'
+            : 'L\'adversaire ne peut plus jouer.';
       (config.onEnd || defaultMatchEnd)({ ...result, title, detail });
     },
   });
@@ -183,13 +195,16 @@ function startAIMatch(levelId) {
       name: level.name,
       avatar: level.icon,
       extra: `Elo ~${level.elo}`,
+      eloHint: level.elo,
       getMove: (fen) => ai.getMove(fen),
     },
     onEnd: (r) => showMatchOverlay({
       title: r.winner === 'w' ? 'Victoire ! 🎉' : r.winner === 'draw' ? 'Partie nulle' : 'Défaite…',
       detail: r.winner === 'w'
         ? `Tu as battu ${level.name} !`
-        : r.winner === 'draw' ? 'Personne ne peut plus gagner.' : `${level.name} l'emporte. Retente ta chance !`,
+        : r.winner === 'draw'
+          ? (r.agreed ? 'Proposition de nulle acceptée — ton adversaire a vérifié la position. 🤝' : 'Personne ne peut plus gagner.')
+          : `${level.name} l'emporte. Retente ta chance !`,
       buttons: [
         { label: 'Revanche', className: 'btn-primary', onClick: () => startAIMatch(levelId) },
         { label: 'Changer de niveau', className: 'btn-good', onClick: () => { quitToMenu(); openAISelect(); } },
@@ -309,6 +324,7 @@ function startPlacementMatch() {
       name: `Examen ${placement.step + 1}/3 — ${level.name}`,
       avatar: level.icon,
       extra: `Elo ~${level.elo}`,
+      eloHint: level.elo,
       getMove: (fen) => ai.getMove(fen),
     },
     onEnd: (r) => {
@@ -476,6 +492,7 @@ function startWorldMatch(cfg) {
       name: opp.name,
       avatar: opp.id,
       extra: cfg.extra ?? (levelCfg ? `Force ~${levelCfg.elo}` : ''),
+      eloHint: cfg.career ? opponentElo(cfg.career, state.career) : levelCfg?.elo,
       getMove: (fen) => ai.getMove(fen),
     },
     onEnd: (r) => {
@@ -511,7 +528,8 @@ function startWorldMatch(cfg) {
       showMatchOverlay({
         title: rc.title ?? (outcome === 'win' ? 'Victoire ! 🎉' : outcome === 'draw' ? 'Partie nulle' : 'Défaite…'),
         detail: rc.detail ?? (outcome === 'win' ? `Bien joué, tu as battu ${opp.name} !`
-          : outcome === 'draw' ? 'Personne ne l\'emporte cette fois.'
+          : outcome === 'draw'
+            ? (r.agreed ? `${opp.name} a examiné la position… et accepte la nulle. 🤝` : 'Personne ne l\'emporte cette fois.')
             : `${opp.name} l'emporte. Tu feras mieux la prochaine fois !`),
         rewards,
         buttons,
@@ -1264,6 +1282,63 @@ $('btn-tournament-play').addEventListener('click', () => playTournamentRound());
 // ---------------------------------------------------------------------------
 // Boutons de l'écran de partie
 // ---------------------------------------------------------------------------
+// --- Proposition de nulle : l'IA vérifie la position avant de répondre ---
+const DRAW_DECLINES = {
+  early: '« Une nulle ? Si tôt ?! On joue, d\'abord. »',
+  winning: '« Non merci… la position me plaît beaucoup trop. »',
+};
+
+$('btn-draw').addEventListener('click', () => {
+  if (!currentMatch || currentMatch.finished) return;
+
+  // Partie locale à deux : la nulle se décide entre humains.
+  if (!currentMatchAI) {
+    showMatchOverlay({
+      title: '🤝 Nulle d\'un commun accord ?',
+      detail: 'Les DEUX joueurs sont d\'accord pour partager le point ?',
+      buttons: [
+        { label: 'Oui, nulle !', className: 'btn-primary', onClick: () => currentMatch?.agreeDraw() },
+        { label: 'Non, on continue', className: 'btn-small', onClick: () => {} },
+      ],
+    });
+    return;
+  }
+
+  const plies = currentMatch.plies;
+  if (plies < drawOfferLockedUntil) {
+    showBanner('Ton adversaire vient de refuser — joue encore quelques coups avant de reproposer.');
+    return;
+  }
+  showBanner('🤝 Proposition de nulle… ton adversaire examine la position.');
+  // Laisse l'interface s'afficher avant le calcul (bref) du verdict.
+  setTimeout(() => {
+    if (!currentMatch || currentMatch.finished) return;
+    // Déroule d'abord les coups FORCÉS : findBestMove renvoie 0 par
+    // convention quand il n'y a qu'un coup légal, ce qui fausserait l'avis.
+    const probe = new RulesEngine(currentMatch.engine.fen());
+    let guard = 0;
+    while (!probe.isGameOver() && probe.getLegalMoves().length === 1 && guard++ < 24) {
+      probe.applyMove(probe.getLegalMoves()[0]);
+    }
+    let aiScore;
+    if (probe.isGameOver()) {
+      const w = probe.winner();
+      aiScore = w === 'draw' ? 0 : w === currentMatchAI.side ? 9999 : -9999;
+    } else {
+      const r = findBestMove(probe.fen(), { maxDepth: 7, timeMs: 900, noise: 0 }, 1);
+      aiScore = probe.turn() === currentMatchAI.side ? r.score : -r.score;
+    }
+    const verdict = aiAcceptsDraw({ aiScore, aiElo: currentMatchAI.elo, plies });
+    if (verdict.accept) {
+      currentMatch.agreeDraw();
+    } else {
+      drawOfferLockedUntil = plies + DRAW_RETRY_PLIES;
+      showBanner(DRAW_DECLINES[verdict.reason] || 'Proposition refusée.');
+      audio.playSfx('blip');
+    }
+  }, 450);
+});
+
 $('btn-resign').addEventListener('click', () => {
   if (!currentMatch || currentMatch.finished) return;
   // Dans l'aventure, l'humain (Blancs) abandonne ; en local, le camp au trait.

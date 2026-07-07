@@ -31,6 +31,7 @@ export class Match {
     this.selected = null;
     this.finished = false;
     this._destroyed = false;
+    this.plies = 0; // demi-coups joués (utile à la proposition de nulle)
 
     this.view.onTap = (sq) => this._handleTap(sq);
   }
@@ -50,6 +51,13 @@ export class Match {
     if (this.finished) return;
     this.finished = true;
     this.onEnd({ winner: color === 'w' ? 'b' : 'w', resigned: true });
+  }
+
+  /** Nulle convenue entre les joueurs (l'IA a vérifié avant d'accepter). */
+  agreeDraw() {
+    if (this.finished) return;
+    this.finished = true;
+    this.onEnd({ winner: 'draw', agreed: true });
   }
 
   /** Coups légaux du moment, après filtre éventuel du tutoriel. */
@@ -109,6 +117,7 @@ export class Match {
     const applied = this.engine.applyMove(move);
     if (!applied) return; // ne devrait jamais arriver : coup issu de legalMoves()
     const after = this.engine.getBoard();
+    this.plies++;
     this.onMove(applied, this.engine);
     await this.view.animateMove({ ...applied, jumps: move.jumps ?? applied.jumps }, before, after);
     if (applied.promotion) this.onMessage('Promotion : une DAME !');
