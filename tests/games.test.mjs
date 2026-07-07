@@ -29,6 +29,7 @@ for (const g of GAMES) {
   test(`${g.white} — ${g.black} (${g.moves.length} coups)`, () => {
     assert.ok(g.id && g.event && g.theme && g.intro === undefined || true);
     assert.ok(g.moves.length >= 40, 'partie trop courte');
+    assert.ok(g.guessSide === 'w' || g.guessSide === 'b', 'guessSide manquant (mode devinette)');
     const e = new RulesEngine();
     for (const [i, m] of g.moves.entries()) {
       const legal = e.getLegalMoves().find((x) => x.from === m.from && x.to === m.to);

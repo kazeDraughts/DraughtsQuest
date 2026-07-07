@@ -29,6 +29,7 @@ import { renderShop } from './shop/shop.js';
 import { renderCarnet } from './ui/carnet.js';
 import { GAMES, gameById } from './story/games.js';
 import { RulesEngine } from './engine/rules.js';
+import { findBestMove } from './ai/search.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -920,27 +921,185 @@ function openCarnet(origin = 'menu') {
 // La bibliothèque du club : parties de maîtres à rejouer
 // ---------------------------------------------------------------------------
 let readerBoard = null;   // BoardView dédié à l'écran de lecture
-let readerGame = null;    // { game, fens, idx }
+let readerGame = null;    // { game, fens, idx } (mode lecture)
 
 function openLibrary() {
   world?.leave();
+  // Interrompt proprement une devinette en cours (retour en arrière).
+  if (guess) guess.active = false;
+  guess = null;
+  if (readerBoard) readerBoard.onTap = null;
   showScreen('screen-library');
   const list = $('library-list');
   list.innerHTML = '';
   const read = state.library?.read || {};
+  const guessed = state.library?.guessed || {};
   for (const g of GAMES) {
+    const master = g.guessSide === 'w' ? g.white : g.black;
     const row = el('div.bracket-row');
     row.append(el('div.who', [
       el('span', '📖'),
       el('div', [
-        el('div', `${g.white} — ${g.black} ${read[g.id] ? '✅' : ''}`),
+        el('div', `${g.white} — ${g.black} ${read[g.id] ? '✅' : ''}${guessed[g.id] ? '🎯' : ''}`),
         el('div.tag-elo', `${g.event} · ${g.theme} · ${g.moves.length} coups`),
       ]),
     ]));
-    row.append(el('button.btn.btn-small' + (read[g.id] ? '' : '.btn-primary'),
+    const btns = el('div');
+    btns.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end';
+    btns.append(el('button.btn.btn-small' + (read[g.id] ? '' : '.btn-primary'),
       read[g.id] ? 'Relire' : 'Lire · 🪙 40', { onclick: () => openGameReader(g.id) }));
+    btns.append(el('button.btn.btn-small' + (guessed[g.id] ? '' : '.btn-good'),
+      guessed[g.id] ? '🎯 Redeviner' : `🎯 Deviner (${master.split(' ').pop()})`,
+      { onclick: () => openGameGuess(g.id) }));
+    row.append(btns);
     list.append(row);
   }
+}
+
+// --- Mode « Devine le coup du maître » -------------------------------------
+let guess = null; // { game, engine, idx, exact, good, miss, active }
+
+function openGameGuess(id) {
+  const game = gameById(id);
+  if (!game) return;
+  showScreen('screen-reader');
+  if (!readerBoard) readerBoard = new BoardView($('reader-canvas'));
+  readerBoard.setThemes(state.equipped.board, state.equipped.pieces);
+  readerGame = null; // désactive la navigation de lecture
+  const master = game.guessSide === 'w' ? game.white : game.black;
+  guess = { game, engine: new RulesEngine(), idx: 0, exact: 0, good: 0, miss: 0, active: true };
+  $('reader-title').textContent = `🎯 ${game.white} — ${game.black}`;
+  $('reader-event').textContent = `${game.event} · Tu joues les ${game.guessSide === 'w' ? 'Blancs' : 'Noirs'} de ${master} !`;
+  $('reader-ply').textContent = '';
+  readerBoard.setState(guess.engine.getBoard(), { lastMove: null });
+  $('reader-note').textContent = game.guessSide === 'w'
+    ? 'À toi : devine le premier coup du maître.'
+    : 'Les Blancs ouvrent… puis à toi de deviner chaque coup du maître.';
+  guessLoop();
+}
+
+function guessScoreLine() {
+  return `✅ ${guess.exact} · 👍 ${guess.good} · ❌ ${guess.miss}`;
+}
+
+async function guessLoop() {
+  const g = guess;
+  if (!g?.active) return;
+  const { game, engine } = g;
+  if (g.idx >= game.moves.length) return finishGuess();
+  $('reader-ply').textContent = `${g.idx + 1}/${game.moves.length} · ${guessScoreLine()}`;
+  const m = game.moves[g.idx];
+  const sideToMove = engine.turn();
+
+  if ((sideToMove === 'w' ? 'w' : 'b') !== game.guessSide) {
+    // Coup de l'adversaire : joué automatiquement, animé.
+    await new Promise((r) => setTimeout(r, 380));
+    if (!g.active) return;
+    const legal = engine.getLegalMoves().find((x) => x.from === m.from && x.to === m.to);
+    const before = engine.getBoard();
+    engine.applyMove(legal);
+    await readerBoard.animateMove(legal, before, engine.getBoard());
+    g.idx++;
+    return guessLoop();
+  }
+
+  // Au maître de jouer : c'est TOI. On attend un coup légal sur le damier.
+  const played = await waitReaderMove(engine);
+  if (!g.active || !played) return;
+  const isExact = played.from === m.from && played.to === m.to;
+  if (isExact) {
+    g.exact++;
+    $('reader-note').textContent = `✅ ${played.from}${played.captures.length ? 'x' : '-'}${played.to} — le coup EXACT du maître !`;
+  } else {
+    // Le moteur compare ton coup à celui du maître (petit budget, réponse vive).
+    const before = engine.fen();
+    engine.applyMove(played);
+    const yourScore = -findBestMove(engine.fen(), { maxDepth: 4, timeMs: 240, noise: 0 }, 1).score;
+    engine.loadFen(before);
+    const masterMove = engine.getLegalMoves().find((x) => x.from === m.from && x.to === m.to);
+    engine.applyMove(masterMove);
+    const masterScore = -findBestMove(engine.fen(), { maxDepth: 4, timeMs: 240, noise: 0 }, 1).score;
+    engine.loadFen(before);
+    const label = `${m.from}${m.takes ? 'x' : '-'}${m.to}`;
+    if (yourScore >= masterScore - 45) {
+      g.good++;
+      $('reader-note').textContent = `👍 Ton coup se défend ! Mais le maître a préféré ${label}.`;
+    } else {
+      g.miss++;
+      $('reader-note').textContent = `❌ Le maître a joué ${label}.`;
+    }
+    // On remet la partie sur les rails du maître.
+    const before2 = engine.getBoard();
+    engine.applyMove(engine.getLegalMoves().find((x) => x.from === m.from && x.to === m.to));
+    await readerBoard.animateMove(masterMove, before2, engine.getBoard());
+  }
+  if (isExact) {
+    const legal = engine.getLegalMoves().find((x) => x.from === m.from && x.to === m.to);
+    const before = engine.getBoard();
+    engine.applyMove(legal);
+    readerBoard.setState(engine.getBoard(), { lastMove: { from: m.from, to: m.to } });
+    void before;
+  }
+  audio.playSfx(isExact ? 'coin' : 'blip');
+  g.idx++;
+  guessLoop();
+}
+
+/** Attend un coup légal joué sur le damier du lecteur (sans l'appliquer). */
+function waitReaderMove(engine) {
+  return new Promise((resolve) => {
+    let selected = null;
+    const refresh = () => {
+      const moves = engine.getLegalMoves();
+      readerBoard.setState(engine.getBoard(), {
+        selected,
+        targets: selected ? moves.filter((x) => x.from === selected).map((x) => ({ to: x.to, captures: x.captures })) : [],
+        moveable: [...new Set(moves.map((x) => x.from))],
+        lastMove: null,
+      });
+    };
+    refresh();
+    readerBoard.onTap = (sq) => {
+      if (!guess?.active) { readerBoard.onTap = null; return resolve(null); }
+      const moves = engine.getLegalMoves();
+      const target = selected && moves.find((x) => x.from === selected && x.to === sq);
+      if (target) {
+        readerBoard.onTap = null;
+        resolve(target);
+      } else if (sq && moves.some((x) => x.from === sq)) {
+        selected = sq;
+        refresh();
+      } else {
+        selected = null;
+        refresh();
+      }
+    };
+  });
+}
+
+function finishGuess() {
+  const g = guess;
+  const total = g.exact + g.good + g.miss;
+  const pts = g.exact * 4 + g.good * 2;
+  const first = !state.library.guessed?.[g.game.id];
+  const stars = g.exact >= total * 0.7 ? '⭐⭐⭐' : g.exact + g.good >= total * 0.6 ? '⭐⭐' : '⭐';
+  if (first && pts > 0) {
+    if (!state.library.guessed) state.library.guessed = {};
+    state.library.guessed[g.game.id] = g.exact;
+    state.points += pts;
+    save();
+    audio.playSfx('win');
+  }
+  guess = null;
+  showMatchOverlay({
+    title: `🎯 ${stars} — ${g.exact}/${total} coups du maître !`,
+    detail: `${g.exact} coups exacts, ${g.good} bonnes alternatives, ${g.miss} ratés — sur la partie ${g.game.white} — ${g.game.black}.`,
+    rewards: first && pts > 0 ? [`🪙 +${pts} Pions d'Or`] : [],
+    buttons: [
+      { label: 'Redeviner', className: 'btn-good', onClick: () => openGameGuess(g.game.id) },
+      { label: 'Bibliothèque', className: 'btn-primary', onClick: () => openLibrary() },
+    ],
+  });
 }
 
 function openGameReader(id) {

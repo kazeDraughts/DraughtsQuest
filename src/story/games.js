@@ -10,6 +10,7 @@
 export const GAMES = [
  {
   id: "korchov1955",
+  guessSide: "b",
   white: "Michael Korchov",
   black: "Iser Kouperman",
   event: "Championnat d'URSS, 1955",
@@ -624,6 +625,7 @@ export const GAMES = [
  },
  {
   id: "anslem1999",
+  guessSide: "b",
   white: "Edgar Anslem",
   black: "Iser Kouperman",
   event: "Panaméricain, 1999",
@@ -1034,6 +1036,7 @@ export const GAMES = [
  },
  {
   id: "adrichem2011",
+  guessSide: "b",
   white: "Ton Adrichem",
   black: "Viacheslav Shchegolev",
   event: "Pays-Bas, 2011",
@@ -1612,6 +1615,7 @@ export const GAMES = [
  },
  {
   id: "sijbrands1967",
+  guessSide: "w",
   white: "Ton Sijbrands",
   black: "Cees Varkevisser",
   event: "Trophée de Rijswijk, 1967",
@@ -1866,6 +1870,7 @@ export const GAMES = [
  },
  {
   id: "boomstra_pion15",
+  guessSide: "w",
   white: "Roel Boomstra",
   black: "Anton Schotanus",
   event: "Début Bizot (pion blanc à 15)",
@@ -2264,6 +2269,7 @@ export const GAMES = [
  },
  {
   id: "chizhov1998",
+  guessSide: "w",
   white: "Alexey Chizhov",
   black: "Rob Clerc",
   event: "Masters de Leeuwarden, 1998",
@@ -2927,6 +2933,7 @@ export const GAMES = [
  },
  {
   id: "gantwarg",
+  guessSide: "b",
   white: "Zalitis",
   black: "Anatoli Gantwarg",
   event: "Championnat d'URSS",
@@ -3409,6 +3416,7 @@ export const GAMES = [
  },
  {
   id: "tchegolev1974",
+  guessSide: "w",
   white: "Viacheslav Shchegolev",
   black: "Kolodiev",
   event: "Championnat d'URSS, 1974",

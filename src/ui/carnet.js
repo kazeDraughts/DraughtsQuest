@@ -58,6 +58,10 @@ export function renderCarnet() {
   zone.append(row('📚', 'La bibliothèque du club', `${readCount}/${GAMES.length} parties lues`,
     flag('club_unlocked') ? 'L\'étagère du club, près du tableau noir' : 'On dit que le club en garde une belle…',
     readCount >= GAMES.length));
+  const guessCount = Object.keys(state.library?.guessed || {}).length;
+  zone.append(row('🎯', 'Devine le coup du maître', `${guessCount}/${GAMES.length} parties devinées`,
+    'Dans la bibliothèque : joue les coups du champion à sa place !',
+    guessCount >= GAMES.length));
 
   // ------------------------------------------------------------- ACADÉMIE
   zone.append(el('div.shop-section-title', '🏛️ ACADÉMIE DU DAMIER'));

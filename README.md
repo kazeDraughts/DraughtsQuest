@@ -170,6 +170,13 @@ intégralement) ; les annotations (rafles, promotions, bascules
 d'évaluation, fiches d'introduction) sont originales. Première lecture
 complète d'une partie : +40 Pions d'Or.
 
+Chaque partie se joue aussi en mode **🎯 Devine le coup du maître** : tu
+joues le camp du champion (Kouperman, Sijbrands, Chizhov, Boomstra…) et
+tu dois retrouver chacun de ses coups. Coup exact ✅ (4 Pions d'Or),
+coup différent mais jugé équivalent par le moteur 👍 (2), raté ❌ — la
+partie est ensuite remise sur les rails du maître. Score, étoiles et
+récompense à la première tentative de chaque partie.
+
 ## 📖 Le Carnet du damiste
 
 Accessible depuis le menu et depuis le monde (bouton 📖 en haut à droite),
