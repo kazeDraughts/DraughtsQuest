@@ -30,6 +30,7 @@ import { renderCarnet } from './ui/carnet.js';
 import { GAMES, gameById } from './story/games.js';
 import { RulesEngine } from './engine/rules.js';
 import { findBestMove } from './ai/search.js';
+import { PLACEMENT_STEPS, placementResult, placementSkipsTutorial } from './career/placement.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -263,9 +264,84 @@ function openPlayerCreation() {
     applyPlayerIdentity();
     audio.playSfx('coin');
     overlay.classList.add('hidden');
-    enterWorld();
+    askPlacement();
   };
   overlay.classList.remove('hidden');
+}
+
+// ---------------------------------------------------------------------------
+// Test de niveau : jusqu'à 3 parties de placement avant l'aventure
+// ---------------------------------------------------------------------------
+let placement = null; // { step, wins }
+
+function askPlacement() {
+  showMatchOverlay({
+    title: 'Connais-tu déjà le jeu de dames ?',
+    detail: 'Si tu es déjà joueur ou joueuse, passe le TEST DE NIVEAU : jusqu\'à trois parties — tant que tu gagnes, l\'adversaire monte d\'un cran. Ton classement de départ en dépendra (et Papi sautera la leçon des règles).',
+    buttons: [
+      {
+        label: '🐣 Je débute — l\'aventure normale',
+        className: 'btn-primary',
+        onClick: () => enterWorld(),
+      },
+      {
+        label: '🎓 Je suis déjà joueur : test de niveau !',
+        className: 'btn-good',
+        onClick: () => {
+          placement = { step: 0, wins: 0 };
+          startPlacementMatch();
+        },
+      },
+    ],
+  });
+}
+
+function startPlacementMatch() {
+  const levelId = PLACEMENT_STEPS[placement.step];
+  const level = AI_LEVELS[levelId];
+  const ai = new AIPlayer(levelId);
+  startMatch({
+    origin: 'world', // le bouton Quitter vaut abandon : la partie compte perdue
+    music: 'tournament',
+    white: { type: 'human', name: state.player.name },
+    black: {
+      type: 'ai',
+      name: `Examen ${placement.step + 1}/3 — ${level.name}`,
+      avatar: level.icon,
+      extra: `Elo ~${level.elo}`,
+      getMove: (fen) => ai.getMove(fen),
+    },
+    onEnd: (r) => {
+      const outcome = r.winner === 'w' ? 'win' : r.winner === 'draw' ? 'draw' : 'lose';
+      if (outcome === 'win') placement.wins++;
+      const res = placementResult(placement.step, outcome);
+      if (!res.done) {
+        placement.step = res.nextStep;
+        showMatchOverlay({
+          title: `Examen ${placement.step}/3 réussi ! 🎉`,
+          detail: `Impressionnant. Voyons ce que tu vaux contre plus fort : ${AI_LEVELS[PLACEMENT_STEPS[placement.step]].name}.`,
+          buttons: [{ label: 'Partie suivante !', className: 'btn-primary', onClick: () => startPlacementMatch() }],
+        });
+        return;
+      }
+      finishPlacement(res.elo);
+    },
+  });
+}
+
+function finishPlacement(elo) {
+  state.career.elo = elo;
+  const skip = placementSkipsTutorial(elo, placement.wins);
+  if (skip) setFlag('tutorial_done'); // Papi proposera directement son défi
+  const wins = placement.wins;
+  placement = null;
+  save();
+  audio.playSfx(wins >= 3 ? 'win' : 'coin');
+  showMatchOverlay({
+    title: `📊 Ton niveau : Elo ${elo}`,
+    detail: `${eloTitle(elo)} — ${wins} victoire${wins > 1 ? 's' : ''} sur ${Math.min(wins + 1, 3)} partie${wins ? 's' : ''} d'examen.${skip ? ' Tu connais les règles : Papi Marcel te proposera directement son défi (le club exige de l\'avoir battu !).' : ' L\'aventure commence en douceur — Papi t\'apprendra tout.'}`,
+    buttons: [{ label: 'Commencer l\'aventure !', className: 'btn-primary', onClick: () => enterWorld() }],
+  });
 }
 
 function enterWorld() {

@@ -47,6 +47,17 @@ Ces règles sont vérifiées par des tests automatiques : `npm test`
 (voir `tests/rules.test.mjs`, dont deux cas dédiés à la rafle majoritaire,
 et `tests/ai.test.mjs` pour l'IA).
 
+## 📊 Le test de niveau (nouvelle partie)
+
+À la création du personnage, le jeu demande si tu connais déjà les dames.
+Les joueurs confirmés peuvent passer le **test de niveau** : jusqu'à trois
+parties d'examen — Apprenti, puis Joueur de club, puis Champion régional —
+on monte tant que tu gagnes. Ton **Elo de départ** en découle (700 à 1550),
+et dès une victoire prouvée, **le tutoriel de Papi est sauté** : il propose
+directement son défi (l'histoire, elle, ne change pas — le club exige
+toujours d'avoir battu le grand-père !). Table de placement vérifiée par
+`tests/placement.test.mjs`.
+
 ## 🎓 Salle d'entraînement
 
 Au club (le **tableau noir** de Gigi, à gauche de l'entrée — ou le bouton
