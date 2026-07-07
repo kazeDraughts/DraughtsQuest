@@ -158,6 +158,15 @@ prime de Pions d'Or et damier exclusif « L'Ardoise du professeur ».
 `tests/academy.test.mjs` rejoue chaque leçon et re-certifie les menaces
 « imparables » à chaque `npm test`.
 
+## 📖 Le Carnet du damiste
+
+Accessible depuis le menu et depuis le monde (bouton 📖 en haut à droite),
+le Carnet récapitule TOUTE la progression — aventure, leçons de Gigi,
+Académie et Annexe, séries d'énigmes, études, compétitions, Woldouby,
+trésors secrets — et indique **où aller** pour chaque activité. Les
+contenus non découverts restent affichés en « ??? » avec un indice,
+sans divulgâcher.
+
 ## 🧠 Architecture
 
 ```

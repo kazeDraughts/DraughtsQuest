@@ -26,6 +26,7 @@ import {
 } from './career/opponents.js';
 import { updateElo, eloTitle } from './career/elo.js';
 import { renderShop } from './shop/shop.js';
+import { renderCarnet } from './ui/carnet.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -136,6 +137,7 @@ function quitToMenu() {
 function refreshMenu() {
   const has = hasSave();
   $('btn-continue').classList.toggle('hidden', !has);
+  $('btn-carnet').classList.toggle('hidden', !has || !flag('intro_done'));
   $('btn-adventure').textContent = has ? 'Nouvelle partie' : 'Aventure';
   const stats = $('menu-stats');
   if (has && flag('intro_done')) {
@@ -898,6 +900,25 @@ function openShop(origin = 'menu') {
   showScreen('screen-shop');
   renderShop(() => world?.updateHud?.());
 }
+
+// ---------------------------------------------------------------------------
+// Carnet du damiste (progression et guide des activités)
+// ---------------------------------------------------------------------------
+let carnetOrigin = 'menu';
+
+function openCarnet(origin = 'menu') {
+  carnetOrigin = origin;
+  if (origin === 'world') world?.leave();
+  showScreen('screen-carnet');
+  renderCarnet();
+}
+
+$('btn-carnet').addEventListener('click', () => openCarnet('menu'));
+$('btn-world-carnet').addEventListener('click', () => openCarnet('world'));
+$('btn-carnet-back').addEventListener('click', () => {
+  if (carnetOrigin === 'world') enterWorld();
+  else showScreen('screen-menu');
+});
 
 $('btn-shop').addEventListener('click', () => openShop('menu'));
 $('btn-shop-back').addEventListener('click', () => {

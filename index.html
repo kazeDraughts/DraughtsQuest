@@ -23,6 +23,7 @@
           <button class="btn" id="btn-vs-ai">Partie rapide contre l'IA</button>
           <button class="btn" id="btn-local">Jouer à deux (local)</button>
           <button class="btn" id="btn-training">Entraînement</button>
+          <button class="btn hidden" id="btn-carnet">📖 Carnet du damiste</button>
           <button class="btn" id="btn-shop">Boutique</button>
           <button class="btn" id="btn-options">Options</button>
           <button class="btn" id="btn-credits">Crédits</button>
@@ -38,6 +39,7 @@
         <div class="hud-quest hidden" id="hud-quest"></div>
         <div style="display:flex; gap:8px; flex-direction:column; align-items:flex-end;">
           <button class="hud-chip" id="btn-world-menu">☰ Menu</button>
+          <button class="hud-chip" id="btn-world-carnet">📖 Carnet</button>
           <div class="hud-chip hidden" id="hud-points">🪙 0</div>
         </div>
       </div>
@@ -152,6 +154,16 @@
       <p class="menu-footnote">Les leçons de Gigi, dans l'ordre des cours fédéraux : bases, tactique, finales.
         Chaque exercice réussi rapporte des Pions d'Or (une fois).</p>
       <div class="bracket" id="training-list"></div>
+    </section>
+
+    <!-- ===================== CARNET DU DAMISTE ===================== -->
+    <section id="screen-carnet" class="screen panel-screen">
+      <div class="panel-head">
+        <h2>📖 Carnet du damiste</h2>
+        <button class="btn btn-small" id="btn-carnet-back">Retour</button>
+      </div>
+      <p class="menu-footnote">Tout ce que le monde a à offrir — ta progression, et où aller la chercher.</p>
+      <div class="bracket" id="carnet-list"></div>
     </section>
 
     <!-- ===================== COMPÉTITIONS ===================== -->
