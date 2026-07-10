@@ -269,10 +269,203 @@ const SEMIOUVERTE = {
   ],
 };
 
+// ===========================================================================
+// LE SYSTÈME GHESTEM — gagner de l'espace par l'avancée, puis bloquer.
+// ===========================================================================
+const GHESTEM = {
+  id: 'ghestem',
+  npc: 'gaspard',
+  title: 'Cours complet : le système Ghestem',
+  reward: 140,
+  chapters: [
+    {
+      title: 'Gagner de l\'espace',
+      fen: 'W:W27,28,32,33,34,38,39,43,44,49:B3,4,8,9,13,14,18,19,20,23',
+      say: [
+        { who: 'gaspard', text: 'Pierre Ghestem, champion du monde français, a donné son nom à une idée simple et redoutable : GAGNER DE L\'ESPACE dans le camp adverse, et l\'y étouffer.' },
+        { who: 'gaspard', text: 'L\'arme du système : l\'avancée 28-22, PROTÉGÉE par ton pion 27. Impossible à prendre, elle plante ton drapeau chez l\'ennemi. À toi de la jouer !' },
+      ],
+      drill: {
+        ask: [{ who: 'gaspard', text: 'Les Blancs jouent. Trouve l\'avancée qui gagne de l\'espace sans se faire prendre.' }],
+        accept: [{ from: 28, to: 22 }],
+        reply: { from: 20, to: 24 },
+        wrong: { who: 'gaspard', text: 'Non : L\'AVANCÉE. Le pion 28 plonge en 22, dans leur camp — et ton pion 27 le garde. Aucune prise possible pour eux.' },
+        hint: { from: 28, to: 22 },
+        then: [{ mv: '33-28' }],
+        success: [
+          { who: 'gaspard', text: '28-22 ! Puis 33-28 pour reconstruire le mur. Tes pions 22 et 28 verrouillent tout un secteur : l\'aile gauche adverse suffoque. Voilà l\'étau Ghestem.' },
+        ],
+      },
+    },
+    {
+      title: 'L\'avancée en fin de milieu',
+      fen: 'W:W27,28,30,32,33,34,35,37,38,43:B8,13,14,16,18,19,21,23,24,26',
+      say: [
+        { who: 'gaspard', text: 'L\'avancée Ghestem prend toute sa valeur en FIN DE MILIEU, face à un « trèfle » adverse (ces trois pions groupés). Mais attention : chaque coup doit être calculé.' },
+        { who: 'gaspard', text: 'Ici, un jeu tranquille mène tout droit à une structure d\'équilibre célèbre — la position Woldouby. Regarde.' },
+      ],
+      show: [
+        { mv: '43-39', note: '43-39 : on renforce l\'arrière avant d\'agir.' },
+        { mv: '8-12' },
+        { mv: '30-25' },
+        { mv: '12-17' },
+        { mv: '34-30', note: '34-30 : et voilà la position Woldouby, cet équilibre au rasoir que même les champions peinent à briser. Savoir RECONNAÎTRE ces structures, c\'est déjà être fort.' },
+      ],
+    },
+    {
+      title: 'La relève des pions',
+      fen: 'W:W22,27,28,32,34,38,39,43,44,49:B3,4,8,9,13,14,18,19,23,24',
+      say: [
+        { who: 'gaspard', text: 'Un système d\'étau ne tient que si chaque pion avancé a sa RELÈVE. Tes pions 22 et 28 pèsent sur l\'ennemi ; derrière, la colonne 44-39-34 doit être prête à monter les remplacer.' },
+        { who: 'gaspard', text: 'Regarde ta position : de l\'espace, des colonnes, des temps de réserve. En face, des pions qui se marchent dessus. L\'étau ne se desserrera jamais tout seul — c\'est à toi de le maintenir, patiemment.' },
+      ],
+      show: [
+        { mv: '44-40', note: '44-40 : l\'arrière-garde monte. Chaque pion avancé sait qu\'un camarade le relèvera. C\'est ça, un étau qui dure.' },
+      ],
+    },
+    {
+      title: 'Bloquer tous les pions',
+      fen: 'W:W27,28,32,33,34,38,39,43,44,49:B3,4,8,9,13,14,18,19,20,23',
+      say: [
+        { who: 'gaspard', text: 'La devise du maître Dubois pour ce système : « bloquer TOUS les pions adverses ». Un pion bloqué ne joue plus ; s\'ils le sont tous, l\'adversaire est perdu même à matériel égal.' },
+        { who: 'gaspard', text: 'Mais retiens l\'avertissement : quand c\'est TOI qu\'on enchaîne, ne subis pas. Rends ton jeu actif, cherche un objectif précis — un gambit, une percée. Sinon, c\'est toi qu\'on étouffe.' },
+      ],
+    },
+  ],
+};
+
+// ===========================================================================
+// LE MARCHAND DE BOIS — les enchaînements, la tenaille, les formations.
+// ===========================================================================
+const BOIS = {
+  id: 'bois',
+  npc: 'boris',
+  title: 'Cours complet : le marchand de bois',
+  reward: 140,
+  chapters: [
+    {
+      title: 'Le charpentier et ses formations',
+      fen: START,
+      say: [
+        { who: 'boris', text: 'Chez moi, on ne pousse pas des pions : on monte des CHARPENTES. Les formations de pionage — le Y, la croix, la flèche, le triplet — sont les poutres du jeu de dames.' },
+        { who: 'boris', text: 'Et ma spécialité, le MARCHAND DE BOIS : un Y construit au bord du damier, une pile de pions qui immobilise tout un pan du camp adverse. On l\'appelle aussi un ENCHAÎNEMENT.' },
+      ],
+      show: [
+        { mv: '33-28', note: '33-28 : la pointe d\'une flèche. Chaque formation naît d\'un coup simple — mais pensé comme une charpente.' },
+      ],
+    },
+    {
+      title: 'L\'enchaînement latéral : la tenaille',
+      fen: 'W:W27,28,31,33:B16,17,18,22',
+      say: [
+        { who: 'boris', text: 'Le plus redoutable des enchaînements porte un nom qui fait peur : la TENAILLE. Regarde cette forme — tes pions 27-28 prennent le pion noir 22 en étau, et le 31-33 verrouille derrière.' },
+        { who: 'boris', text: 'Un pion pris en tenaille ne peut plus bouger sans tomber. C\'est le rêve du charpentier : l\'adversaire cloué, et toi libre d\'agir ailleurs.' },
+      ],
+    },
+    {
+      title: 'La tenaille de Baba Sy',
+      fen: 'W:W26,28,31,32,33,36,40,42,45,49:B6,7,8,9,12,14,16,17,18,22',
+      say: [
+        { who: 'boris', text: 'Voici la tenaille dans une vraie partie — Baba Sy, le magicien de Dakar, contre Mulder, 1963. Les Blancs jouent un coup tranquille après lequel les Noirs n\'ont PLUS AUCUNE PARADE.' },
+      ],
+      drill: {
+        ask: [{ who: 'boris', text: 'Trouve le coup qui installe la tenaille et crée une menace imparable.' }],
+        accept: [{ from: 32, to: 27 }],
+        wrong: { who: 'boris', text: 'Cherche le coup qui referme la tenaille sur le pion 22 et prépare l\'irruption 27-21.' },
+        hint: { from: 32, to: 27 },
+        success: [
+          { who: 'boris', text: '32-27 ! La menace 27-21 est imparable : quoi que jouent les Noirs, ils perdent du bois. Baba Sy raflait ensuite cinq pions d\'un coup. Voilà pourquoi on craignait ce joueur.' },
+        ],
+      },
+    },
+    {
+      title: 'La stratégie EN FACE du marchand',
+      fen: 'W:W26,27,29,31,33,36,38,42,47:B6,12,16,17,18,19,22',
+      say: [
+        { who: 'boris', text: 'Un bon charpentier sait aussi COMBATTRE un enchaînement adverse. Quand l\'ennemi a un pion en 29, toute sa diagonale 47-29 est immobilisée — c\'est une entrave autant qu\'une force.' },
+        { who: 'boris', text: 'La parade : jouer sur l\'aile LIBRE, là où l\'adversaire a dégarni pour tenir sa charpente. On ne détruit pas la tenaille de front — on la contourne, et on frappe où elle a laissé un trou.' },
+      ],
+    },
+    {
+      title: 'Charpente et patience',
+      fen: START,
+      say: [
+        { who: 'boris', text: 'Voilà mon métier résumé : des FORMATIONS solides (Y, croix, flèche, triplet), l\'ENCHAÎNEMENT qui cloue (le marchand de bois, la tenaille), et la PATIENCE de laisser l\'adversaire scier lui-même la branche où il est assis.' },
+        { who: 'boris', text: 'Du bois bien empilé ne s\'écroule jamais. Monte tes charpentes, petit, et le damier t\'appartiendra.' },
+      ],
+    },
+  ],
+};
+
+// ===========================================================================
+// LES FINALES — compter les temps, l'opposition, le blocage angulaire.
+// ===========================================================================
+const FINALES = {
+  id: 'finales',
+  npc: 'hortense',
+  title: 'Cours complet : les finales',
+  reward: 140,
+  chapters: [
+    {
+      title: 'Les finales se comptent',
+      fen: 'W:W17:B19',
+      say: [
+        { who: 'hortense', text: 'Assieds-toi, mon petit. En finale, presque plus de pions sur le damier — et pourtant, c\'est là que les parties se GAGNENT ou se perdent. Le secret ? On ne compte plus les pions, on compte les TEMPS et les CASES.' },
+        { who: 'hortense', text: 'Un temps, c\'est un coup d\'avance dans la course à la promotion. Souvent, un seul temps décide de tout. Apprends à les compter avant de te lancer.' },
+      ],
+    },
+    {
+      title: 'L\'opposition',
+      fen: 'W:W32:B18',
+      say: [
+        { who: 'hortense', text: 'Le duel le plus pur : un pion contre un pion. Ici, pas de combinaison — une affaire de CASES. Il existe un coup après lequel le pion noir est perdu quoi qu\'il fasse.' },
+        { who: 'hortense', text: 'On appelle ça le ZUGZWANG : « l\'obligation de jouer ». L\'adversaire doit bouger… et tout coup le condamne. Mais attention : une seule de tes deux avances gagne !' },
+      ],
+    },
+    {
+      title: 'Trouver le zugzwang',
+      fen: 'W:W32:B18',
+      say: [
+        { who: 'hortense', text: 'À toi. Regarde les cases où le pion noir POURRA aller après ton coup… et choisis l\'avance qui les met TOUTES sous ta prise.' },
+      ],
+      drill: {
+        ask: [{ who: 'hortense', text: 'Une seule avance gagne. Laquelle ?' }],
+        accept: [{ from: 32, to: 28 }],
+        reply: { from: 18, to: 22 },
+        wrong: { who: 'hortense', text: 'Nulle ! Par là, le pion noir garde une case de fuite. Reprends : après ton coup, ses DEUX avances doivent tomber sous ta prise.' },
+        hint: { from: 32, to: 28 },
+        then: [{ mv: '28-17' }],
+        success: [
+          { who: 'hortense', text: '32-28 ! Le pion noir n\'a que 22 et 23 — toutes deux sous ta prise. Il joue, forcé, 18-22… et 28x17 : le damier est à toi. Voilà le zugzwang.' },
+        ],
+      },
+    },
+    {
+      title: 'La règle de la 4e rangée',
+      fen: 'W:W17:B19',
+      say: [
+        { who: 'hortense', text: 'Un classique à connaître par cœur : les deux pions sur leur 4e rangée, face à face. Avec le TRAIT, les Blancs gagnent ; sans lui, c\'est nulle. Trois temps d\'avance plus le trait suffisent à damer le premier ET à bloquer le pion adverse.' },
+        { who: 'hortense', text: 'La méthode : foncer tout droit vers la promotion, puis placer sa dame toute neuve sur la diagonale d\'interception. Jamais de zigzag : chaque coup doit rapprocher du but.' },
+      ],
+    },
+    {
+      title: 'Dame contre deux pions',
+      fen: 'W:WK23:B11,20',
+      say: [
+        { who: 'hortense', text: 'Et la reine des finales : DAME CONTRE DEUX PIONS. Beaucoup croient que la dame gagne seule. Faux ! Sans méthode, les pions passent. Il faut le BLOCAGE ANGULAIRE.' },
+        { who: 'hortense', text: 'Le principe : conduire ta dame dans le COIN vers lequel courent les pions — case 48 ou 49 — et les y attendre. Plus ils avancent, plus ils marchent vers leur cage. Retiens mes trois secrets : les temps avant les pions, l\'offre qui déplace, et le coin qui attend.' },
+      ],
+    },
+  ],
+};
+
 export const COURSES = {
   classique: CLASSIQUE,
   taquin: TAQUIN,
   semiouverte: SEMIOUVERTE,
+  ghestem: GHESTEM,
+  bois: BOIS,
+  finales: FINALES,
 };
 
 export function courseForStyle(styleId) {
