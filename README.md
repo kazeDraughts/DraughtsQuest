@@ -37,7 +37,10 @@ ou n'importe quel serveur statique : `npx serve .`, `python3 -m http.server`…
 - pions : déplacement diagonal en avant, **prise obligatoire en avant comme
   en arrière** ;
 - **rafle majoritaire obligatoire** : quand plusieurs prises existent, seule
-  la capture du nombre maximal de pièces est légale ;
+  la capture du nombre maximal de pièces est légale — et, par défaut, les
+  rafles se jouent **case par case** (option « Rafles pas à pas ») pour que
+  le joueur trace lui-même le chemin (`tests/rafle.test.mjs`) ; à décocher
+  pour jouer la rafle d'un seul geste (case finale) ;
 - promotion en **dame volante** (déplacement/prise à distance) uniquement si
   le pion **termine** son coup sur la dernière rangée ;
 - victoire par blocage ou capture totale ; nulles (triple répétition,

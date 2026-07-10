@@ -90,6 +90,7 @@ function startMatch(config) {
     black: config.black,
     fen: config.fen,
     allowedMoves: config.allowedMoves,
+    guidedCaptures: state.options.rafleStep !== false,
     onMessage: (msg) => showBanner(msg),
     onMove: (applied) => {
       audio.playSfx(applied.promotion ? 'promote' : applied.captures.length ? 'capture' : 'move');
@@ -759,6 +760,7 @@ async function startTrainingExercise(id) {
     dialogue: matchDialogue,
     setStatus: (t) => { $('turn-pill').textContent = t; },
     signal: tutorialSignal,
+    guided: state.options.rafleStep !== false,
   });
   tutorialSignal = null;
   if (!doneOk) return;
@@ -817,6 +819,7 @@ async function startComboChallenge(seriesId) {
     dialogue: matchDialogue,
     setStatus: (t) => { $('turn-pill').textContent = t; },
     signal: tutorialSignal,
+    guided: state.options.rafleStep !== false,
   });
   tutorialSignal = null;
   if (!doneOk) return;
@@ -907,6 +910,7 @@ async function startStyleLesson(styleId) {
     dialogue: matchDialogue,
     setStatus: (t) => { $('turn-pill').textContent = t; },
     signal: tutorialSignal,
+    guided: state.options.rafleStep !== false,
   });
   tutorialSignal = null;
   if (!doneOk) return;
@@ -1397,6 +1401,7 @@ function openOptions() {
   showScreen('screen-options');
   $('opt-music').value = state.options.music;
   $('opt-sfx').value = state.options.sfx;
+  $('opt-rafle').checked = state.options.rafleStep !== false;
 }
 $('btn-options').addEventListener('click', () => openOptions());
 $('btn-options-back').addEventListener('click', () => quitToMenu());
@@ -1406,6 +1411,10 @@ $('opt-music').addEventListener('input', (e) => {
 $('opt-sfx').addEventListener('change', (e) => {
   audio.setVolumes(state.options.music, parseFloat(e.target.value));
   audio.playSfx('capture'); // aperçu du volume choisi
+});
+$('opt-rafle').addEventListener('change', (e) => {
+  state.options.rafleStep = e.target.checked;
+  save();
 });
 $('btn-delete-save').addEventListener('click', () => {
   showMatchOverlay({

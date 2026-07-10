@@ -24,6 +24,7 @@
  */
 
 import { RulesEngine } from '../engine/rules.js';
+import { isRafleFrom, rafleStart, rafleNextHops, rafleAdvance, rafleBoard } from '../game/rafle.js';
 
 export const EXERCISES = [
   // ------------------------------------------------------------- LES BASES
@@ -491,7 +492,7 @@ export function exerciseById(id) {
  * Déroule un exercice sur le damier de l'écran de partie.
  * @returns {Promise<boolean>} true si terminé, false si interrompu
  */
-export async function runExercise(ex, { boardView, dialogue, setStatus, signal }) {
+export async function runExercise(ex, { boardView, dialogue, setStatus, signal, guided = true }) {
   let engine = null;
   let fails = 0;
 
@@ -509,7 +510,7 @@ export async function runExercise(ex, { boardView, dialogue, setStatus, signal }
     // Boucle d'essais : on attend LE bon coup, sinon on remet la position.
     let solved = false;
     while (!solved && !signal.aborted) {
-      const move = await waitForMove(engine, boardView, signal, fails >= 2 ? step.hint : null);
+      const move = await waitForMove(engine, boardView, signal, fails >= 2 ? step.hint : null, guided);
       if (signal.aborted) return false;
 
       const ok = !step.accept
@@ -539,12 +540,18 @@ export async function runExercise(ex, { boardView, dialogue, setStatus, signal }
   return !signal.aborted;
 }
 
-/** Attend un coup légal joué sur le damier (sélection + destination). */
-function waitForMove(engine, boardView, signal, hint = null) {
+/**
+ * Attend un coup légal joué sur le damier (sélection + destination).
+ * En mode `guided`, les rafles se jouent SAUT PAR SAUT : idéal pour les
+ * exercices de vision, où tout l'intérêt est de tracer le chemin soi-même.
+ */
+function waitForMove(engine, boardView, signal, hint = null, guided = true) {
   return new Promise((resolve) => {
     signal.onAbort(resolve);
     let selected = null;
-    const refresh = () => {
+    let rafle = null;
+
+    const showSelection = () => {
       const moves = engine.getLegalMoves();
       boardView.setState(engine.getBoard(), {
         selected,
@@ -556,23 +563,52 @@ function waitForMove(engine, boardView, signal, hint = null) {
         lastMove: null,
       });
     };
-    refresh();
+    const showRafle = () => {
+      const cur = rafle.path[rafle.path.length - 1];
+      const board = rafleBoard(engine.getBoard(), rafle);
+      const targets = rafleNextHops(rafle).map((h) => ({ to: h.to, captures: [h.capture] }));
+      boardView.setState(board, { selected: cur, targets, moveable: [], hint: null, lastMove: null });
+    };
+    const complete = async (move, animate) => {
+      boardView.onTap = null;
+      const before = engine.getBoard();
+      engine.applyMove(move);
+      if (animate) await boardView.animateMove(move, before, engine.getBoard());
+      else boardView.setState(engine.getBoard(), { lastMove: { from: move.from, to: move.to } });
+      resolve(move);
+    };
+
+    showSelection();
     boardView.onTap = async (sq) => {
       if (signal.aborted) return resolve(null);
       const moves = engine.getLegalMoves();
+
+      // Rafle guidée en cours : chaque tap avance d'un saut. Hors chemin,
+      // on annule la rafle (sans la jouer) : jamais de raccourci vers la fin.
+      if (rafle) {
+        const res = rafleAdvance(rafle, sq);
+        if (res.ok && res.done) return complete(res.move, false);
+        if (res.ok) { rafle = res.state; showRafle(); return; }
+        rafle = null;
+        selected = null;
+        showSelection();
+        return;
+      }
+
       const target = selected && moves.find((m) => m.from === selected && m.to === sq);
-      if (target) {
-        boardView.onTap = null;
-        const before = engine.getBoard();
-        engine.applyMove(target);
-        await boardView.animateMove(target, before, engine.getBoard());
-        resolve(target);
-      } else if (sq && moves.some((m) => m.from === sq)) {
+      if (target) return complete(target, true);
+
+      if (sq && moves.some((m) => m.from === sq)) {
         selected = sq;
-        refresh();
+        if (guided && isRafleFrom(moves, sq)) {
+          rafle = rafleStart(moves, sq);
+          showRafle();
+        } else {
+          showSelection();
+        }
       } else {
         selected = null;
-        refresh();
+        showSelection();
       }
     };
   });

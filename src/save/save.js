@@ -34,7 +34,8 @@ export function freshState() {
     inventory: { boards: ['classic'], pieces: ['classic'] },
     equipped: { board: 'classic', pieces: 'classic' },
     // Options (phase 7)
-    options: { music: 0.5, sfx: 0.8 },
+    // rafleStep : rafles jouées case par case (pédagogique, défaut ON)
+    options: { music: 0.5, sfx: 0.8, rafleStep: true },
     // Position dans le monde
     world: { map: 'home', x: 5, y: 4.5, dir: 'down' },
   };

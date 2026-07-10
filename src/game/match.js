@@ -17,9 +17,10 @@
  */
 
 import { RulesEngine } from '../engine/rules.js';
+import { isRafleFrom, rafleStart, rafleNextHops, rafleAdvance, rafleBoard } from './rafle.js';
 
 export class Match {
-  constructor({ boardView, white, black, fen, allowedMoves, onMessage, onMove, onTurn, onEnd }) {
+  constructor({ boardView, white, black, fen, allowedMoves, onMessage, onMove, onTurn, onEnd, guidedCaptures = true }) {
     this.view = boardView;
     this.players = { w: white, b: black };
     this.engine = new RulesEngine(fen || undefined);
@@ -29,6 +30,8 @@ export class Match {
     this.onTurn = onTurn || (() => {});
     this.onEnd = onEnd || (() => {});
     this.selected = null;
+    this.rafle = null;        // rafle en cours de saisie pas-à-pas
+    this.guidedCaptures = guidedCaptures; // rafles case par case (option)
     this.finished = false;
     this._destroyed = false;
     this.plies = 0; // demi-coups joués (utile à la proposition de nulle)
@@ -112,14 +115,19 @@ export class Match {
     await this._play(chosen);
   }
 
-  async _play(move) {
+  async _play(move, animate = true) {
     const before = this.engine.getBoard();
     const applied = this.engine.applyMove(move);
     if (!applied) return; // ne devrait jamais arriver : coup issu de legalMoves()
     const after = this.engine.getBoard();
     this.plies++;
     this.onMove(applied, this.engine);
-    await this.view.animateMove({ ...applied, jumps: move.jumps ?? applied.jumps }, before, after);
+    if (animate) {
+      await this.view.animateMove({ ...applied, jumps: move.jumps ?? applied.jumps }, before, after);
+    } else {
+      // Rafle déjà tracée pas-à-pas par le joueur : on fige la position finale.
+      this.view.setState(after, { lastMove: { from: applied.from, to: applied.to } });
+    }
     if (applied.promotion) this.onMessage('Promotion : une DAME !');
     this._nextTurn();
   }
@@ -137,6 +145,31 @@ export class Match {
     if (this.players[color].type !== 'human') return;
     const moves = this.legalMoves();
 
+    // Rafle guidée en cours : chaque tap avance d'un saut. Un tap hors du
+    // chemin ANNULE la rafle (sans la jouer) et on repart de la sélection —
+    // on ne « mâche » jamais la case finale d'un seul geste.
+    if (this.rafle) {
+      const res = rafleAdvance(this.rafle, sq);
+      if (res.ok && res.done) {
+        this.rafle = null;
+        this.selected = null;
+        this._play(res.move, false); // déjà tracée pas-à-pas : pas de réanimation
+        return;
+      }
+      if (res.ok) {
+        this.rafle = res.state;
+        this._renderRafle();
+        return;
+      }
+      this.rafle = null;
+      this.selected = null;
+      this.view.setState(this.engine.getBoard(), {
+        moveable: [...new Set(moves.map((m) => m.from))],
+        lastMove: this.view.lastMove,
+      });
+      return;
+    }
+
     if (this.selected) {
       const target = moves.find((m) => m.from === this.selected && m.to === sq);
       if (target) {
@@ -150,6 +183,15 @@ export class Match {
     const own = sq && moves.some((m) => m.from === sq);
     if (own) {
       this.selected = sq;
+      // Rafle + mode guidé : on démarre le pas-à-pas (on ne montre PAS la case
+      // finale, pour ne pas mâcher le travail — le joueur suit le chemin).
+      if (this.guidedCaptures && isRafleFrom(moves, sq)) {
+        this.rafle = rafleStart(moves, sq);
+        this._renderRafle();
+        const n = this.rafle.candidates[0].captures.length;
+        this.onMessage(`Rafle de ${n} : suis le chemin, saut par saut !`);
+        return;
+      }
       const targets = moves.filter((m) => m.from === sq).map((m) => ({ to: m.to, captures: m.captures }));
       this.view.setState(this.engine.getBoard(), {
         selected: sq,
@@ -169,5 +211,13 @@ export class Match {
         if (mine) this.onMessage('Cette pièce ne peut pas jouer : la prise est obligatoire !');
       }
     }
+  }
+
+  /** Affiche la position intermédiaire d'une rafle et ses prochains sauts. */
+  _renderRafle() {
+    const cur = this.rafle.path[this.rafle.path.length - 1];
+    const board = rafleBoard(this.engine.getBoard(), this.rafle);
+    const targets = rafleNextHops(this.rafle).map((h) => ({ to: h.to, captures: [h.capture] }));
+    this.view.setState(board, { selected: cur, targets, moveable: [], lastMove: this.view.lastMove });
   }
 }
