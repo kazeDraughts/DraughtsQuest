@@ -179,8 +179,12 @@ menace du coup royal, « seuls au centre », le grand triangle latéral,
 l'avancée Ghestem et le jeu offensif sur l'aile gauche — chaque chapitre
 explique l'IDÉE, montre la manœuvre type jouée sur le damier, et propose
 parfois un exercice où l'on trouve soi-même le coup clé (le coup royal qui
-rafle cinq pions, l'échange qui élimine le centre…). Le professeur propose
-ensuite une **partie d'application** dans la structure étudiée. Les cinq leçons donnent le **diplôme de l'Académie** :
+rafle cinq pions, l'échange qui élimine le centre…). **Les six professeurs
+ont chacun leur cours complet** : la classique (8 chapitres), le pion
+taquin, la partie semi-ouverte, le système Ghestem, le marchand de bois
+(la tenaille de Baba Sy !) et les finales (opposition, zugzwang, blocage
+angulaire) — tout est revérifié par `tests/course.test.mjs`. Le professeur
+propose ensuite une **partie d'application** dans la structure étudiée. Les cinq leçons donnent le **diplôme de l'Académie** :
 prime de Pions d'Or et damier exclusif « L'Ardoise du professeur ».
 `tests/academy.test.mjs` rejoue chaque leçon et re-certifie les menaces
 « imparables » à chaque `npm test`.
