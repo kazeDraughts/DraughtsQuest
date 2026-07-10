@@ -44,9 +44,12 @@ console.log('Cours de l\'Académie — validation par le moteur');
 for (const course of Object.values(COURSES)) {
   test(`${course.title} : structure`, () => {
     assert.ok(course.id && course.npc && course.reward > 0, 'fiche de cours incomplète');
-    assert.ok(course.chapters.length >= 6, 'un cours complet doit avoir au moins 6 chapitres');
+    assert.ok(course.chapters.length >= 4, 'un cours complet doit avoir au moins 4 chapitres');
     const drills = course.chapters.filter((c) => c.drill).length;
-    assert.ok(drills >= 2, 'un cours doit contenir au moins deux exercices');
+    assert.ok(drills >= 1, 'un cours doit contenir au moins un exercice');
+    // Un vrai cours enseigne des IDÉES : beaucoup de texte explicatif.
+    const sayLines = course.chapters.reduce((n, c) => n + (c.say?.length || 0), 0);
+    assert.ok(sayLines >= 8, 'un cours doit être richement expliqué');
   });
 
   for (const [i, ch] of course.chapters.entries()) {

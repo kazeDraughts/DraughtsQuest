@@ -137,8 +137,142 @@ const CLASSIQUE = {
   ],
 };
 
+// ===========================================================================
+// LE PION TAQUIN — l'avant-poste en 24 et le taquin adverse isolé.
+// ===========================================================================
+const TAQUIN = {
+  id: 'taquin',
+  npc: 'tiphaine',
+  title: 'Cours complet : le pion taquin',
+  reward: 130,
+  chapters: [
+    {
+      title: 'L\'avant-poste et son gardien',
+      fen: 'W:W29,30,33,34,39,40,44,45:B4,5,10,14,15,18,19,25',
+      say: [
+        { who: 'tiphaine', text: 'Le TAQUIN, c\'est le pion qu\'on plante en 24, en plein dans l\'aile adverse. Sa mission : clouer les pions du bord — ici 15 et 25 — et gêner tout le monde.' },
+        { who: 'tiphaine', text: 'Sa règle d\'or : jamais seul ! Il lui faut un GARDIEN. Regarde : ton pion 30 protège la case 24. Sans lui, le taquin se fait cueillir.' },
+      ],
+      show: [
+        { mv: '29-24', note: '29-24 : l\'avant-poste est en place, gardé par le 30. Les pions noirs 15 et 25 sont désormais paralysés au bord.' },
+      ],
+    },
+    {
+      title: 'Le taquin isolé de l\'adversaire',
+      fen: 'W:W26,28,33,34,35,36,37,38,39,43,49:B7,8,9,10,11,12,13,14,15,25,27',
+      say: [
+        { who: 'tiphaine', text: 'Le plus beau, c\'est quand c\'est LUI qui a un taquin… mal entouré. Son pion 27 est ISOLÉ, cerné par tes pions. Et ta flèche 28-33-39 lui interdit la case 19 : impossible de reprendre pied au centre.' },
+        { who: 'tiphaine', text: 'Résultat : les Noirs sont condamnés à jouer sur les côtés et à subir. Regarde comme tu déroules ton jeu tranquillement.' },
+      ],
+      show: [
+        { mv: '34-29', note: '34-29 : on avance, sans hâte.' },
+        { mv: '14-20' },
+        { mv: '39-34', note: '39-34 : la flèche se reforme un cran plus haut. Le pion 27 reste prisonnier.' },
+        { mv: '20-24' },
+        { mv: '29x20' },
+        { mv: '15x24' },
+        { mv: '43-39', note: 'Et ça recommence. Les Noirs n\'ont aucun contre-jeu : voilà la puissance d\'un taquin isolé bien encerclé.' },
+      ],
+    },
+    {
+      title: 'La combinaison du taquin',
+      fen: 'W:W21,27,30,34,37:B12,16,19,20,26,28',
+      say: [
+        { who: 'tiphaine', text: 'Et quand l\'adversaire s\'énerve autour de ton avant-poste… il tombe dans le piège. Les Blancs jouent et gagnent un pion par une combinaison typique du taquin.' },
+        { who: 'tiphaine', text: 'Le mécanisme est toujours le même : un petit sacrifice qui aligne les pions adverses, puis une rafle qui ramasse la mise. Ouvre l\'œil !' },
+      ],
+      drill: {
+        ask: [{ who: 'tiphaine', text: 'Trouve le coup calme qui déclenche tout. Indice : offre en douceur, la reprise est obligatoire.' }],
+        accept: [{ from: 30, to: 25 }],
+        reply: { from: 26, to: 17 },
+        wrong: { who: 'tiphaine', text: 'Non — cherche le coup discret qui met un pion en prise pour que la reprise noire s\'aligne sous ta rafle.' },
+        hint: { from: 30, to: 25 },
+        then: [{ mv: '25-32' }],
+        success: [
+          { who: 'tiphaine', text: '30-25, 26x17, 25x32 : trois pions raflés, un pion de gain net ! Le taquin ne se contente pas de gêner — il MORD.' },
+        ],
+      },
+    },
+    {
+      title: 'Quand échanger le taquin ?',
+      fen: 'W:W26,28,33,34,35,36,37,38,39,43,49:B7,8,9,10,11,12,13,14,15,25,27',
+      say: [
+        { who: 'tiphaine', text: 'Dernière sagesse : l\'échange du taquin est TOUJOURS possible… mais rarement pressé. Tant que ton avant-poste étouffe l\'adversaire, garde-le ! On n\'échange que pour transformer l\'avantage en gain concret.' },
+        { who: 'tiphaine', text: 'Retiens : un taquin GARDÉ, un adversaire CLOUÉ, une flèche qui interdit le centre… et de la patience. Le reste vient tout seul.' },
+      ],
+    },
+  ],
+};
+
+// ===========================================================================
+// LA PARTIE SEMI-OUVERTE — le « half-open klassiek » et l'enchaînement à 29.
+// ===========================================================================
+const SEMIOUVERTE = {
+  id: 'semiouverte',
+  npc: 'salome',
+  title: 'Cours complet : la partie semi-ouverte',
+  reward: 140,
+  chapters: [
+    {
+      title: 'Qu\'est-ce que la semi-ouverte ?',
+      fen: START,
+      say: [
+        { who: 'salome', text: 'La partie SEMI-OUVERTE — « half-open klassiek » chez les Hollandais — est la cousine de la classique. Un seul camp tient vraiment le centre ; l\'autre joue AUTOUR, plus souplement.' },
+        { who: 'salome', text: 'Elle naît d\'un schéma reconnaissable : 32-28 et, en face, 20-24. Regarde la prise de contact caractéristique.' },
+      ],
+      show: [
+        { mv: '32-28' },
+        { mv: '20-24', note: 'Le pion noir 24 s\'écarte du centre : signature de la semi-ouverte.' },
+        { mv: '34-30', note: '34-30 : les Blancs préparent l\'échange latéral.' },
+        { mv: '18-23' },
+        { mv: '30-25' },
+        { mv: '23x32' },
+        { mv: '37x28', note: 'La position est prise : structures asymétriques, jeu tout en manœuvres. Bienvenue en semi-ouverte.' },
+      ],
+    },
+    {
+      title: 'L\'enchaînement du pion central à 29',
+      fen: 'W:W27,30,32,33,34,37,38:B13,14,16,18,19,23,26',
+      say: [
+        { who: 'salome', text: 'La grande arme de la semi-ouverte : l\'ENCHAÎNEMENT à 29. On cloue le pion central adverse (ici le 23) et, derrière, plane la menace 27-22.' },
+        { who: 'salome', text: 'À toi : trouve le coup qui enchaîne le pion 23 et met les Noirs sans solution.' },
+      ],
+      drill: {
+        ask: [{ who: 'salome', text: 'Les Blancs jouent. Quel coup enchaîne le pion central 23 ?' }],
+        accept: [{ from: 33, to: 29 }],
+        wrong: { who: 'salome', text: 'Cherche le coup qui vient border le pion 23 par en dessous, en installant un pion en 29 — et qui prépare la menace 27-22.' },
+        hint: { from: 33, to: 29 },
+        success: [
+          { who: 'salome', text: '33-29 ! Le pion 23 est enchaîné, et la menace 27-22 pèse de tout son poids. Les Noirs vont devoir concéder. C\'est LA position que les maîtres cherchent en semi-ouverte.' },
+        ],
+      },
+    },
+    {
+      title: 'L\'art de l\'encerclement',
+      fen: 'W:W34,36,37,38,39:B8,12,17,18,28',
+      say: [
+        { who: 'salome', text: 'Et quand l\'adversaire pousse un pion trop loin dans ton camp ? La réponse semi-ouverte n\'est jamais l\'attaque frontale : c\'est l\'ENCERCLEMENT. Prive-le de ses cases de fuite, une à une.' },
+        { who: 'salome', text: 'Regarde le pion noir avancé en 28 : au lieu de foncer dessus, on referme la nasse.' },
+      ],
+      show: [
+        { mv: '34-29', note: '34-29 : toutes les cases de fuite du pion 28 sont désormais surveillées. Il est condamné.' },
+      ],
+    },
+    {
+      title: 'La philosophie du style',
+      fen: START,
+      say: [
+        { who: 'salome', text: 'Retiens l\'esprit semi-ouvert : de la SOUPLESSE. On n\'occupe pas le centre à tout prix ; on le contourne, on l\'encercle, on enchaîne. La patience du chat, pas la fougue du taureau.' },
+        { who: 'salome', text: 'Prise de contact, enchaînement à 29, menace 27-22, encerclement des pions avancés : voilà ta boîte à outils. Le centre adverse n\'est plus une menace — c\'est ton futur prisonnier.' },
+      ],
+    },
+  ],
+};
+
 export const COURSES = {
   classique: CLASSIQUE,
+  taquin: TAQUIN,
+  semiouverte: SEMIOUVERTE,
 };
 
 export function courseForStyle(styleId) {
