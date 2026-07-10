@@ -26,7 +26,7 @@ export function freshState() {
     // Salle d'entraînement : exercices réussis (récompensés une fois)
     // + énigmes des PNJ (src/story/combos.js)
     // + Académie des styles : leçons suivies / parties d'application gagnées
-    training: { done: {}, combos: {}, styles: { done: {}, applied: {} } },
+    training: { done: {}, combos: {}, styles: { done: {}, applied: {}, courses: {} } },
     // Bibliothèque du club : parties lues + devinettes réussies (1 récompense)
     library: { read: {}, guessed: {} },
     // Monnaie de la boutique (phase 6)
@@ -59,6 +59,7 @@ export function loadSave() {
       if (!state.training.styles) state.training.styles = { done: {}, applied: {} };
       if (!state.training.styles.done) state.training.styles.done = {};
       if (!state.training.styles.applied) state.training.styles.applied = {};
+      if (!state.training.styles.courses) state.training.styles.courses = {};
       state.library = { read: {}, guessed: {}, ...data.library };
       if (!state.library.read) state.library.read = {};
       if (!state.library.guessed) state.library.guessed = {};

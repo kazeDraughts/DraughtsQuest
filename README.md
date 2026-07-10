@@ -171,9 +171,16 @@ la **Woldouby** (Paris, ~1910), 10 pions contre 10, l'équilibre au rasoir
 (le moteur la donne à −3). La vaincre avec les Blancs rapporte 200 Pions
 d'Or.
 
-Chaque leçon se joue sur le vrai moteur (coups commentés, répliques
-scriptées), puis le professeur propose une **partie d'application** dans la
-structure étudiée. Les cinq leçons donnent le **diplôme de l'Académie** :
+Chaque professeur propose deux formules : une **leçon express** (l'essentiel
+en quelques coups) et surtout un **cours complet à chapitres** — bien plus
+approfondi. Le cours de la partie classique, par exemple, déroule les **six
+piliers du système** (d'après J-P. Dubois) : le contrôle des ailes, la
+menace du coup royal, « seuls au centre », le grand triangle latéral,
+l'avancée Ghestem et le jeu offensif sur l'aile gauche — chaque chapitre
+explique l'IDÉE, montre la manœuvre type jouée sur le damier, et propose
+parfois un exercice où l'on trouve soi-même le coup clé (le coup royal qui
+rafle cinq pions, l'échange qui élimine le centre…). Le professeur propose
+ensuite une **partie d'application** dans la structure étudiée. Les cinq leçons donnent le **diplôme de l'Académie** :
 prime de Pions d'Or et damier exclusif « L'Ardoise du professeur ».
 `tests/academy.test.mjs` rejoue chaque leçon et re-certifie les menaces
 « imparables » à chaque `npm test`.

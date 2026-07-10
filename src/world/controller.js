@@ -179,6 +179,14 @@ export class WorldController {
         this._savePosition();
         this.services.startStyleLesson(styleId);
       },
+      startStyleCourse: (styleId) => {
+        if (!this.services.startStyleCourse) {
+          this.say([{ who: 'player', name: 'Mise à jour', text: 'Une mise à jour du jeu vient d\'arriver : recharge la page pour continuer !' }]);
+          return;
+        }
+        this._savePosition();
+        this.services.startStyleCourse(styleId);
+      },
       startStylePractice: (styleId) => {
         if (!this.services.startStylePractice) {
           this.say([{ who: 'player', name: 'Mise à jour', text: 'Une mise à jour du jeu vient d\'arriver : recharge la page pour continuer !' }]);

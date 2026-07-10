@@ -545,7 +545,7 @@ export async function runExercise(ex, { boardView, dialogue, setStatus, signal, 
  * En mode `guided`, les rafles se jouent SAUT PAR SAUT : idéal pour les
  * exercices de vision, où tout l'intérêt est de tracer le chemin soi-même.
  */
-function waitForMove(engine, boardView, signal, hint = null, guided = true) {
+export function waitForMove(engine, boardView, signal, hint = null, guided = true) {
   return new Promise((resolve) => {
     signal.onAbort(resolve);
     let selected = null;

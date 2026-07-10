@@ -13,6 +13,7 @@ import {
   COMBO_BANK, COMBO_SERIES, combosSolved, comboSeriesDone, comboSeriesAvailable, comboBankCleared,
 } from '../story/combos.js';
 import { STYLES, MASTER_STYLES, styleDone, stylePracticeWon, stylesCompleted, isAcademyGraduate } from '../story/academy.js';
+import { courseForStyle } from '../story/courses.js';
 import { COMPETITIONS, competitionStatus, unlockHint } from '../career/opponents.js';
 import { eloTitle } from '../career/elo.js';
 import { BOARD_THEMES, PIECE_THEMES } from '../shop/themes.js';
@@ -72,9 +73,16 @@ export function renderCarnet() {
     for (const s of STYLES) {
       const done = styleDone(state, s.id);
       const applied = stylePracticeWon(state, s.id);
+      const hasCourse = !!courseForStyle(s.id);
+      const courseDone = hasCourse && state.training?.styles?.courses?.[s.id];
+      const parts = [];
+      if (done) parts.push('leçon');
+      if (courseDone) parts.push('cours');
+      if (applied) parts.push('application');
       zone.append(row(s.icon, s.title,
-        done ? (applied ? 'Leçon + application ✔' : 'Leçon suivie') : 'À suivre',
-        done && !applied ? 'Gagne la partie d\'application !' : s.desc, done && applied));
+        parts.length ? `${parts.join(' + ')} ✔` : 'À suivre',
+        hasCourse && !courseDone ? '📚 Un cours complet t\'attend chez ce professeur' : s.desc,
+        done && applied && (!hasCourse || courseDone)));
     }
     const grad = isAcademyGraduate(state);
     zone.append(row('🎓', 'Diplôme de l\'Académie', `${stylesCompleted(state)}/${STYLES.length} leçons`,

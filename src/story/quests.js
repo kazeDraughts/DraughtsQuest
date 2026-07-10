@@ -20,6 +20,7 @@ import {
 } from './combos.js';
 import { styleByNpc, styleDone, stylePracticeWon } from './academy.js';
 import { comboSeriesByNpc } from './combos.js';
+import { courseForStyle } from './courses.js';
 
 /** Accord de genre : gg(state)('champion', 'championne'). */
 const gg = (state) => (m, f) => (state?.player?.gender === 'girl' ? f : m);
@@ -251,14 +252,19 @@ function professorDialogue(ctx, npcId, texts) {
   const puzzlesTotal = puzzles ? COMBO_BANK[puzzles.id].length : 0;
   const offerPuzzles = puzzles && done && puzzlesSolved < puzzlesTotal;
 
+  const course = courseForStyle(style.id);
+  const courseDone = course && ctx.state.training?.styles?.courses?.[style.id];
+
   if (!done) {
+    const choices = [{ label: 'Commencer la leçon', value: 'lesson' }];
+    if (course) choices.push({ label: `📚 ${courseDone ? 'Revoir le cours complet' : 'Suivre le cours complet'}`, value: 'course' });
+    choices.push({ label: 'Plus tard.', value: 'later' });
     lines.push({
       who: npcId,
-      text: `${style.icon} Leçon : « ${style.title} ». On s'installe au damier ?`,
-      choices: [
-        { label: 'Commencer la leçon', value: 'lesson' },
-        { label: 'Plus tard.', value: 'later' },
-      ],
+      text: course
+        ? `${style.icon} Deux formules : la LEÇON express (l'essentiel en quelques coups) ou le COURS COMPLET (${course.chapters.length} chapitres : les plans, les cases clés, les combinaisons). Que préfères-tu ?`
+        : `${style.icon} Leçon : « ${style.title} ». On s'installe au damier ?`,
+      choices,
     });
   } else {
     lines.push({ who: npcId, text: texts.after });
@@ -266,6 +272,7 @@ function professorDialogue(ctx, npcId, texts) {
       { label: applied ? 'Partie d\'application' : 'Jouer l\'application !', value: 'practice' },
       { label: 'Revoir la leçon', value: 'lesson' },
     ];
+    if (course) choices.push({ label: `📚 ${courseDone ? 'Revoir le cours complet' : 'Suivre le cours complet'}`, value: 'course' });
     if (offerPuzzles) choices.unshift({ label: `${puzzles.icon} Étude ${puzzlesSolved + 1}/${puzzlesTotal}`, value: 'puzzle' });
     else if (puzzles && done && puzzlesTotal > 0) choices.push({ label: `${puzzles.icon} Revoir une étude`, value: 'puzzle' });
     choices.push({ label: 'Une autre fois.', value: 'later' });
@@ -284,6 +291,7 @@ function professorDialogue(ctx, npcId, texts) {
     onDone: (a) => {
       ctx.setFlag(metFlag);
       if (a === 'lesson') ctx.startStyleLesson?.(style.id);
+      else if (a === 'course') ctx.startStyleCourse?.(style.id);
       else if (a === 'practice') ctx.startStylePractice?.(style.id);
       else if (a === 'puzzle') ctx.startCombo?.(puzzles.id);
     },

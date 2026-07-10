@@ -20,6 +20,8 @@ import { afterTutorial, gigiTips, worldChampionScene } from './story/quests.js';
 import { EXERCISES, TRAINING_CATEGORIES, exerciseById, runExercise } from './story/training.js';
 import { COMBO_BANK, comboSeriesById, comboToExercise, COMBO_CLEARED_BONUS } from './story/combos.js';
 import { styleById, isAcademyGraduate, ACADEMY_GRADUATE_BONUS } from './story/academy.js';
+import { courseForStyle } from './story/courses.js';
+import { runCourse } from './story/course.js';
 import {
   COMPETITIONS, competitionById, competitionStatus, unlockHint,
   opponentElo, opponentAiConfig,
@@ -374,6 +376,7 @@ function enterWorld() {
         startTutorial: () => startTutorialFlow(),
         startCombo: (seriesId) => startComboChallenge(seriesId),
         startStyleLesson: (styleId) => startStyleLesson(styleId),
+        startStyleCourse: (styleId) => startStyleCourse(styleId),
         startStylePractice: (styleId) => startStylePractice(styleId),
         openCompetitions: () => openCompetitions(),
         openShop: () => openShop('world'),
@@ -941,6 +944,62 @@ async function startStyleLesson(styleId) {
       : first
         ? `${prof.name} te propose maintenant une partie d'application dans ce style.`
         : 'Réviser ses classiques, littéralement.',
+    rewards,
+    buttons: [
+      { label: 'Retour à l\'Académie', className: 'btn-primary', onClick: () => enterWorld() },
+    ],
+  });
+}
+
+async function startStyleCourse(styleId) {
+  const course = courseForStyle(styleId);
+  const style = styleById(styleId);
+  if (!course || !style) return;
+  const prof = characterById(course.npc);
+
+  world?.leave();
+  currentMatch?.destroy();
+  currentMatch = null;
+  showScreen('screen-match');
+  audio.playMusic('club');
+  boardView.setThemes(state.equipped.board, state.equipped.pieces);
+  $('name-white').textContent = state.player.name;
+  $('name-black').textContent = prof.name;
+  setAvatar('avatar-white', 'player');
+  setAvatar('avatar-black', prof.id);
+  $('extra-white').textContent = '';
+  $('extra-black').textContent = `📚 ${style.title}`;
+  matchOrigin = 'world';
+  lessonReturn = () => enterWorld();
+
+  if (!matchDialogue) matchDialogue = new Dialogue($('screen-match'));
+  tutorialSignal = makeSignal();
+  const doneOk = await runCourse(course, {
+    boardView,
+    dialogue: matchDialogue,
+    setStatus: (t) => { $('turn-pill').textContent = t; },
+    signal: tutorialSignal,
+    guided: state.options.rafleStep !== false,
+  });
+  tutorialSignal = null;
+  if (!doneOk) return;
+
+  const first = !state.training.styles.courses[styleId];
+  const rewards = [];
+  if (first) {
+    state.training.styles.courses[styleId] = true;
+    state.points += course.reward;
+    rewards.push(`🪙 +${course.reward} Pions d'Or`);
+    save();
+    audio.playSfx('win');
+  } else {
+    audio.playSfx('coin');
+  }
+  showMatchOverlay({
+    title: `📚 Cours terminé — ${style.title} !`,
+    detail: first
+      ? `Te voilà vraiment savant sur ce style. ${prof.name} est fier de toi.`
+      : 'Un bon cours se relit sans modération.',
     rewards,
     buttons: [
       { label: 'Retour à l\'Académie', className: 'btn-primary', onClick: () => enterWorld() },
