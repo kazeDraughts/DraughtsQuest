@@ -56,33 +56,46 @@ function rng(seed) {
   return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32);
 }
 
-// ---------------------------------------------------------------- terrain
-function grassTile(ctx, x, y, s, v, dark) {
-  // Aplat (sans dégradé par tuile) pour éviter tout effet de bandes.
-  ctx.fillStyle = dark ? PAL.grassDk1 : PAL.grass1;
-  ctx.fillRect(x, y, s + 0.6, s + 0.6);
-  // touffes d'herbe douces
-  const rnd = rng((Math.round(x / s) * 73856093) ^ (Math.round(y / s) * 19349663) ^ (v + 1));
-  const n = 3;
-  ctx.strokeStyle = dark ? PAL.bladeDk : PAL.blade;
-  ctx.lineWidth = Math.max(1, s * 0.03);
-  ctx.lineCap = 'round';
-  for (let i = 0; i < n; i++) {
-    const bx = x + (0.15 + rnd() * 0.7) * s;
-    const by = y + (0.25 + rnd() * 0.65) * s;
-    const hgt = s * (0.08 + rnd() * 0.06);
-    const lean = (rnd() - 0.5) * s * 0.05;
-    ctx.beginPath();
-    ctx.moveTo(bx, by);
-    ctx.quadraticCurveTo(bx + lean, by - hgt * 0.7, bx + lean * 1.6, by - hgt);
-    ctx.moveTo(bx + s * 0.05, by);
-    ctx.quadraticCurveTo(bx + s * 0.05 + lean, by - hgt * 0.55, bx + s * 0.05 + lean, by - hgt * 0.8);
-    ctx.stroke();
+// ---------------------------------------------------------------- textures
+// Textures de sol générées (Higgsfield), tuilées de façon transparente : une
+// texture couvre TEX_SPAN×TEX_SPAN tuiles du monde, donc chaque case n'affiche
+// qu'un sous-carré ; comme la texture est sans couture, ça se répète tous les
+// TEX_SPAN cases sans grille visible.
+const TEX_SPAN = 3;
+const TEX = {};
+if (typeof Image !== 'undefined') {
+  for (const n of ['grass', 'path', 'sand', 'water', 'floor', 'carpet', 'wall']) {
+    const img = new Image();
+    img.__ok = false;
+    img.onload = () => { img.__ok = true; };
+    img.src = `assets/tiles/${n}.webp`;
+    TEX[n] = img;
   }
 }
 
+/** Dessine le sous-carré (gx,gy) de la texture `name`. false si pas encore chargée. */
+function texTile(ctx, name, gx, gy, x, y, s) {
+  const img = TEX[name];
+  if (!img || !img.__ok) return false;
+  const span = TEX_SPAN;
+  const cell = img.width / span;
+  const sx = (((gx % span) + span) % span) * cell;
+  const sy = (((gy % span) + span) % span) * cell;
+  ctx.drawImage(img, sx, sy, cell, cell, x, y, s + 0.6, s + 0.6);
+  return true;
+}
+
+// ---------------------------------------------------------------- terrain
+function grassTile(ctx, x, y, s, gx, gy, dark) {
+  if (!texTile(ctx, 'grass', gx, gy, x, y, s)) {
+    ctx.fillStyle = dark ? PAL.grassDk1 : PAL.grass1;
+    ctx.fillRect(x, y, s + 0.6, s + 0.6);
+  }
+  if (dark) { ctx.fillStyle = 'rgba(28,66,24,.3)'; ctx.fillRect(x, y, s + 0.6, s + 0.6); }
+}
+
 // Sol « dur » (chemin/sable) avec coins arrondis là où il borde l'herbe.
-function groundTile(ctx, x, y, s, c1, c2, edgeC, edges) {
+function groundTile(ctx, x, y, s, name, flat, edgeC, edges, gx, gy) {
   const e = edges || {};
   ctx.save();
   // Découpe : on arrondit chaque coin dont les DEUX côtés bordent l'herbe.
@@ -100,72 +113,56 @@ function groundTile(ctx, x, y, s, c1, c2, edgeC, edges) {
   if (nw) ctx.arcTo(x, y, x + rad, y, rad); else ctx.lineTo(x, y);
   ctx.closePath();
   ctx.clip();
-  ctx.fillStyle = c1;
-  ctx.fillRect(x - 1, y - 1, s + 2, s + 2);
-  void c2;
+  if (!texTile(ctx, name, gx, gy, x, y, s)) {
+    ctx.fillStyle = flat;
+    ctx.fillRect(x - 1, y - 1, s + 2, s + 2);
+  }
   // liseré doux sur les bords qui touchent l'herbe
   ctx.strokeStyle = edgeC;
   ctx.lineWidth = s * 0.06;
-  ctx.globalAlpha = 0.5;
+  ctx.globalAlpha = 0.45;
   if (e.n) { ctx.beginPath(); ctx.moveTo(x - 1, y + 1); ctx.lineTo(x + s + 1, y + 1); ctx.stroke(); }
   if (e.s) { ctx.beginPath(); ctx.moveTo(x - 1, y + s - 1); ctx.lineTo(x + s + 1, y + s - 1); ctx.stroke(); }
   if (e.w) { ctx.beginPath(); ctx.moveTo(x + 1, y - 1); ctx.lineTo(x + 1, y + s + 1); ctx.stroke(); }
   if (e.e) { ctx.beginPath(); ctx.moveTo(x + s - 1, y - 1); ctx.lineTo(x + s - 1, y + s + 1); ctx.stroke(); }
+  ctx.globalAlpha = 1;
   ctx.restore();
 }
 
-function waterTile(ctx, x, y, s, frame, edges) {
-  ctx.fillStyle = PAL.water2;
-  ctx.fillRect(x, y, s + 0.6, s + 0.6);
-  // reflets ondulants
-  ctx.strokeStyle = 'rgba(255,255,255,.35)';
-  ctx.lineWidth = Math.max(1, s * 0.035);
-  ctx.lineCap = 'round';
-  const off = frame ? s * 0.18 : 0;
-  for (const [ry, rw] of [[0.32, 0.4], [0.6, 0.28], [0.82, 0.34]]) {
-    ctx.beginPath();
-    ctx.moveTo(x + s * 0.12 + off, y + s * ry);
-    ctx.quadraticCurveTo(x + s * (0.12 + rw / 2) + off, y + s * ry - s * 0.05,
-      x + s * (0.12 + rw) + off, y + s * ry);
-    ctx.stroke();
+function waterTile(ctx, x, y, s, edges, gx, gy) {
+  if (!texTile(ctx, 'water', gx, gy, x, y, s)) {
+    ctx.fillStyle = PAL.water2;
+    ctx.fillRect(x, y, s + 0.6, s + 0.6);
   }
   // écume sur les rives (côtés bordant autre chose que de l'eau)
   const e = edges || {};
   ctx.fillStyle = PAL.foam;
-  const band = s * 0.16;
+  const band = s * 0.14;
   if (e.n) ctx.fillRect(x, y, s, band);
   if (e.s) ctx.fillRect(x, y + s - band, s, band);
   if (e.w) ctx.fillRect(x, y, band, s);
   if (e.e) ctx.fillRect(x + s - band, y, band, s);
 }
 
-function floorTile(ctx, x, y, s, v) {
-  ctx.fillStyle = PAL.floor1;
-  ctx.fillRect(x, y, s + 0.6, s + 0.6);
-  ctx.strokeStyle = PAL.floorLine;
-  ctx.lineWidth = Math.max(1, s * 0.02);
-  ctx.beginPath();
-  ctx.moveTo(x, y + s * 0.5); ctx.lineTo(x + s, y + s * 0.5);
-  const seam = v % 2 ? x + s * 0.5 : x + s * 0.25;
-  ctx.moveTo(seam, y); ctx.lineTo(seam, y + s * 0.5);
-  const seam2 = v % 2 ? x + s * 0.25 : x + s * 0.72;
-  ctx.moveTo(seam2, y + s * 0.5); ctx.lineTo(seam2, y + s);
-  ctx.stroke();
+function floorTile(ctx, x, y, s, gx, gy) {
+  if (!texTile(ctx, 'floor', gx, gy, x, y, s)) {
+    ctx.fillStyle = PAL.floor1;
+    ctx.fillRect(x, y, s + 0.6, s + 0.6);
+  }
 }
 
-function carpetTile(ctx, x, y, s) {
-  // Aplat uni : un grand tapis doux, sans grille de tuiles.
-  ctx.fillStyle = PAL.carpet1;
-  ctx.fillRect(x, y, s + 0.6, s + 0.6);
+function carpetTile(ctx, x, y, s, gx, gy) {
+  if (!texTile(ctx, 'carpet', gx, gy, x, y, s)) {
+    ctx.fillStyle = PAL.carpet1;
+    ctx.fillRect(x, y, s + 0.6, s + 0.6);
+  }
 }
 
-function wallTile(ctx, x, y, s) {
-  ctx.fillStyle = PAL.wall1;
-  ctx.fillRect(x, y, s + 0.6, s + 0.6);
-  ctx.fillStyle = 'rgba(255,255,255,.12)';
-  ctx.fillRect(x, y, s, s * 0.18);
-  ctx.fillStyle = 'rgba(0,0,0,.14)';
-  ctx.fillRect(x, y + s * 0.82, s, s * 0.18);
+function wallTile(ctx, x, y, s, gx, gy) {
+  if (!texTile(ctx, 'wall', gx, gy, x, y, s)) {
+    ctx.fillStyle = PAL.wall1;
+    ctx.fillRect(x, y, s + 0.6, s + 0.6);
+  }
 }
 
 function flowerOverlay(ctx, x, y, s, v) {
@@ -196,18 +193,22 @@ function flowerOverlay(ctx, x, y, s, v) {
   }
 }
 
-/** Dessine une tuile de sol. edges = {n,e,s,w} : côtés bordant un autre terrain. */
-export function drawTile(ctx, name, x, y, s, variant = 0, edges = null) {
+/**
+ * Dessine une tuile de sol. (gx,gy) = coordonnées de la case dans le monde
+ * (pour le placement de la texture) ; edges = {n,e,s,w} côtés bordant un autre
+ * terrain (coins arrondis / écume).
+ */
+export function drawTile(ctx, name, x, y, s, gx = 0, gy = 0, edges = null) {
   switch (name) {
-    case 'grass': grassTile(ctx, x, y, s, variant, false); break;
-    case 'grassdark': grassTile(ctx, x, y, s, variant, true); break;
-    case 'path': groundTile(ctx, x, y, s, PAL.path1, PAL.path2, PAL.pathEdge, edges); break;
-    case 'sand': groundTile(ctx, x, y, s, PAL.sand1, PAL.sand2, PAL.sandEdge, edges); break;
-    case 'water': waterTile(ctx, x, y, s, variant, edges); break;
-    case 'floor': floorTile(ctx, x, y, s, variant); break;
-    case 'carpet': carpetTile(ctx, x, y, s); break;
-    case 'wall': wallTile(ctx, x, y, s); break;
-    case 'flower': flowerOverlay(ctx, x, y, s, variant); break;
+    case 'grass': grassTile(ctx, x, y, s, gx, gy, false); break;
+    case 'grassdark': grassTile(ctx, x, y, s, gx, gy, true); break;
+    case 'path': groundTile(ctx, x, y, s, 'path', PAL.path1, PAL.pathEdge, edges, gx, gy); break;
+    case 'sand': groundTile(ctx, x, y, s, 'sand', PAL.sand1, PAL.sandEdge, edges, gx, gy); break;
+    case 'water': waterTile(ctx, x, y, s, edges, gx, gy); break;
+    case 'floor': floorTile(ctx, x, y, s, gx, gy); break;
+    case 'carpet': carpetTile(ctx, x, y, s, gx, gy); break;
+    case 'wall': wallTile(ctx, x, y, s, gx, gy); break;
+    case 'flower': flowerOverlay(ctx, x, y, s, ((gx * 73856093) ^ (gy * 19349663)) >>> 0); break;
     default: ctx.fillStyle = PAL.voidc; ctx.fillRect(x, y, s + 0.6, s + 0.6);
   }
 }

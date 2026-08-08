@@ -348,8 +348,7 @@ export class Overworld {
     const x1 = Math.min(this.W - 1, Math.ceil((cx + this.vw) / t));
     const y1 = Math.min(this.H - 1, Math.ceil((cy + this.vh) / t));
 
-    // --- sol (rendu vectoriel doux) ---
-    const wFrame = Math.floor(performance.now() / 600) % 2;
+    // --- sol (textures générées + bords vectoriels) ---
     const gAt = (xx, yy) => (yy >= 0 && yy < this.H && xx >= 0 && xx < this.W) ? this.grid[yy][xx] : null;
     const isPathish = (xx, yy) => {
       const g = gAt(xx, yy);
@@ -360,25 +359,24 @@ export class Overworld {
         const c = this.grid[y][x];
         const px = x * t - cx;
         const py = y * t - cy;
-        const h = ((x * 73856093) ^ (y * 19349663)) >>> 0;
         switch (c) {
           case '.': case 't': case 'r':
-            drawTile(ctx, 'grass', px, py, t, (x + y) % 2);
+            drawTile(ctx, 'grass', px, py, t, x, y);
             break;
           case ',':
-            drawTile(ctx, 'grassdark', px, py, t, 0);
+            drawTile(ctx, 'grassdark', px, py, t, x, y);
             break;
           case 'f':
-            drawTile(ctx, 'grass', px, py, t, (x + y) % 2);
-            drawTile(ctx, 'flower', px, py, t, h % 3);
+            drawTile(ctx, 'grass', px, py, t, x, y);
+            drawTile(ctx, 'flower', px, py, t, x, y);
             break;
           case 'p': case 's': {
-            drawTile(ctx, 'grass', px, py, t, (x + y) % 2);
+            drawTile(ctx, 'grass', px, py, t, x, y);
             const edges = {
               n: !isPathish(x, y - 1), s: !isPathish(x, y + 1),
               w: !isPathish(x - 1, y), e: !isPathish(x + 1, y),
             };
-            drawTile(ctx, c === 'p' ? 'path' : 'sand', px, py, t, (x * 3 + y) % 2, edges);
+            drawTile(ctx, c === 'p' ? 'path' : 'sand', px, py, t, x, y, edges);
             break;
           }
           case 'w': {
@@ -387,20 +385,20 @@ export class Overworld {
               n: !isWater(x, y - 1), s: !isWater(x, y + 1),
               w: !isWater(x - 1, y), e: !isWater(x + 1, y),
             };
-            drawTile(ctx, 'water', px, py, t, wFrame, edges);
+            drawTile(ctx, 'water', px, py, t, x, y, edges);
             break;
           }
           case 'F':
-            drawTile(ctx, 'floor', px, py, t, y % 2);
+            drawTile(ctx, 'floor', px, py, t, x, y);
             break;
           case 'c':
-            drawTile(ctx, 'carpet', px, py, t, 0);
+            drawTile(ctx, 'carpet', px, py, t, x, y);
             break;
           case 'W':
-            drawTile(ctx, 'wall', px, py, t, 0);
+            drawTile(ctx, 'wall', px, py, t, x, y);
             break;
           default:
-            drawTile(ctx, 'void', px, py, t, 0);
+            drawTile(ctx, 'void', px, py, t, x, y);
         }
       }
     }
