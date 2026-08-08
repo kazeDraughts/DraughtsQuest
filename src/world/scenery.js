@@ -120,7 +120,11 @@ const PROP_H = {
 
 // Personnages : planches générées découpées en 4 directions, chargées à la
 // demande. Seuls les ids listés ici ont une planche (évite les 404 inutiles).
-export const CHAR_SHEETS = new Set(['player']);
+// Personnages disposant d'une planche générée (les autres : repli vectoriel).
+export const CHAR_SHEETS = new Set([
+  'player', 'mom', 'grandpa', 'gigi', 'momo', 'lea', 'karim', 'shopkeeper',
+  'villager1', 'villager2', 'arbiter', 'rival1', 'rival2',
+]);
 const CHAR = {};
 /** Sprite de personnage dirigé. (x,y) = bas-centre. false => repli vectoriel. */
 export function charSprite(ctx, id, x, y, s, dir = 'down', step = 0) {
