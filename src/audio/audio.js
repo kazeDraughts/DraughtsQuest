@@ -13,37 +13,70 @@ import { state, save } from '../save/save.js';
 
 const NOTE = (n) => 440 * 2 ** ((n - 69) / 12); // midi -> Hz
 
-// Boucles musicales : { bpm, bass: [midi|0 par croche], lead: [[midi,durée-croches]|0] }
+// Boucles musicales douces, façon Animal Crossing : tempos posés, timbres
+// tendres (sinus/triangle) et harmonies colorées (accords de 7e / 9e / 6e)
+// pour une ambiance mellow et chaleureuse — le tout en synthèse, sans couture.
+// Format : { bpm, wave, bassWave, bass: [midi|0 par croche], lead: [[midi,durée]|…], vol }
 const TRACKS = {
+  // Menu — berceuse jazzy : Cmaj7 · Am7 · Dm7 · G7
   menu: {
-    bpm: 76, wave: 'triangle', bassWave: 'sine',
-    bass: [45, 0, 52, 0, 50, 0, 45, 0],
-    lead: [[69, 2], [72, 2], [76, 2], [74, 1], [72, 1], [69, 2], [64, 4], [0, 2]],
-    vol: 0.5,
+    bpm: 66, wave: 'triangle', bassWave: 'sine',
+    bass: [48, 0, 0, 0, 45, 0, 0, 0, 50, 0, 0, 0, 43, 0, 0, 0],
+    lead: [
+      [64, 2], [67, 2], [71, 3], [74, 1],
+      [72, 2], [69, 2], [67, 4],
+      [65, 2], [69, 2], [72, 3], [74, 1],
+      [71, 2], [67, 2], [62, 4], [0, 2],
+    ],
+    vol: 0.42,
   },
+  // Village — flânerie ensoleillée : Fmaj7 · Gm7 · Am7 · B♭maj7
   village: {
-    bpm: 96, wave: 'triangle', bassWave: 'triangle',
-    bass: [48, 0, 55, 0, 53, 0, 55, 0, 48, 0, 55, 0, 57, 0, 55, 0],
-    lead: [[72, 1], [76, 1], [79, 2], [76, 1], [72, 1], [74, 2], [76, 1], [77, 1], [76, 2], [72, 2], [0, 2]],
-    vol: 0.45,
-  },
-  club: {
-    bpm: 84, wave: 'sine', bassWave: 'sine',
-    bass: [43, 0, 50, 0, 46, 0, 50, 0, 41, 0, 48, 0, 43, 0, 0, 0],
-    lead: [[67, 2], [70, 1], [72, 3], [0, 2], [74, 1], [72, 1], [70, 2], [67, 2], [0, 2]],
+    bpm: 84, wave: 'triangle', bassWave: 'sine',
+    bass: [41, 0, 48, 0, 43, 0, 50, 0, 45, 0, 52, 0, 46, 0, 48, 0],
+    lead: [
+      [72, 2], [76, 1], [77, 1], [79, 2], [76, 2],
+      [74, 2], [72, 1], [74, 1], [77, 3], [0, 1],
+      [76, 2], [72, 2], [69, 2], [72, 2],
+      [77, 3], [76, 3], [0, 2],
+    ],
     vol: 0.4,
   },
-  match: {
-    bpm: 108, wave: 'square', bassWave: 'sine',
-    bass: [38, 0, 38, 0, 45, 0, 38, 0, 36, 0, 36, 0, 43, 0, 36, 0],
-    lead: [[62, 1], [0, 1], [65, 1], [0, 1], [62, 1], [0, 3], [69, 1], [0, 1], [67, 1], [0, 5]],
-    vol: 0.3,
+  // Club — coin feutré, piano-jazz doux : Gmaj7 · Em7 · Am7 · D9
+  club: {
+    bpm: 72, wave: 'sine', bassWave: 'sine',
+    bass: [43, 0, 0, 0, 40, 0, 0, 0, 45, 0, 0, 0, 50, 0, 45, 0],
+    lead: [
+      [66, 2], [69, 2], [74, 3], [71, 1],
+      [67, 2], [71, 2], [69, 4],
+      [72, 2], [69, 2], [67, 2], [64, 2],
+      [66, 3], [62, 3], [0, 2],
+    ],
+    vol: 0.38,
   },
+  // Partie — accompagnement calme et discret, pour ne pas distraire.
+  match: {
+    bpm: 80, wave: 'sine', bassWave: 'sine',
+    bass: [45, 0, 0, 0, 43, 0, 0, 0, 41, 0, 0, 0, 43, 0, 0, 0],
+    lead: [
+      [69, 3], [72, 1], [76, 4],
+      [74, 3], [71, 1], [67, 4],
+      [69, 2], [71, 2], [72, 4],
+      [0, 4],
+    ],
+    vol: 0.26,
+  },
+  // Tournoi — un peu plus allant, mais toujours tendre.
   tournament: {
-    bpm: 120, wave: 'square', bassWave: 'triangle',
-    bass: [40, 40, 47, 40, 43, 43, 50, 43, 45, 45, 52, 45, 47, 47, 43, 40],
-    lead: [[64, 1], [67, 1], [71, 2], [67, 1], [64, 1], [69, 2], [71, 1], [72, 1], [71, 2], [67, 2], [0, 2]],
-    vol: 0.32,
+    bpm: 100, wave: 'triangle', bassWave: 'sine',
+    bass: [40, 0, 47, 0, 43, 0, 50, 0, 45, 0, 52, 0, 47, 0, 43, 0],
+    lead: [
+      [64, 1], [67, 1], [71, 2], [72, 2], [71, 2],
+      [69, 1], [67, 1], [69, 2], [64, 2],
+      [66, 2], [69, 2], [74, 3], [71, 1],
+      [72, 2], [67, 2], [0, 2],
+    ],
+    vol: 0.3,
   },
 };
 

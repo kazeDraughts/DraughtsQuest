@@ -65,9 +65,16 @@ function setAvatar(spanId, who) {
  * config : { white, black, fen, allowedMoves, onEnd({winner, resigned}) }
  * Les joueurs : { type:'human'|'ai', name, avatar? , getMove? }
  */
+/** Choisit le décor d'ambiance de l'écran de partie selon le lieu courant. */
+function applyMatchScene() {
+  const sm = $('screen-match');
+  if (world?.map?.outdoor) sm.dataset.scene = 'jardin';
+  else sm.removeAttribute('data-scene'); // défaut : le salon
+}
+
 function startMatch(config) {
   currentMatch?.destroy();
-  showScreen('screen-match');
+  showScreen('screen-match'); applyMatchScene();
   audio.playMusic(config.music || 'match');
   // Applique les cosmétiques équipés (boutique)
   boardView.setThemes(state.equipped.board, state.equipped.pieces);
@@ -414,7 +421,7 @@ async function startTutorialFlow() {
   world.leave();
   currentMatch?.destroy();
   currentMatch = null;
-  showScreen('screen-match');
+  showScreen('screen-match'); applyMatchScene();
   $('name-white').textContent = state.player.name;
   $('name-black').textContent = 'Papi Marcel';
   setAvatar('avatar-white', 'player');
@@ -747,7 +754,7 @@ async function startTrainingExercise(id) {
   if (!ex) return;
   currentMatch?.destroy();
   currentMatch = null;
-  showScreen('screen-match');
+  showScreen('screen-match'); applyMatchScene();
   audio.playMusic('club');
   boardView.setThemes(state.equipped.board, state.equipped.pieces);
   $('name-white').textContent = state.player.name;
@@ -806,7 +813,7 @@ async function startComboChallenge(seriesId) {
   world?.leave();
   currentMatch?.destroy();
   currentMatch = null;
-  showScreen('screen-match');
+  showScreen('screen-match'); applyMatchScene();
   audio.playMusic('club');
   boardView.setThemes(state.equipped.board, state.equipped.pieces);
   $('name-white').textContent = state.player.name;
@@ -897,7 +904,7 @@ async function startStyleLesson(styleId) {
   world?.leave();
   currentMatch?.destroy();
   currentMatch = null;
-  showScreen('screen-match');
+  showScreen('screen-match'); applyMatchScene();
   audio.playMusic('club');
   boardView.setThemes(state.equipped.board, state.equipped.pieces);
   $('name-white').textContent = state.player.name;
@@ -963,7 +970,7 @@ async function startStyleCourse(styleId) {
   world?.leave();
   currentMatch?.destroy();
   currentMatch = null;
-  showScreen('screen-match');
+  showScreen('screen-match'); applyMatchScene();
   audio.playMusic('club');
   boardView.setThemes(state.equipped.board, state.equipped.pieces);
   $('name-white').textContent = state.player.name;
