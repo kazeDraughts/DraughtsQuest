@@ -10,7 +10,7 @@
 import { MAPS, SOLID_TILES } from './maps.js';
 import { characterById } from './npcs.js';
 import { drawCharacter } from './portraits.js';
-import { PAL, drawTile, drawTree, drawRock, drawHouse, drawProp } from './scenery.js';
+import { PAL, drawTile, drawTree, drawRock, drawHouse, drawProp, charSprite } from './scenery.js';
 
 const DIRS = {
   up: { x: 0, y: -1 }, down: { x: 0, y: 1 },
@@ -421,11 +421,19 @@ export class Overworld {
       else if (d.kind === 'rock') this._drawRock(d.x * t - cx, d.ty * t - cy);
       else if (d.kind === 'prop') this._drawProp(d.p, cx, cy);
       else if (d.kind === 'npc') {
-        drawCharacter(ctx, d.n.look, d.n.x * t - cx, d.n.y * t - cy, t, d.n.dir, d.n.walking ? d.n.step : 0);
+        const nx = d.n.x * t - cx, ny = d.n.y * t - cy;
+        const step = d.n.walking ? d.n.step : 0;
+        if (!charSprite(ctx, d.n.id, nx, ny, t, d.n.dir, step)) {
+          drawCharacter(ctx, d.n.look, nx, ny, t, d.n.dir, step);
+        }
       } else {
-        const look = this.hooks.playerLook?.() || characterById('player').look;
         const p = this.player;
-        drawCharacter(ctx, look, p.x * t - cx, p.y * t - cy, t, p.dir, p.walking ? p.step : 0);
+        const px = p.x * t - cx, py = p.y * t - cy;
+        const step = p.walking ? p.step : 0;
+        if (!charSprite(ctx, 'player', px, py, t, p.dir, step)) {
+          const look = this.hooks.playerLook?.() || characterById('player').look;
+          drawCharacter(ctx, look, px, py, t, p.dir, step);
+        }
       }
     }
 

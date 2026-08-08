@@ -118,6 +118,35 @@ const PROP_H = {
   counter: 1.5, plant: 1.7, trophy: 1.5, noticeboard: 1.7, blackboard: 1.7, mat: 0,
 };
 
+// Personnages : planches générées découpées en 4 directions, chargées à la
+// demande. Seuls les ids listés ici ont une planche (évite les 404 inutiles).
+export const CHAR_SHEETS = new Set(['player']);
+const CHAR = {};
+/** Sprite de personnage dirigé. (x,y) = bas-centre. false => repli vectoriel. */
+export function charSprite(ctx, id, x, y, s, dir = 'down', step = 0) {
+  if (!CHAR_SHEETS.has(id)) return false;
+  let set = CHAR[id];
+  if (!set) {
+    set = {};
+    for (const d of ['down', 'up', 'left', 'right']) {
+      const img = new Image();
+      img.__ok = false;
+      img.onload = () => { img.__ok = true; };
+      img.src = `assets/chars/${id}-${d}.webp`;
+      set[d] = img;
+    }
+    CHAR[id] = set;
+  }
+  const img = set[dir] || set.down;
+  if (!img || !img.__ok) return false;
+  const h = s * 1.28;
+  const w = h * (img.width / img.height);
+  const bob = step > 0 ? Math.abs(Math.sin(step * Math.PI * 2)) * s * 0.05 : 0;
+  shadow(ctx, x, y, w * 0.32, s * 0.09);
+  ctx.drawImage(img, x - w / 2, y - h - bob, w, h);
+  return true;
+}
+
 /** Meuble étiré sur l'emprise (largeur wT), ancré au bas. false si pas prêt. */
 function sprProp(ctx, name, x, y, wT, hT, s) {
   const img = SPR[name];
