@@ -85,6 +85,51 @@ function texTile(ctx, name, gx, gy, x, y, s) {
   return true;
 }
 
+// ---------------------------------------------------------------- sprites
+// Sprites détourés (Higgsfield) : nature + mobilier. Repli vectoriel tant
+// qu'un sprite n'est pas chargé.
+const SPR = {};
+const SPR_NAMES = ['tree', 'rock', 'fountain', 'sign', 'bed', 'shelf', 'table',
+  'boardtable', 'counter', 'plant', 'trophy', 'noticeboard', 'blackboard', 'mat'];
+if (typeof Image !== 'undefined') {
+  for (const n of SPR_NAMES) {
+    const img = new Image();
+    img.__ok = false;
+    img.onload = () => { img.__ok = true; };
+    img.src = `assets/sprites/${n}.webp`;
+    SPR[n] = img;
+  }
+}
+
+/** Sprite ancré bas-centre (aspect conservé), largeur w px. false si pas prêt. */
+function sprBC(ctx, name, cx, cy, w) {
+  const img = SPR[name];
+  if (!img || !img.__ok) return false;
+  const h = w * (img.height / img.width);
+  shadow(ctx, cx, cy - h * 0.02, w * 0.4, w * 0.12);
+  ctx.drawImage(img, cx - w / 2, cy - h, w, h);
+  return true;
+}
+
+// Hauteur visible (en tuiles) des meubles ; ils « montent » au-dessus de leur
+// emprise. 0 => on garde la hauteur d'emprise.
+const PROP_H = {
+  fountain: 1.5, sign: 1.7, bed: 0, shelf: 1.9, table: 1.15, boardtable: 1.35,
+  counter: 1.5, plant: 1.7, trophy: 1.5, noticeboard: 1.7, blackboard: 1.7, mat: 0,
+};
+
+/** Meuble étiré sur l'emprise (largeur wT), ancré au bas. false si pas prêt. */
+function sprProp(ctx, name, x, y, wT, hT, s) {
+  const img = SPR[name];
+  if (!img || !img.__ok) return false;
+  const w = wT * s;
+  const h = Math.max(hT, PROP_H[name] || 0) * s;
+  const baseY = y + hT * s;
+  shadow(ctx, x + w / 2, baseY - s * 0.06, w * 0.46, s * 0.1);
+  ctx.drawImage(img, x, baseY - h, w, h);
+  return true;
+}
+
 // ---------------------------------------------------------------- terrain
 function grassTile(ctx, x, y, s, gx, gy, dark) {
   if (!texTile(ctx, 'grass', gx, gy, x, y, s)) {
@@ -224,6 +269,7 @@ function shadow(ctx, cx, cy, rx, ry) {
 // ------------------------------------------------------------------ nature
 /** Arbre rond façon AC. (x,y) = bas-centre. */
 export function drawTree(ctx, x, y, s) {
+  if (sprBC(ctx, 'tree', x, y, s * 1.4)) return;
   shadow(ctx, x, y - s * 0.04, s * 0.34, s * 0.12);
   // tronc
   ctx.fillStyle = vgrad(ctx, x, y - s * 0.7, s * 0.7, PAL.trunk1, PAL.trunk2);
@@ -254,6 +300,7 @@ export function drawTree(ctx, x, y, s) {
 
 /** Rocher arrondi. (x,y) = bas-centre. */
 export function drawRock(ctx, x, y, s) {
+  if (sprBC(ctx, 'rock', x, y, s * 0.92)) return;
   shadow(ctx, x, y, s * 0.28, s * 0.09);
   ctx.fillStyle = vgrad(ctx, x, y - s * 0.4, s * 0.4, PAL.stone1, PAL.stone3);
   ctx.beginPath();
@@ -361,6 +408,7 @@ export function drawHouse(ctx, x, y, wT, hT, palette, doorCol, size) {
  * de l'emprise (px écran), wT/hT en tuiles, s = taille de tuile.
  */
 export function drawProp(ctx, type, x, y, wT, hT, s, frame = 0) {
+  if (sprProp(ctx, type, x, y, wT, hT, s)) return;
   const w = wT * s;
   const h = hT * s;
   const cx = x + w / 2;
