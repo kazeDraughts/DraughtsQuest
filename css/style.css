@@ -75,24 +75,44 @@ body {
   align-items: center;
   justify-content: center;
   padding: 24px;
+  position: relative;
+  background: url("../assets/menu-bg.webp") center bottom / cover no-repeat, var(--bg2);
+}
+/* Voile doux : le décor reste visible, le titre et les boutons restent lisibles. */
+#screen-menu::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(16, 24, 34, .10) 0%, rgba(16, 24, 34, .04) 38%, rgba(16, 24, 34, .55) 100%);
+  pointer-events: none;
 }
 .menu-box {
+  position: relative;
+  z-index: 1;
   width: min(420px, 100%);
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
+  /* Carte « village » : coins ronds, verre dépoli chaleureux façon Animal Crossing. */
+  padding: 22px 20px 24px;
+  border-radius: 24px;
+  background: rgba(20, 29, 40, .52);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  border: 1px solid rgba(255, 255, 255, .14);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .45);
 }
 .game-title {
-  font-size: clamp(2.4rem, 9vw, 3.4rem);
-  letter-spacing: .5px;
-  text-shadow: 0 4px 18px rgba(0, 0, 0, .5);
+  font-size: clamp(2.1rem, 8vw, 3rem);
+  letter-spacing: .3px;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, .25), 0 6px 22px rgba(0, 0, 0, .55);
 }
 .game-title span { color: var(--accent); }
-.game-subtitle { color: var(--muted); margin-top: -10px; }
+.game-subtitle { color: #d9e6f0; margin-top: -8px; text-shadow: 0 2px 8px rgba(0, 0, 0, .5); }
 .menu-buttons { display: flex; flex-direction: column; gap: 12px; }
-.menu-footnote { color: var(--muted); font-size: .8rem; }
-.menu-stats { color: var(--accent); font-size: .95rem; font-weight: 600; }
+.menu-footnote { color: #c3d3e0; font-size: .8rem; text-shadow: 0 1px 6px rgba(0, 0, 0, .5); }
+.menu-stats { color: var(--accent); font-size: .95rem; font-weight: 600; text-shadow: 0 2px 8px rgba(0, 0, 0, .55); }
 
 /* ---------- Écran de partie ---------- */
 #screen-match {
