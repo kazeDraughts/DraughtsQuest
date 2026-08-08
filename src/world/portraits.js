@@ -5,117 +5,205 @@
  */
 
 /**
- * Dessine un portrait (buste) dans un canvas.
- * cfg : { skin, hair, hairStyle: 'short'|'long'|'bald'|'bun'|'cap',
- *         shirt, beard?, glasses?, blush?, capColor? }
+ * Portrait (buste) façon Animal Crossing : grosse tête ronde, grands yeux à
+ * reflet, joues roses, contour doux — cohérent avec les sprites chibi de
+ * l'overworld (drawCharacter). Dessiné entièrement au canvas, aucun asset.
+ * cfg : { skin, hair, hairStyle: 'short'|'long'|'bald'|'bun'|'cap'|'grayfringe',
+ *         shirt, beard?, mustache?, glasses?, blush?, capColor?, bg? }
  */
 export function drawPortrait(canvas, cfg, size = 64) {
   canvas.width = size;
   canvas.height = size;
   const x = canvas.getContext('2d');
-  const u = size / 64; // unité d'échelle
+  const S = size;
+  const cx = S * 0.5;
+  const R = S * 0.30;                 // rayon de la tête (chibi : très grosse)
+  const headY = S * 0.42;
+  const hairC = cfg.hairStyle === 'bald' ? cfg.skin : cfg.hair;
+  const capC = cfg.capColor || '#d84f42';
+  const outline = 'rgba(70,45,30,.42)';
+  const lw = Math.max(1, S * 0.014);
+  x.lineWidth = lw;
+  x.lineJoin = 'round';
 
-  // Fond
-  const bg = x.createLinearGradient(0, 0, 0, size);
-  bg.addColorStop(0, cfg.bg || '#3b4d61');
-  bg.addColorStop(1, '#26313d');
+  // --- Fond : dégradé doux + halo clair derrière la tête ---
+  const bg = x.createLinearGradient(0, 0, 0, S);
+  const top = cfg.bg || '#3b4d61';
+  bg.addColorStop(0, tint(top, 0.18));
+  bg.addColorStop(1, shade(top, 0.28));
   x.fillStyle = bg;
-  x.fillRect(0, 0, size, size);
+  x.fillRect(0, 0, S, S);
+  const halo = x.createRadialGradient(cx, headY, R * 0.2, cx, headY, R * 2.2);
+  halo.addColorStop(0, 'rgba(255,255,255,.16)');
+  halo.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = halo;
+  x.fillRect(0, 0, S, S);
 
-  // Épaules / buste
+  // --- Buste / épaules (capsule arrondie) ---
+  const bodyW = S * 0.62;
+  const bodyTop = S * 0.74;
   x.fillStyle = cfg.shirt;
+  x.strokeStyle = outline;
   x.beginPath();
-  x.ellipse(32 * u, 66 * u, 24 * u, 18 * u, 0, Math.PI, 0);
+  x.roundRect(cx - bodyW / 2, bodyTop, bodyW, S * 0.34, [S * 0.16, S * 0.16, 0, 0]);
+  x.fill();
+  x.stroke();
+  // col clair
+  x.fillStyle = 'rgba(255,255,255,.22)';
+  x.beginPath();
+  x.ellipse(cx, bodyTop + S * 0.01, bodyW * 0.22, S * 0.03, 0, 0, Math.PI);
   x.fill();
 
-  // Tête
+  // --- Cou ---
+  x.fillStyle = shade(cfg.skin, 0.08);
+  x.fillRect(cx - S * 0.06, headY + R * 0.5, S * 0.12, S * 0.14);
+
+  // --- Tête ---
   x.fillStyle = cfg.skin;
+  x.strokeStyle = outline;
   x.beginPath();
-  x.ellipse(32 * u, 32 * u, 15 * u, 17 * u, 0, 0, Math.PI * 2);
+  x.arc(cx, headY, R, 0, Math.PI * 2);
   x.fill();
-
-  // Cheveux
-  x.fillStyle = cfg.hair;
-  if (cfg.hairStyle === 'short') {
+  x.stroke();
+  // oreilles
+  x.fillStyle = cfg.skin;
+  for (const k of [-1, 1]) {
     x.beginPath();
-    x.ellipse(32 * u, 24 * u, 16 * u, 12 * u, 0, Math.PI, 0);
+    x.arc(cx + k * R * 0.98, headY + R * 0.14, R * 0.15, 0, Math.PI * 2);
     x.fill();
-  } else if (cfg.hairStyle === 'long') {
-    x.beginPath();
-    x.ellipse(32 * u, 26 * u, 17 * u, 14 * u, 0, Math.PI, 0);
-    x.fill();
-    x.fillRect(15 * u, 26 * u, 6 * u, 22 * u);
-    x.fillRect(43 * u, 26 * u, 6 * u, 22 * u);
-  } else if (cfg.hairStyle === 'bun') {
-    x.beginPath();
-    x.ellipse(32 * u, 24 * u, 16 * u, 11 * u, 0, Math.PI, 0);
-    x.fill();
-    x.beginPath();
-    x.arc(32 * u, 13 * u, 7 * u, 0, Math.PI * 2);
-    x.fill();
-  } else if (cfg.hairStyle === 'cap') {
-    x.fillStyle = cfg.capColor || '#d84f42';
-    x.beginPath();
-    x.ellipse(32 * u, 23 * u, 16.5 * u, 12 * u, 0, Math.PI, 0);
-    x.fill();
-    x.fillRect(15 * u, 21 * u, 34 * u, 4 * u);
-    x.fillRect(40 * u, 21 * u, 16 * u, 4 * u); // visière
-  } else if (cfg.hairStyle === 'grayfringe') {
-    x.beginPath();
-    x.ellipse(32 * u, 22 * u, 15 * u, 8 * u, 0, Math.PI, 0);
-    x.fill();
-  }
-  // 'bald' : rien
-
-  // Yeux
-  x.fillStyle = '#232323';
-  x.beginPath();
-  x.arc(26 * u, 32 * u, 2.1 * u, 0, Math.PI * 2);
-  x.arc(38 * u, 32 * u, 2.1 * u, 0, Math.PI * 2);
-  x.fill();
-
-  // Lunettes
-  if (cfg.glasses) {
-    x.strokeStyle = '#20242c';
-    x.lineWidth = 1.6 * u;
-    x.beginPath();
-    x.arc(26 * u, 32 * u, 5.5 * u, 0, Math.PI * 2);
-    x.moveTo(44 * u, 32 * u);
-    x.arc(38.5 * u, 32 * u, 5.5 * u, 0, Math.PI * 2);
-    x.moveTo(31.5 * u, 32 * u);
-    x.lineTo(33 * u, 32 * u);
     x.stroke();
   }
 
-  // Joues
+  // --- Chevelure : calotte + frange en festons (comme les villageois) ---
+  const domeC = cfg.hairStyle === 'cap' ? capC : hairC;
+  if (cfg.hairStyle !== 'bald') {
+    x.fillStyle = domeC;
+    x.beginPath();
+    const fr = headY + R * 0.10;            // ligne de frange
+    x.arc(cx, headY, R * 1.03, Math.PI, 0);
+    if (cfg.hairStyle === 'grayfringe') {
+      x.closePath();
+      x.fill();
+      // crâne dégarni : on redécoupe une calotte de peau au sommet
+      x.fillStyle = cfg.skin;
+      x.beginPath();
+      x.arc(cx, headY - R * 0.18, R * 0.82, Math.PI, 0);
+      x.fill();
+    } else {
+      const w3 = (R * 2.06) / 3;
+      for (let i = 2; i >= 0; i--) {
+        const f = cx - R * 1.03 + w3 * (i + 0.5);
+        x.lineTo(f + w3 / 2, fr);
+        x.arc(f, fr, w3 / 2, 0, Math.PI);
+      }
+      x.closePath();
+      x.fill();
+    }
+  }
+  // mèches longues sur les côtés
+  if (cfg.hairStyle === 'long') {
+    x.fillStyle = hairC;
+    for (const k of [-1, 1]) {
+      x.beginPath();
+      x.roundRect(cx + k * R * 0.82 - R * 0.24, headY - R * 0.15, R * 0.46, R * 1.7, R * 0.22);
+      x.fill();
+    }
+  }
+  // chignon
+  if (cfg.hairStyle === 'bun') {
+    x.fillStyle = hairC;
+    x.beginPath();
+    x.arc(cx, headY - R * 1.0, R * 0.36, 0, Math.PI * 2);
+    x.fill();
+    x.stroke();
+  }
+  // casquette : visière + bouton
+  if (cfg.hairStyle === 'cap') {
+    x.fillStyle = shade(capC, 0.2);
+    x.beginPath();
+    x.ellipse(cx, headY - R * 0.02, R * 0.98, R * 0.3, 0, 0, Math.PI);
+    x.fill();
+    x.fillStyle = shade(capC, 0.35);
+    x.beginPath();
+    x.arc(cx, headY - R * 1.0, R * 0.13, 0, Math.PI * 2);
+    x.fill();
+  }
+
+  // --- Yeux : grand blanc + iris + reflet (tout le charme est là) ---
+  const eyeY = headY + R * 0.2;
+  const eyeDX = R * 0.42;
+  for (const k of [-1, 1]) {
+    const ex = cx + k * eyeDX;
+    x.fillStyle = '#fff';
+    x.beginPath();
+    x.ellipse(ex, eyeY, R * 0.17, R * 0.24, 0, 0, Math.PI * 2);
+    x.fill();
+    x.fillStyle = '#3a2e28';
+    x.beginPath();
+    x.ellipse(ex, eyeY + R * 0.03, R * 0.11, R * 0.17, 0, 0, Math.PI * 2);
+    x.fill();
+    x.fillStyle = '#fff';
+    x.beginPath();
+    x.arc(ex - R * 0.04, eyeY - R * 0.07, R * 0.05, 0, Math.PI * 2);
+    x.fill();
+  }
+
+  // --- Lunettes ---
+  if (cfg.glasses) {
+    x.strokeStyle = '#20242c';
+    x.lineWidth = Math.max(1, S * 0.018);
+    for (const k of [-1, 1]) {
+      x.beginPath();
+      x.arc(cx + k * eyeDX, eyeY, R * 0.27, 0, Math.PI * 2);
+      x.stroke();
+    }
+    x.beginPath();
+    x.moveTo(cx - R * 0.15, eyeY);
+    x.lineTo(cx + R * 0.15, eyeY);
+    x.stroke();
+    x.lineWidth = lw;
+  }
+
+  // --- Joues roses ---
   if (cfg.blush) {
-    x.fillStyle = 'rgba(240,120,120,.45)';
-    x.beginPath();
-    x.arc(23 * u, 38 * u, 3.4 * u, 0, Math.PI * 2);
-    x.arc(41 * u, 38 * u, 3.4 * u, 0, Math.PI * 2);
-    x.fill();
+    x.fillStyle = 'rgba(245,130,120,.4)';
+    for (const k of [-1, 1]) {
+      x.beginPath();
+      x.ellipse(cx + k * R * 0.6, eyeY + R * 0.36, R * 0.15, R * 0.1, 0, 0, Math.PI * 2);
+      x.fill();
+    }
   }
 
-  // Bouche
-  x.strokeStyle = '#7c3f2e';
-  x.lineWidth = 1.6 * u;
+  // --- Bouche : petit sourire ---
+  x.strokeStyle = '#8a4a38';
+  x.lineWidth = Math.max(1, S * 0.02);
   x.beginPath();
-  x.arc(32 * u, 39 * u, 4.6 * u, 0.15 * Math.PI, 0.85 * Math.PI);
+  x.arc(cx, headY + R * 0.55, R * 0.14, 0.15 * Math.PI, 0.85 * Math.PI);
   x.stroke();
+  x.lineWidth = lw;
 
-  // Barbe / moustache
-  if (cfg.beard) {
-    x.fillStyle = cfg.beard;
-    x.beginPath();
-    x.ellipse(32 * u, 45 * u, 11 * u, 7 * u, 0, 0, Math.PI);
-    x.fill();
-  }
+  // --- Moustache / barbe ---
   if (cfg.mustache) {
     x.fillStyle = cfg.mustache;
     x.beginPath();
-    x.ellipse(32 * u, 36.5 * u, 7 * u, 2.6 * u, 0, 0, Math.PI);
+    x.ellipse(cx, headY + R * 0.48, R * 0.32, R * 0.1, 0, 0, Math.PI);
     x.fill();
   }
+  if (cfg.beard) {
+    x.fillStyle = cfg.beard;
+    x.beginPath();
+    x.ellipse(cx, headY + R * 0.82, R * 0.52, R * 0.32, 0, 0, Math.PI);
+    x.fill();
+  }
+}
+
+/** Éclaircit une couleur hexadécimale (#rrggbb) vers le blanc d'un facteur 0..1. */
+function tint(hex, f) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = Math.round(((n >> 16) & 255) + (255 - ((n >> 16) & 255)) * f);
+  const g = Math.round(((n >> 8) & 255) + (255 - ((n >> 8) & 255)) * f);
+  const b = Math.round((n & 255) + (255 - (n & 255)) * f);
+  return `rgb(${r},${g},${b})`;
 }
 
 /** Assombrit une couleur hexadécimale (#rrggbb) d'un facteur 0..1. */

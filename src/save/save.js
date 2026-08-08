@@ -31,8 +31,8 @@ export function freshState() {
     library: { read: {}, guessed: {} },
     // Monnaie de la boutique (phase 6)
     points: 0,
-    inventory: { boards: ['classic'], pieces: ['classic'] },
-    equipped: { board: 'classic', pieces: 'classic' },
+    inventory: { boards: ['verger', 'classic'], pieces: ['bois-clair', 'classic'] },
+    equipped: { board: 'verger', pieces: 'bois-clair' },
     // Options (phase 7)
     // rafleStep : rafles jouées case par case (pédagogique, défaut ON)
     options: { music: 0.5, sfx: 0.8, rafleStep: true },

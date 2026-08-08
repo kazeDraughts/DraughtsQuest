@@ -13,6 +13,7 @@ import { CHARACTERS, characterById, updatePlayerCharacter, PLAYER_LOOKS } from '
 import { setPlayerHomeName } from './world/maps.js';
 import { drawPortrait } from './world/portraits.js';
 import { Dialogue } from './world/dialogue.js';
+import { showLocationCard, resetLocationCard } from './world/locationcard.js';
 import { loadSave, setFlag, flag, state, save, hasSave, resetSave } from './save/save.js';
 import { audio } from './audio/audio.js';
 import { runTutorial, makeSignal } from './story/tutorial.js';
@@ -147,6 +148,7 @@ function quitToMenu() {
   currentMatch?.destroy();
   currentMatch = null;
   world?.leave();
+  resetLocationCard();
   refreshMenu();
   showScreen('screen-menu');
   audio.playMusic('menu');
@@ -389,6 +391,7 @@ function enterWorld() {
         },
         onMapChanged: (map) => {
           audio.playMusic(map.outdoor ? 'village' : 'club');
+          showLocationCard(map, $('screen-world'));
         },
         toMenu: () => quitToMenu(),
         sfx: (name) => audio.playSfx(name),

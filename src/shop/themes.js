@@ -8,6 +8,14 @@
 
 export const BOARD_THEMES = [
   {
+    id: 'verger',
+    name: 'Le Verger',
+    desc: 'Le damier douillet de la place du village.',
+    price: 0,
+    light: '#f4e7c8', dark: '#c88f52', border: '#7c5330',
+    coord: 'rgba(80,52,26,.5)', table: '#3a2a18',
+  },
+  {
     id: 'classic',
     name: 'Classique',
     desc: 'Le damier officiel des clubs.',
@@ -77,6 +85,15 @@ export const BOARD_THEMES = [
 ];
 
 export const PIECE_THEMES = [
+  {
+    id: 'bois-clair',
+    name: 'Pions du village',
+    desc: 'Palets de bois, doux et arrondis, comme sur la place.',
+    price: 0,
+    shape: 'disc',
+    w: { fill: '#faf1d8', edge: '#dcbd8a', line: '#b89a63' },
+    b: { fill: '#c96a34', edge: '#8a4319', line: '#e6a26e' },
+  },
   {
     id: 'classic',
     name: 'Classiques',
