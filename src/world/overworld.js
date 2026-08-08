@@ -9,8 +9,8 @@
 
 import { MAPS, SOLID_TILES } from './maps.js';
 import { characterById } from './npcs.js';
-import { drawCharacterSprite } from './pixelart.js';
-import { PX, drawPixelTile, pixelSprite, drawPixelSprite, drawPixelHouse } from './pixeltiles.js';
+import { drawCharacter } from './portraits.js';
+import { PAL, drawTile, drawTree, drawRock, drawHouse, drawProp } from './scenery.js';
 
 const DIRS = {
   up: { x: 0, y: -1 }, down: { x: 0, y: 1 },
@@ -320,10 +320,9 @@ export class Overworld {
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     this.vw = w;
     this.vh = h;
-    // Taille de tuile alignée sur un multiple de 16 : chaque pixel d'art
-    // tombe exactement sur des pixels d'écran (rendu pixel art net).
-    const raw = Math.min(w, h) / 9;
-    this.tile = Math.max(32, Math.min(64, Math.round(raw / 16) * 16));
+    // Rendu vectoriel : plus besoin d'aligner sur 16 px. On vise ~9 tuiles
+    // visibles, avec de grandes tuiles pour un décor doux et lisible.
+    this.tile = Math.max(46, Math.min(96, Math.round(Math.min(w, h) / 9)));
   }
 
   _camera() {
@@ -341,7 +340,7 @@ export class Overworld {
     if (!this.map || !this.vw) return;
     const { ctx, tile: t } = this;
     const { cx, cy } = this._camera();
-    ctx.fillStyle = this.map.outdoor ? PX.grassDD : PX.void;
+    ctx.fillStyle = this.map.outdoor ? PAL.grassDk2 : PAL.voidc;
     ctx.fillRect(0, 0, this.vw, this.vh);
 
     const x0 = Math.max(0, Math.floor(cx / t));
@@ -349,7 +348,7 @@ export class Overworld {
     const x1 = Math.min(this.W - 1, Math.ceil((cx + this.vw) / t));
     const y1 = Math.min(this.H - 1, Math.ceil((cy + this.vh) / t));
 
-    // --- sol (tuiles pixel art) ---
+    // --- sol (rendu vectoriel doux) ---
     const wFrame = Math.floor(performance.now() / 600) % 2;
     const gAt = (xx, yy) => (yy >= 0 && yy < this.H && xx >= 0 && xx < this.W) ? this.grid[yy][xx] : null;
     const isPathish = (xx, yy) => {
@@ -364,45 +363,44 @@ export class Overworld {
         const h = ((x * 73856093) ^ (y * 19349663)) >>> 0;
         switch (c) {
           case '.': case 't': case 'r':
-            drawPixelTile(ctx, 'grass', px, py, t, (x + y) % 2);
+            drawTile(ctx, 'grass', px, py, t, (x + y) % 2);
             break;
           case ',':
-            drawPixelTile(ctx, 'grassdark', px, py, t, 0);
+            drawTile(ctx, 'grassdark', px, py, t, 0);
             break;
           case 'f':
-            drawPixelTile(ctx, 'grass', px, py, t, (x + y) % 2);
-            drawPixelTile(ctx, 'flowertile', px, py, t, h % 3);
+            drawTile(ctx, 'grass', px, py, t, (x + y) % 2);
+            drawTile(ctx, 'flower', px, py, t, h % 3);
             break;
           case 'p': case 's': {
-            drawPixelTile(ctx, 'grass', px, py, t, (x + y) % 2);
-            drawPixelTile(ctx, c === 'p' ? 'path' : 'sand', px, py, t, (x * 3 + y) % 2);
-            // coins arrondis contre l'herbe
-            if (!isPathish(x - 1, y) && !isPathish(x, y - 1)) drawPixelTile(ctx, 'pathcorner', px, py, t, 0);
-            if (!isPathish(x + 1, y) && !isPathish(x, y - 1)) drawPixelTile(ctx, 'pathcorner', px, py, t, 1);
-            if (!isPathish(x + 1, y) && !isPathish(x, y + 1)) drawPixelTile(ctx, 'pathcorner', px, py, t, 2);
-            if (!isPathish(x - 1, y) && !isPathish(x, y + 1)) drawPixelTile(ctx, 'pathcorner', px, py, t, 3);
+            drawTile(ctx, 'grass', px, py, t, (x + y) % 2);
+            const edges = {
+              n: !isPathish(x, y - 1), s: !isPathish(x, y + 1),
+              w: !isPathish(x - 1, y), e: !isPathish(x + 1, y),
+            };
+            drawTile(ctx, c === 'p' ? 'path' : 'sand', px, py, t, (x * 3 + y) % 2, edges);
             break;
           }
           case 'w': {
-            drawPixelTile(ctx, 'water', px, py, t, wFrame);
             const isWater = (xx, yy) => gAt(xx, yy) === 'w' || gAt(xx, yy) === null;
-            if (!isWater(x, y - 1)) drawPixelTile(ctx, 'shore', px, py, t, 0);
-            if (!isWater(x + 1, y)) drawPixelTile(ctx, 'shore', px, py, t, 1);
-            if (!isWater(x, y + 1)) drawPixelTile(ctx, 'shore', px, py, t, 2);
-            if (!isWater(x - 1, y)) drawPixelTile(ctx, 'shore', px, py, t, 3);
+            const edges = {
+              n: !isWater(x, y - 1), s: !isWater(x, y + 1),
+              w: !isWater(x - 1, y), e: !isWater(x + 1, y),
+            };
+            drawTile(ctx, 'water', px, py, t, wFrame, edges);
             break;
           }
           case 'F':
-            drawPixelTile(ctx, 'floor', px, py, t, y % 2);
+            drawTile(ctx, 'floor', px, py, t, y % 2);
             break;
           case 'c':
-            drawPixelTile(ctx, 'carpet', px, py, t, 0);
+            drawTile(ctx, 'carpet', px, py, t, 0);
             break;
           case 'W':
-            drawPixelTile(ctx, 'wall', px, py, t, 0);
+            drawTile(ctx, 'wall', px, py, t, 0);
             break;
           default:
-            drawPixelTile(ctx, 'void', px, py, t, 0);
+            drawTile(ctx, 'void', px, py, t, 0);
         }
       }
     }
@@ -425,11 +423,11 @@ export class Overworld {
       else if (d.kind === 'rock') this._drawRock(d.x * t - cx, d.ty * t - cy);
       else if (d.kind === 'prop') this._drawProp(d.p, cx, cy);
       else if (d.kind === 'npc') {
-        drawCharacterSprite(ctx, d.n.look, d.n.x * t - cx, d.n.y * t - cy, t, d.n.dir, d.n.walking ? d.n.step : 0);
+        drawCharacter(ctx, d.n.look, d.n.x * t - cx, d.n.y * t - cy, t, d.n.dir, d.n.walking ? d.n.step : 0);
       } else {
         const look = this.hooks.playerLook?.() || characterById('player').look;
         const p = this.player;
-        drawCharacterSprite(ctx, look, p.x * t - cx, p.y * t - cy, t, p.dir, p.walking ? p.step : 0);
+        drawCharacter(ctx, look, p.x * t - cx, p.y * t - cy, t, p.dir, p.walking ? p.step : 0);
       }
     }
 
@@ -475,12 +473,12 @@ export class Overworld {
 
   _drawTree(px, py) {
     const t = this.tile;
-    drawPixelSprite(this.ctx, 'tree', px + t * 0.5, py + t * 0.95, t);
+    drawTree(this.ctx, px + t * 0.5, py + t * 0.98, t);
   }
 
   _drawRock(px, py) {
     const t = this.tile;
-    drawPixelSprite(this.ctx, 'rock', px + t * 0.5, py + t * 0.9, t);
+    drawRock(this.ctx, px + t * 0.5, py + t * 0.92, t);
   }
 
   _drawProp(p, cx, cy) {
@@ -491,35 +489,10 @@ export class Overworld {
     const hT = p.h || 1;
     const frame2 = Math.floor(performance.now() / 600) % 2;
 
-    // Sprite pixel art aligné sur l'emprise du meuble (bas de boîte)
-    const box = (name, variant = 0) => {
-      const scale = Math.max(1, Math.round(t / 16));
-      const c = pixelSprite(name, scale, variant);
-      const prev = ctx.imageSmoothingEnabled;
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(c, Math.round(x), Math.round(y + hT * t - c.height));
-      ctx.imageSmoothingEnabled = prev;
-    };
-
-    switch (p.type) {
-      case 'house':
-        drawPixelHouse(ctx, x, y, wT, hT, p.palette, p.doorX - p.x, t);
-        break;
-      case 'fountain': box('fountain', frame2); break;
-      case 'sign': box('sign'); break;
-      case 'bed': box('bed'); break;
-      case 'shelf': box('shelf', wT); break;
-      case 'table': box('table'); break;
-      case 'boardtable': box('boardtable'); break;
-      case 'counter': box('counter', wT); break;
-      case 'plant': box('plant'); break;
-      case 'trophy': box('trophy'); break;
-      case 'noticeboard': box('noticeboard'); break;
-      case 'blackboard': box('blackboard'); break;
-      case 'mat': box('mat'); break;
-      default:
-        ctx.fillStyle = '#888';
-        ctx.fillRect(x, y, wT * t, hT * t);
+    if (p.type === 'house') {
+      drawHouse(ctx, x, y, wT, hT, p.palette, p.doorX - p.x, t);
+    } else {
+      drawProp(ctx, p.type, x, y, wT, hT, t, frame2);
     }
 
     // Enseigne au-dessus d'un meuble ou d'une maison
